@@ -1748,7 +1748,15 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
         clearInterval(messageInterval);
         button.disabled = false;
         button.textContent = originalText;
-        showError(`Fehler: ${error.message}`);
+
+        if (error.message.includes('401') || error.message.includes('ungültig')) {
+          showError('API Key ungültig. Gib einen neuen ein.');
+          apiKey = null;
+          localStorage.removeItem('weekendr_key');
+          setTimeout(() => document.getElementById('api-modal').classList.add('show'), 500);
+        } else {
+          showError(`Fehler: ${error.message}`);
+        }
       });
     }
 
