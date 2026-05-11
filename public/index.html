@@ -8,21 +8,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
-    /* ==================== CSS Variables ==================== */
     :root {
-      --color-bg: #faf8f5;
+      --color-bg: #f5f0e8;
       --color-text: #0f0e0d;
       --color-accent: #c9a84c;
-      --color-light-gray: #e8e6e1;
+      --color-light: #fafaf8;
       --color-dark-gray: #6b6966;
-
       --font-serif: 'Cormorant Garamond', serif;
       --font-sans: 'DM Sans', sans-serif;
-
-      --transition: 0.3s ease;
     }
 
-    /* ==================== Reset ==================== */
     * {
       margin: 0;
       padding: 0;
@@ -35,13 +30,13 @@
 
     body {
       font-family: var(--font-sans);
-      background-color: var(--color-bg);
+      background: linear-gradient(135deg, var(--color-bg) 0%, #f8f5ee 100%);
+      min-height: 100vh;
       color: var(--color-text);
       line-height: 1.6;
       cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2" fill="%230f0e0d"/><circle cx="8" cy="8" r="7" fill="none" stroke="%230f0e0d" stroke-width="1"/></svg>') 8 8, auto;
     }
 
-    /* ==================== Typography ==================== */
     h1, h2, h3, h4 {
       font-family: var(--font-serif);
       font-weight: 300;
@@ -49,65 +44,33 @@
     }
 
     h1 {
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      letter-spacing: -0.02em;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: -0.03em;
     }
 
     h2 {
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
-      margin-bottom: 2rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      margin-bottom: 3rem;
     }
 
-    h3 {
-      font-size: 1.5rem;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      transition: color var(--transition);
-    }
-
-    button {
-      font-family: var(--font-sans);
-      cursor: pointer;
-      border: none;
-      transition: all var(--transition);
-    }
-
-    /* ==================== Layout ==================== */
     .container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 0 2rem;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
+      padding: 0 2.5rem;
     }
 
     /* ==================== Navigation ==================== */
     nav {
       position: fixed;
       top: 0;
-      left: 0;
-      right: 0;
+      width: 100%;
       z-index: 1000;
-      padding: 1.5rem 2rem;
+      padding: 2rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(250, 248, 245, 0.8);
-      backdrop-filter: blur(8px);
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
@@ -125,7 +88,7 @@
 
     nav .nav-links {
       display: flex;
-      gap: 2.5rem;
+      gap: 3rem;
       flex: 1;
       justify-content: center;
     }
@@ -134,94 +97,162 @@
       font-size: 0.95rem;
       font-weight: 500;
       color: var(--color-dark-gray);
+      position: relative;
+      transition: color 0.3s ease;
     }
 
-    nav a:hover {
-      color: var(--color-accent);
+    nav a:after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--color-accent);
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover:after {
+      width: 100%;
     }
 
     .nav-cta {
       background: var(--color-accent);
-      color: var(--color-bg);
-      padding: 0.75rem 1.5rem;
-      border-radius: 2px;
-      font-weight: 500;
-      font-size: 0.9rem;
+      color: var(--color-light);
+      padding: 0.85rem 1.8rem;
+      border-radius: 3px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     .nav-cta:hover {
       background: #b39340;
-      transform: translateX(4px);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(201, 168, 76, 0.2);
     }
 
-    /* ==================== Hero Section ==================== */
+    /* ==================== Hero ==================== */
     #hero {
-      padding-top: 140px;
-      padding-bottom: 60px;
-      min-height: 100vh;
+      padding-top: 160px;
+      padding-bottom: 80px;
+      min-height: 110vh;
       display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
       align-items: center;
     }
 
     .hero-content h1 {
-      margin-bottom: 1rem;
-      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
     }
 
     .hero-subtext {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: var(--color-dark-gray);
-      margin-bottom: 3rem;
-      max-width: 90%;
-      line-height: 1.4;
+      margin-bottom: 3.5rem;
+      max-width: 100%;
+      line-height: 1.5;
     }
 
-    /* ==================== Search Form ==================== */
-    .search-form {
-      background: white;
-      padding: 2rem;
-      border-radius: 4px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    /* ==================== Destination Selector ==================== */
+    .destination-selector {
+      background: var(--color-light);
+      padding: 2.5rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       margin-bottom: 2rem;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
+    .dest-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    .form-group label {
+    .dest-input-wrapper {
+      position: relative;
+    }
+
+    .dest-input-wrapper label {
       display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
       color: var(--color-text);
     }
 
-    .form-group input,
-    .form-group select {
+    .dest-input-wrapper input {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--color-light-gray);
-      border-radius: 3px;
+      padding: 0.9rem 1.2rem;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      background: rgba(15, 14, 13, 0.03);
       font-family: var(--font-sans);
       font-size: 0.95rem;
-      background: white;
       color: var(--color-text);
+      transition: all 0.3s ease;
     }
 
-    .form-group input:focus,
-    .form-group select:focus {
+    .dest-input-wrapper input:focus {
       outline: none;
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+      background: rgba(201, 168, 76, 0.05);
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.1);
     }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
+    .dest-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--color-light);
+      border: 2px solid var(--color-accent);
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .dest-suggestions.show {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 0.8rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .suggestion-item:hover {
+      background: rgba(201, 168, 76, 0.1);
+      padding-left: 1.5rem;
+    }
+
+    .suggestion-city {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .suggestion-country {
+      font-size: 0.8rem;
+      color: var(--color-dark-gray);
     }
 
     /* Mood Pills */
@@ -229,65 +260,69 @@
       margin-bottom: 1.5rem;
     }
 
-    .mood-section label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
+    .mood-label {
+      font-size: 0.8rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       margin-bottom: 0.8rem;
       color: var(--color-text);
+      display: block;
     }
 
     .mood-pills {
       display: flex;
-      gap: 0.8rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
     }
 
     .mood-pill {
-      padding: 0.6rem 1rem;
-      border: 1px solid var(--color-light-gray);
-      border-radius: 20px;
-      background: white;
+      padding: 0.65rem 1.1rem;
+      border: 2px solid rgba(201, 168, 76, 0.3);
+      border-radius: 25px;
+      background: var(--color-light);
       font-size: 0.9rem;
       cursor: pointer;
-      transition: all var(--transition);
+      transition: all 0.3s ease;
       color: var(--color-text);
+      font-weight: 500;
     }
 
     .mood-pill:hover {
       border-color: var(--color-accent);
       background: rgba(201, 168, 76, 0.05);
+      transform: translateY(-2px);
     }
 
     .mood-pill.active {
       background: var(--color-accent);
-      color: white;
+      color: var(--color-light);
       border-color: var(--color-accent);
+      box-shadow: 0 5px 15px rgba(201, 168, 76, 0.3);
     }
 
-    /* Generate Button */
     .btn-generate {
       width: 100%;
       padding: 1.2rem;
-      background: var(--color-accent);
-      color: white;
+      background: linear-gradient(135deg, var(--color-accent) 0%, #b39340 100%);
+      color: var(--color-light);
       font-size: 1rem;
-      font-weight: 600;
-      border-radius: 3px;
-      transition: all var(--transition);
-      margin-top: 1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem;
     }
 
     .btn-generate:hover {
-      background: #b39340;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(201, 168, 76, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(201, 168, 76, 0.3);
     }
 
     .btn-generate:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
@@ -295,73 +330,63 @@
     .hero-mosaic {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 1rem;
-      border-radius: 4px;
+      grid-template-rows: 300px 300px;
+      gap: 1.2rem;
+      border-radius: 8px;
       overflow: hidden;
     }
 
     .mosaic-item {
       position: relative;
-      background: var(--color-light-gray);
+      background: var(--color-dark-gray);
       overflow: hidden;
-      border-radius: 2px;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     .mosaic-item:nth-child(1) {
       grid-row: span 2;
-      min-height: 500px;
-    }
-
-    .mosaic-item:nth-child(2),
-    .mosaic-item:nth-child(3) {
-      min-height: 240px;
-    }
-
-    .mosaic-item:nth-child(4) {
-      grid-column: span 2;
-      min-height: 240px;
     }
 
     .mosaic-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.6s ease;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .mosaic-item:hover img {
-      transform: scale(1.05);
+      transform: scale(1.08);
     }
 
     .mosaic-label {
       position: absolute;
-      bottom: 1rem;
-      left: 1rem;
-      background: rgba(0, 0, 0, 0.3);
+      bottom: 1.5rem;
+      left: 1.5rem;
+      background: rgba(0, 0, 0, 0.35);
       color: white;
-      padding: 0.5rem 1rem;
+      padding: 0.6rem 1.2rem;
       font-size: 0.85rem;
-      font-weight: 500;
-      border-radius: 2px;
-      backdrop-filter: blur(4px);
+      font-weight: 600;
+      border-radius: 4px;
+      backdrop-filter: blur(8px);
     }
 
     /* ==================== Marquee ==================== */
     #marquee {
-      padding: 2rem 0;
-      margin: 4rem 0;
-      border-top: 1px solid var(--color-light-gray);
-      border-bottom: 1px solid var(--color-light-gray);
+      padding: 3rem 0;
+      margin: 5rem 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       overflow: hidden;
     }
 
     .marquee-content {
       display: flex;
       gap: 3rem;
-      animation: marquee 20s linear infinite;
+      animation: marquee 25s linear infinite;
       font-family: var(--font-serif);
-      font-size: 1.3rem;
+      font-size: 1.5rem;
       font-style: italic;
       color: var(--color-dark-gray);
       font-weight: 300;
@@ -373,38 +398,35 @@
     }
 
     @keyframes marquee {
-      0% {
-        transform: translateX(100%);
-      }
-      100% {
-        transform: translateX(-100%);
-      }
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
     }
 
-    /* ==================== Destinations Section ==================== */
+    /* ==================== Destinations Grid ==================== */
     #destinations {
-      padding: 6rem 0;
+      padding: 8rem 0;
     }
 
     .destinations-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 1rem;
+      gap: 1.2rem;
       margin-top: 3rem;
     }
 
     .destination-card {
       position: relative;
-      border-radius: 3px;
+      border-radius: 8px;
       overflow: hidden;
       cursor: pointer;
       group: true;
+      min-height: 200px;
     }
 
     .destination-card:nth-child(1) {
       grid-column: span 3;
       grid-row: span 2;
-      min-height: 400px;
+      min-height: 420px;
     }
 
     .destination-card:nth-child(2),
@@ -417,18 +439,18 @@
     .destination-card:nth-child(5),
     .destination-card:nth-child(6) {
       grid-column: span 2;
-      min-height: 200px;
+      min-height: 220px;
     }
 
     .destination-card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .destination-card:hover img {
-      transform: scale(1.1);
+      transform: scale(1.12) rotate(1deg);
     }
 
     .destination-overlay {
@@ -436,161 +458,80 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1.5rem;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+      padding: 2rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
       color: white;
     }
 
     .destination-name {
       font-family: var(--font-serif);
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 300;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.5rem;
     }
 
     .destination-country {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 0.8rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 1rem;
     }
 
     .destination-tags {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
     }
 
     .tag {
       font-size: 0.75rem;
-      padding: 0.3rem 0.7rem;
+      padding: 0.4rem 0.8rem;
       background: var(--color-accent);
       color: white;
-      border-radius: 12px;
+      border-radius: 20px;
+      font-weight: 600;
     }
 
     .destination-price {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
+      top: 1.5rem;
+      right: 1.5rem;
       background: var(--color-accent);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 3px;
+      color: var(--color-light);
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     /* ==================== How It Works ==================== */
     #how-it-works {
-      padding: 6rem 0;
+      padding: 8rem 0;
     }
 
-    .how-it-works-content {
+    .how-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4rem;
+      gap: 5rem;
       align-items: flex-start;
-    }
-
-    .how-it-works-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
     }
 
     .step {
       display: flex;
-      gap: 1.5rem;
-    }
-
-    .step-number {
-      font-family: var(--font-serif);
-      font-size: 2.5rem;
-      font-weight: 300;
-      color: var(--color-accent);
-      min-width: 60px;
-      line-height: 1;
-    }
-
-    .step-content h3 {
-      margin-bottom: 0.5rem;
-      font-family: var(--font-serif);
-      font-size: 1.3rem;
-      font-weight: 300;
-    }
-
-    .step-content p {
-      color: var(--color-dark-gray);
-      line-height: 1.6;
-    }
-
-    .how-it-works-image {
-      position: sticky;
-      top: 150px;
-    }
-
-    .how-it-works-image img {
-      width: 100%;
-      border-radius: 3px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    }
-
-    .how-it-works-quote {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 1.3rem;
-      color: var(--color-accent);
-      margin-top: 1rem;
-      font-weight: 300;
-    }
-
-    /* ==================== Generator Section ==================== */
-    #generator {
-      padding: 6rem 0;
-      background: linear-gradient(135deg, rgba(201, 168, 76, 0.03) 0%, rgba(201, 168, 76, 0.02) 100%);
-    }
-
-    .generator-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .generator-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 4px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    }
-
-    /* ==================== Trip Results ==================== */
-    .results-container {
-      display: none;
-      padding: 4rem 0;
-    }
-
-    .results-container.show {
-      display: block;
-    }
-
-    .trip-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 2rem;
-      margin-top: 3rem;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease forwards;
     }
 
-    .trip-card {
-      background: white;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      animation: slideUp 0.6s ease;
-    }
+    .step:nth-child(1) { animation-delay: 0.1s; }
+    .step:nth-child(2) { animation-delay: 0.2s; }
+    .step:nth-child(3) { animation-delay: 0.3s; }
+    .step:nth-child(4) { animation-delay: 0.4s; }
 
-    @keyframes slideUp {
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
       }
       to {
         opacity: 1;
@@ -598,16 +539,118 @@
       }
     }
 
+    .step-number {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      font-weight: 300;
+      color: var(--color-accent);
+      min-width: 80px;
+      line-height: 1;
+    }
+
+    .step-content h3 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 300;
+      margin-bottom: 0.6rem;
+    }
+
+    .step-content p {
+      color: var(--color-dark-gray);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .how-it-works-image {
+      position: sticky;
+      top: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    }
+
+    .how-it-works-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .how-it-works-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.4rem;
+      color: var(--color-accent);
+      margin-top: 1.5rem;
+      font-weight: 300;
+    }
+
+    /* ==================== Generator ==================== */
+    #generator {
+      padding: 8rem 0;
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.04) 0%, rgba(201, 168, 76, 0.02) 100%);
+      border-radius: 12px;
+      margin: 4rem 0;
+    }
+
+    .generator-container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .generator-card {
+      background: var(--color-light);
+      padding: 3rem;
+      border-radius: 10px;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ==================== Trip Results ==================== */
+    .results-container {
+      display: none;
+      padding: 6rem 0;
+    }
+
+    .results-container.show {
+      display: block;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .trip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .trip-card {
+      background: var(--color-light);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s ease;
+    }
+
+    .trip-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    }
+
     .trip-header {
       position: relative;
-      height: 300px;
+      height: 320px;
       overflow: hidden;
+      background: var(--color-dark-gray);
     }
 
     .trip-header img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .trip-card:hover .trip-header img {
+      transform: scale(1.08);
     }
 
     .trip-header-overlay {
@@ -615,50 +658,51 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 2rem;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+      padding: 2.5rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
       color: white;
     }
 
     .trip-destination {
       font-family: var(--font-serif);
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 300;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.5rem;
     }
 
     .trip-country {
       font-size: 0.9rem;
-      opacity: 0.9;
-      margin-bottom: 0.8rem;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
     }
 
     .trip-tagline {
       font-size: 0.95rem;
       font-style: italic;
-      opacity: 0.95;
+      opacity: 0.9;
     }
 
     .trip-meta {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--color-light-gray);
+      padding: 1.8rem 2rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       display: flex;
-      gap: 1rem;
+      gap: 0.8rem;
       flex-wrap: wrap;
     }
 
     .meta-chip {
       padding: 0.5rem 1rem;
-      background: var(--color-bg);
+      background: rgba(201, 168, 76, 0.08);
       border-radius: 20px;
       font-size: 0.8rem;
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--color-accent);
     }
 
     .trip-tabs {
       display: flex;
-      border-bottom: 1px solid var(--color-light-gray);
-      background: var(--color-bg);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      background: rgba(201, 168, 76, 0.02);
     }
 
     .tab-button {
@@ -666,12 +710,12 @@
       padding: 1rem;
       background: none;
       border: none;
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: var(--color-dark-gray);
-      border-bottom: 2px solid transparent;
+      border-bottom: 3px solid transparent;
       cursor: pointer;
-      transition: all var(--transition);
+      transition: all 0.3s ease;
     }
 
     .tab-button.active {
@@ -681,7 +725,9 @@
 
     .tab-content {
       display: none;
-      padding: 1.5rem;
+      padding: 2rem;
+      max-height: 400px;
+      overflow-y: auto;
     }
 
     .tab-content.active {
@@ -690,27 +736,28 @@
 
     .itinerary-item {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 1.2rem;
+      margin-bottom: 1.8rem;
     }
 
     .itinerary-time {
-      font-weight: 600;
-      min-width: 80px;
+      font-weight: 700;
+      min-width: 70px;
       color: var(--color-accent);
+      font-size: 0.9rem;
     }
 
     .itinerary-details h4 {
       font-family: var(--font-serif);
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 300;
       margin-bottom: 0.3rem;
     }
 
     .itinerary-details p {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--color-dark-gray);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .extras-list {
@@ -719,7 +766,7 @@
 
     .extras-list h4 {
       font-family: var(--font-serif);
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 300;
       margin-bottom: 0.8rem;
       color: var(--color-accent);
@@ -728,36 +775,34 @@
     .extras-item {
       margin-bottom: 1rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid var(--color-light-gray);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .extras-item:last-child {
       border-bottom: none;
-      margin-bottom: 0;
-      padding-bottom: 0;
     }
 
     .extras-item-name {
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .extras-item-detail {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--color-dark-gray);
+      margin-top: 0.2rem;
     }
 
     .why-section {
       padding: 1.5rem;
       margin-top: 1.5rem;
       border-left: 3px solid var(--color-accent);
-      background: rgba(201, 168, 76, 0.03);
-      border-radius: 2px;
+      background: rgba(201, 168, 76, 0.04);
+      border-radius: 4px;
     }
 
     .why-section p {
-      font-size: 0.9rem;
-      color: var(--color-text);
+      font-size: 0.85rem;
       line-height: 1.6;
     }
 
@@ -765,28 +810,31 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0.8rem;
-      padding: 1.5rem;
-      border-top: 1px solid var(--color-light-gray);
+      padding: 1.5rem 2rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .action-btn {
       padding: 0.8rem;
       background: var(--color-accent);
-      color: white;
-      border-radius: 3px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all var(--transition);
+      color: var(--color-light);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     .action-btn:hover {
       background: #b39340;
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(201, 168, 76, 0.3);
     }
 
     /* ==================== Testimonials ==================== */
     #testimonials {
-      padding: 6rem 0;
+      padding: 8rem 0;
     }
 
     .testimonials-grid {
@@ -797,46 +845,50 @@
     }
 
     .testimonial-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 4px;
-      border: 1px solid var(--color-light-gray);
+      background: var(--color-light);
+      padding: 2.5rem;
+      border-radius: 8px;
+      border: 2px solid rgba(201, 168, 76, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 10px 30px rgba(201, 168, 76, 0.15);
     }
 
     .testimonial-stars {
-      color: var(--color-accent);
-      font-size: 1rem;
       margin-bottom: 1rem;
+      font-size: 1.1rem;
     }
 
     .testimonial-quote {
       font-family: var(--font-serif);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-style: italic;
       font-weight: 300;
-      margin-bottom: 1rem;
-      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
     }
 
     .testimonial-author {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.9rem;
-      margin-bottom: 0.2rem;
     }
 
     .testimonial-meta {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--color-dark-gray);
     }
 
     /* ==================== Footer ==================== */
     footer {
-      padding: 4rem 2rem;
-      border-top: 1px solid var(--color-light-gray);
+      padding: 5rem 2.5rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 2rem;
+      gap: 3rem;
     }
 
     footer .logo {
@@ -847,12 +899,13 @@
       flex: 1;
       display: flex;
       justify-content: center;
-      gap: 2rem;
+      gap: 3rem;
     }
 
     footer .footer-links a {
       color: var(--color-dark-gray);
       font-size: 0.9rem;
+      transition: color 0.3s ease;
     }
 
     footer .footer-links a:hover {
@@ -866,37 +919,53 @@
       color: var(--color-dark-gray);
     }
 
-    /* ==================== Loading State ==================== */
+    /* ==================== Error & Loading ==================== */
+    .error-message {
+      background: #fde2e4;
+      color: #9b2c2c;
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #c5192d;
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: slideInDown 0.4s ease;
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .loading-dots {
       display: inline-flex;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
 
     .dot {
-      width: 0.6rem;
-      height: 0.6rem;
+      width: 0.7rem;
+      height: 0.7rem;
       border-radius: 50%;
       background: var(--color-accent);
       animation: bounce 1.4s infinite;
     }
 
-    .dot:nth-child(1) {
-      animation-delay: -0.32s;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: -0.16s;
-    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
 
     @keyframes bounce {
-      0%, 80%, 100% {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      40% {
-        transform: translateY(-8px);
-        opacity: 0.7;
-      }
+      0%, 80%, 100% { transform: translateY(0); opacity: 1; }
+      40% { transform: translateY(-10px); opacity: 0.7; }
     }
 
     /* ==================== Modal ==================== */
@@ -907,23 +976,30 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 2000;
       align-items: center;
       justify-content: center;
+      backdrop-filter: blur(4px);
     }
 
     .modal-overlay.show {
       display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal {
-      background: white;
-      padding: 2rem;
-      border-radius: 4px;
+      background: var(--color-light);
+      padding: 3rem;
+      border-radius: 10px;
       max-width: 500px;
       width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
     }
 
     .modal h2 {
@@ -934,7 +1010,7 @@
     .modal p {
       color: var(--color-dark-gray);
       margin-bottom: 1.5rem;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .modal-form-group {
@@ -943,58 +1019,64 @@
 
     .modal-form-group label {
       display: block;
-      font-weight: 600;
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 0.6rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
     }
 
     .modal-form-group input {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--color-light-gray);
-      border-radius: 3px;
+      padding: 0.9rem 1.2rem;
+      border: 2px solid transparent;
+      border-radius: 6px;
       font-size: 0.95rem;
       font-family: var(--font-sans);
+      background: rgba(15, 14, 13, 0.03);
+      transition: all 0.3s ease;
     }
 
     .modal-form-group input:focus {
       outline: none;
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+      background: rgba(201, 168, 76, 0.05);
     }
 
     .modal-actions {
       display: flex;
       gap: 1rem;
-      margin-top: 2rem;
+      margin-top: 2.5rem;
     }
 
     .modal-actions button {
       flex: 1;
-      padding: 0.8rem;
-      border-radius: 3px;
-      font-weight: 600;
+      padding: 0.9rem;
+      border-radius: 6px;
+      font-weight: 700;
       font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     .btn-submit {
       background: var(--color-accent);
-      color: white;
+      color: var(--color-light);
     }
 
     .btn-submit:hover {
       background: #b39340;
+      transform: translateY(-3px);
     }
 
     .btn-cancel {
-      background: var(--color-light-gray);
+      background: rgba(0, 0, 0, 0.05);
       color: var(--color-text);
     }
 
     .btn-cancel:hover {
-      background: #ddd8d1;
+      background: rgba(0, 0, 0, 0.1);
     }
 
     .modal-link {
@@ -1002,57 +1084,19 @@
       text-decoration: underline;
     }
 
-    /* ==================== Error Messages ==================== */
-    .error-message {
-      background: #fde2e4;
-      color: #9b2c2c;
-      padding: 1rem;
-      border-radius: 3px;
-      margin-bottom: 1rem;
-      border-left: 3px solid #c5192d;
-      display: none;
-      font-size: 0.9rem;
-    }
-
-    .error-message.show {
-      display: block;
-    }
-
-    /* ==================== Scroll Reveal ==================== */
-    .reveal {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     /* ==================== Responsive ==================== */
     @media (max-width: 1024px) {
-      nav .nav-links {
-        gap: 1.5rem;
+      .container {
+        padding: 0 2rem;
       }
 
-      .grid-2 {
+      .hero-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 3rem;
       }
 
       .hero-mosaic {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-      }
-
-      .mosaic-item:nth-child(1),
-      .mosaic-item:nth-child(2),
-      .mosaic-item:nth-child(3),
-      .mosaic-item:nth-child(4) {
-        grid-column: span 1;
-        grid-row: span 1;
-        min-height: 250px;
+        grid-template-rows: 250px 250px;
       }
 
       .destinations-grid {
@@ -1064,9 +1108,9 @@
         grid-row: span 2;
       }
 
-      .how-it-works-content {
+      .how-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 3rem;
       }
 
       .how-it-works-image {
@@ -1076,39 +1120,33 @@
       footer {
         flex-direction: column;
         text-align: center;
+        gap: 2rem;
       }
 
-      footer .footer-links,
+      footer .footer-links {
+        justify-content: center;
+      }
+
       footer .copyright {
-        flex: none;
+        text-align: center;
       }
     }
 
     @media (max-width: 768px) {
       nav {
-        flex-direction: column;
+        padding: 1.5rem;
+        flex-wrap: wrap;
         gap: 1rem;
-        padding: 1rem;
       }
 
       nav .nav-links {
         flex-direction: column;
-        gap: 1rem;
-        justify-content: flex-start;
         width: 100%;
-      }
-
-      nav .nav-links a {
-        font-size: 0.9rem;
-      }
-
-      #hero {
-        padding-top: 100px;
-        padding-bottom: 40px;
+        gap: 0.8rem;
       }
 
       .container {
-        padding: 0 1rem;
+        padding: 0 1.5rem;
       }
 
       h1 {
@@ -1117,19 +1155,19 @@
 
       h2 {
         font-size: 1.5rem;
+        margin-bottom: 2rem;
       }
 
-      .grid-3 {
+      #hero {
+        padding-top: 120px;
+      }
+
+      .dest-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
       }
 
       .destinations-grid {
         grid-template-columns: repeat(2, 1fr);
-      }
-
-      .destination-card {
-        min-height: 180px;
       }
 
       .destination-card:nth-child(1) {
@@ -1140,21 +1178,12 @@
         grid-template-columns: 1fr;
       }
 
-      .search-form {
-        padding: 1.5rem;
+      .trip-grid {
+        grid-template-columns: 1fr;
       }
 
-      .mood-pills {
-        gap: 0.5rem;
-      }
-
-      .mood-pill {
-        font-size: 0.8rem;
-        padding: 0.5rem 0.8rem;
-      }
-
-      footer {
-        padding: 2rem 1rem;
+      .modal {
+        padding: 2rem;
       }
     }
   </style>
@@ -1174,126 +1203,27 @@
 
   <!-- Hero Section -->
   <section id="hero" class="container">
-    <div class="grid-2">
+    <div class="hero-grid">
       <div>
         <h1>Kein Suchen.<br>Nur Reisen.<br><span style="font-style: italic;">Freitag–Sonntag.</span></h1>
-        <p class="hero-subtext">Gib uns deine Vorstellungen. Unsere KI erstellt 3 perfekte Wochenend-Trips.</p>
+        <p class="hero-subtext">Gib uns deine Vorstellungen. Unsere KI erstellt 3 perfekte Wochenend-Trips just for you.</p>
 
-        <div class="search-form">
-          <div class="form-row">
-            <div class="form-group">
+        <div class="destination-selector">
+          <div class="dest-grid">
+            <div class="dest-input-wrapper">
               <label for="hero-from">Startort</label>
-              <input type="text" id="hero-from" placeholder="z.B. Zürich, Berlin, Wien" list="cities-list">
+              <input type="text" id="hero-from" placeholder="Tippe eine Stadt..." autocomplete="off">
+              <div class="dest-suggestions" id="hero-from-suggestions"></div>
             </div>
-            <div class="form-group">
+            <div class="dest-input-wrapper">
               <label for="hero-to">Wohin? (Optional)</label>
-              <input type="text" id="hero-to" placeholder="z.B. Barcelona" list="cities-list">
-            </div>
-          </div>
-          <datalist id="cities-list">
-            <option value="Amsterdam">Amsterdam, Niederlande</option>
-            <option value="Athen">Athen, Griechenland</option>
-            <option value="Barcelona">Barcelona, Spanien</option>
-            <option value="Berlin">Berlin, Deutschland</option>
-            <option value="Bern">Bern, Schweiz</option>
-            <option value="Bologna">Bologna, Italien</option>
-            <option value="Brüssel">Brüssel, Belgien</option>
-            <option value="Budapest">Budapest, Ungarn</option>
-            <option value="Dublin">Dublin, Irland</option>
-            <option value="Dubrovnik">Dubrovnik, Kroatien</option>
-            <option value="Florenz">Florenz, Italien</option>
-            <option value="Frankfurt">Frankfurt, Deutschland</option>
-            <option value="Genua">Genua, Italien</option>
-            <option value="Graz">Graz, Österreich</option>
-            <option value="Hameln">Hameln, Deutschland</option>
-            <option value="Helsinki">Helsinki, Finnland</option>
-            <option value="Istanbul">Istanbul, Türkei</option>
-            <option value="Kopenhagen">Kopenhagen, Dänemark</option>
-            <option value="Köln">Köln, Deutschland</option>
-            <option value="Krakau">Krakau, Polen</option>
-            <option value="Lissabon">Lissabon, Portugal</option>
-            <option value="London">London, Vereinigtes Königreich</option>
-            <option value="Lucca">Lucca, Italien</option>
-            <option value="Lyon">Lyon, Frankreich</option>
-            <option value="Madrid">Madrid, Spanien</option>
-            <option value="Mailand">Mailand, Italien</option>
-            <option value="Málaga">Málaga, Spanien</option>
-            <option value="Manchester">Manchester, Vereinigtes Königreich</option>
-            <option value="Marseille">Marseille, Frankreich</option>
-            <option value="Maui">Maui, Spanien</option>
-            <option value="Meran">Meran, Italien</option>
-            <option value="Messina">Messina, Italien</option>
-            <option value="Metz">Metz, Frankreich</option>
-            <option value="Montpellier">Montpellier, Frankreich</option>
-            <option value="München">München, Deutschland</option>
-            <option value="Nantes">Nantes, Frankreich</option>
-            <option value="Neapel">Neapel, Italien</option>
-            <option value="Nizza">Nizza, Frankreich</option>
-            <option value="Nürnberg">Nürnberg, Deutschland</option>
-            <option value="Oslo">Oslo, Norwegen</option>
-            <option value="Palermo">Palermo, Italien</option>
-            <option value="Paris">Paris, Frankreich</option>
-            <option value="Pisa">Pisa, Italien</option>
-            <option value="Prag">Prag, Tschechien</option>
-            <option value="Ratibon">Ratibon, Deutschland</option>
-            <option value="Rom">Rom, Italien</option>
-            <option value="Rotterdam">Rotterdam, Niederlande</option>
-            <option value="Salzburg">Salzburg, Österreich</option>
-            <option value="San Sebastián">San Sebastián, Spanien</option>
-            <option value="Siena">Siena, Italien</option>
-            <option value="Sizilien">Sizilien, Italien</option>
-            <option value="Sofia">Sofia, Bulgarien</option>
-            <option value="Split">Split, Kroatien</option>
-            <option value="Stockholm">Stockholm, Schweden</option>
-            <option value="Straßburg">Straßburg, Frankreich</option>
-            <option value="Stuttgart">Stuttgart, Deutschland</option>
-            <option value="Tanger">Tanger, Marokko</option>
-            <option value="Thessaloniki">Thessaloniki, Griechenland</option>
-            <option value="Tivoli">Tivoli, Italien</option>
-            <option value="Trier">Trier, Deutschland</option>
-            <option value="Triest">Triest, Italien</option>
-            <option value="Trondheim">Trondheim, Norwegen</option>
-            <option value="Überlandfahrt">Überlandfahrt, Schweiz</option>
-            <option value="Valencia">Valencia, Spanien</option>
-            <option value="Valence">Valence, Frankreich</option>
-            <option value="Venedig">Venedig, Italien</option>
-            <option value="Verona">Verona, Italien</option>
-            <option value="Wien">Wien, Österreich</option>
-            <option value="Wiesbaden">Wiesbaden, Deutschland</option>
-            <option value="Wrocław">Wrocław, Polen</option>
-            <option value="Zürich">Zürich, Schweiz</option>
-          </datalist>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="hero-budget">Budget (CHF)</label>
-              <select id="hero-budget">
-                <option value="">Wähle...</option>
-                <option value="budget">unter 150</option>
-                <option value="mid">150–300</option>
-                <option value="comfort">300–500</option>
-                <option value="premium">500–800</option>
-                <option value="luxury">800+</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="hero-transport">Transport</label>
-              <select id="hero-transport">
-                <option value="">Egal</option>
-                <option value="flight">Flug</option>
-                <option value="train">Zug</option>
-                <option value="car">Auto</option>
-                <option value="ferry">Fähre</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="hero-date">Datum (Freitag)</label>
-              <input type="date" id="hero-date">
+              <input type="text" id="hero-to" placeholder="Oder lass die KI wählen..." autocomplete="off">
+              <div class="dest-suggestions" id="hero-to-suggestions"></div>
             </div>
           </div>
 
           <div class="mood-section">
-            <label>Deine Stimmung</label>
+            <label class="mood-label">Wie ist deine Stimmung?</label>
             <div class="mood-pills">
               <button class="mood-pill" data-mood="party">🎉 Party</button>
               <button class="mood-pill" data-mood="food">🍝 Food</button>
@@ -1304,25 +1234,21 @@
             </div>
           </div>
 
-          <button class="btn-generate" onclick="handleGenerateTrips()">3 Trips generieren</button>
+          <button class="btn-generate" onclick="handleGenerateTrips()">Trips generieren</button>
         </div>
       </div>
 
       <div class="hero-mosaic">
         <div class="mosaic-item">
-          <img src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?w=600&h=800&fit=crop" alt="Travel" loading="lazy">
+          <img src="https://images.pexels.com/photos/3915857/pexels-photo-3915857.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Europe">
           <div class="mosaic-label">Europa</div>
         </div>
         <div class="mosaic-item">
-          <img src="https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?w=600&h=400&fit=crop" alt="Food" loading="lazy">
+          <img src="https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Food">
           <div class="mosaic-label">Kulinarik</div>
         </div>
         <div class="mosaic-item">
-          <img src="https://images.pexels.com/photos/3535335/pexels-photo-3535335.jpeg?w=600&h=400&fit=crop" alt="Luxury" loading="lazy">
-          <div class="mosaic-label">Komfort</div>
-        </div>
-        <div class="mosaic-item">
-          <img src="https://images.pexels.com/photos/1183622/pexels-photo-1183622.jpeg?w=600&h=800&fit=crop" alt="Nightlife" loading="lazy">
+          <img src="https://images.pexels.com/photos/1183622/pexels-photo-1183622.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Nightlife">
           <div class="mosaic-label">Nachtleben</div>
         </div>
       </div>
@@ -1344,17 +1270,15 @@
       <span>Porto · </span>
       <span>Barcelona · </span>
       <span>Lissabon · </span>
-      <span>Athen · </span>
-      <span>Split · </span>
     </div>
   </section>
 
   <!-- Destinations Section -->
   <section id="destinations" class="container">
-    <h2>Europa wartet auf dich</h2>
+    <h2>Beliebte Ziele</h2>
     <div class="destinations-grid">
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/3889857/pexels-photo-3889857.jpeg?w=800&h=600&fit=crop" alt="Barcelona" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Barcelona')">
+        <img src="https://images.pexels.com/photos/3889857/pexels-photo-3889857.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Barcelona">
         <div class="destination-overlay">
           <div class="destination-name">Barcelona</div>
           <div class="destination-country">Spanien</div>
@@ -1366,8 +1290,8 @@
         <div class="destination-price">ab CHF 120</div>
       </div>
 
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/3915857/pexels-photo-3915857.jpeg?w=800&h=600&fit=crop" alt="Lissabon" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Lissabon')">
+        <img src="https://images.pexels.com/photos/3915857/pexels-photo-3915857.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lissabon">
         <div class="destination-overlay">
           <div class="destination-name">Lissabon</div>
           <div class="destination-country">Portugal</div>
@@ -1379,8 +1303,8 @@
         <div class="destination-price">ab CHF 100</div>
       </div>
 
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?w=800&h=600&fit=crop" alt="Amsterdam" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Amsterdam')">
+        <img src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Amsterdam">
         <div class="destination-overlay">
           <div class="destination-name">Amsterdam</div>
           <div class="destination-country">Niederlande</div>
@@ -1392,8 +1316,8 @@
         <div class="destination-price">ab CHF 150</div>
       </div>
 
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/3756517/pexels-photo-3756517.jpeg?w=800&h=600&fit=crop" alt="Dubrovnik" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Dubrovnik')">
+        <img src="https://images.pexels.com/photos/3756517/pexels-photo-3756517.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Dubrovnik">
         <div class="destination-overlay">
           <div class="destination-name">Dubrovnik</div>
           <div class="destination-country">Kroatien</div>
@@ -1405,8 +1329,8 @@
         <div class="destination-price">ab CHF 130</div>
       </div>
 
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg?w=800&h=600&fit=crop" alt="Neapel" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Neapel')">
+        <img src="https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Neapel">
         <div class="destination-overlay">
           <div class="destination-name">Neapel</div>
           <div class="destination-country">Italien</div>
@@ -1418,8 +1342,8 @@
         <div class="destination-price">ab CHF 110</div>
       </div>
 
-      <div class="destination-card" onclick="setDestination(this)">
-        <img src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?w=800&h=600&fit=crop" alt="Prag" loading="lazy">
+      <div class="destination-card" onclick="setDestination('Prag')">
+        <img src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Prag">
         <div class="destination-overlay">
           <div class="destination-name">Prag</div>
           <div class="destination-country">Tschechien</div>
@@ -1435,41 +1359,41 @@
 
   <!-- How It Works -->
   <section id="how-it-works" class="container">
-    <h2>Wie es funktioniert</h2>
-    <div class="how-it-works-content">
-      <div class="how-it-works-steps">
+    <h2>So funktioniert's</h2>
+    <div class="how-grid">
+      <div>
         <div class="step">
           <div class="step-number">1</div>
           <div class="step-content">
             <h3>Erzähl uns</h3>
-            <p>Gib deinen Startort, Budget und deine Stimmung an. Das wars.</p>
+            <p>Startort, Budget, Datum und deine Stimmung – mehr brauchst du nicht.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">2</div>
           <div class="step-content">
             <h3>KI analysiert</h3>
-            <p>Unsere Claude-basierte KI berücksichtigt 1000+ Faktoren: Wetter, Festivals, Preise, Verbindungen.</p>
+            <p>Unsere Claude-KI berechnet 1000+ Faktoren: Wetter, Events, Preise, Connections.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">3</div>
           <div class="step-content">
             <h3>Wähle deinen Trip</h3>
-            <p>Du erhältst 3 kuratierte Wochenend-Pläne. Minute für Minute, Freitag bis Sonntag.</p>
+            <p>3 kuratierte Wochenend-Pläne, Minute für Minute. Jeder ist unique für dich.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-number">4</div>
           <div class="step-content">
-            <h3>Direkt buchen</h3>
-            <p>Ein Klick führt dich zu Flügen, Hotels und Aktivitäten. Alles ist vorbereitet.</p>
+            <h3>Buchen & genießen</h3>
+            <p>Ein Klick führt zu Flügen, Hotels und Aktivitäten. Alles vorbereitet, nichts vergessen.</p>
           </div>
         </div>
       </div>
 
       <div class="how-it-works-image">
-        <img src="https://images.pexels.com/photos/3601453/pexels-photo-3601453.jpeg?w=500&h=600&fit=crop" alt="Planning" loading="lazy">
+        <img src="https://images.pexels.com/photos/3601453/pexels-photo-3601453.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Travel Planning">
         <p class="how-it-works-quote">Nicht suchen. Erleben.</p>
       </div>
     </div>
@@ -1482,25 +1406,27 @@
       <div class="error-message" id="error-message"></div>
 
       <div class="generator-card">
-        <div class="form-row">
-          <div class="form-group">
+        <div class="dest-grid">
+          <div class="dest-input-wrapper">
             <label for="gen-from">Startort *</label>
-            <input type="text" id="gen-from" placeholder="z.B. Zürich" list="cities-list" required>
+            <input type="text" id="gen-from" placeholder="Tippe deine Stadt..." autocomplete="off" required>
+            <div class="dest-suggestions" id="gen-from-suggestions"></div>
           </div>
-          <div class="form-group">
+          <div class="dest-input-wrapper">
             <label for="gen-to">Wohin? (Optional)</label>
-            <input type="text" id="gen-to" placeholder="KI wählt, wenn leer" list="cities-list">
+            <input type="text" id="gen-to" placeholder="KI wählt spontan..." autocomplete="off">
+            <div class="dest-suggestions" id="gen-to-suggestions"></div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
+        <div class="dest-grid" style="margin-top: 1.5rem;">
+          <div class="dest-input-wrapper">
             <label for="gen-date">Freitag (Datum) *</label>
             <input type="date" id="gen-date" required>
           </div>
-          <div class="form-group">
+          <div class="dest-input-wrapper">
             <label for="gen-budget">Budget (CHF) *</label>
-            <select id="gen-budget" required>
+            <select id="gen-budget" required style="padding: 0.9rem 1.2rem; border: 2px solid transparent; border-radius: 6px; background: rgba(15, 14, 13, 0.03); font-family: var(--font-sans); font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease;">
               <option value="">Wähle...</option>
               <option value="budget">unter 150</option>
               <option value="mid">150–300</option>
@@ -1511,39 +1437,8 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="gen-persons">Personen</label>
-            <select id="gen-persons">
-              <option value="1">Solo</option>
-              <option value="2">2 Personen</option>
-              <option value="3">3 Personen</option>
-              <option value="4">4+ Personen</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="gen-transport">Transport</label>
-            <select id="gen-transport">
-              <option value="">Egal</option>
-              <option value="flight">Flug</option>
-              <option value="train">Zug</option>
-              <option value="car">Auto</option>
-              <option value="ferry">Fähre</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="gen-style">Reisestil</label>
-            <select id="gen-style">
-              <option value="spontaneous">Spontan</option>
-              <option value="planned">Geplant</option>
-              <option value="relaxed">Entspannt</option>
-              <option value="intense">Intensiv</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mood-section">
-          <label>Deine Stimmung</label>
+        <div class="mood-section" style="margin-top: 1.5rem;">
+          <label class="mood-label">Wie ist deine Stimmung?</label>
           <div class="mood-pills" id="gen-moods">
             <button class="mood-pill" data-mood="party">🎉 Party</button>
             <button class="mood-pill" data-mood="food">🍝 Food</button>
@@ -1554,7 +1449,7 @@
           </div>
         </div>
 
-        <button class="btn-generate" id="gen-button" onclick="handleGenerateTrips()">3 Trips generieren</button>
+        <button class="btn-generate" id="gen-button" onclick="handleGenerateTrips()">Trips generieren</button>
       </div>
     </div>
   </section>
@@ -1567,25 +1462,25 @@
 
   <!-- Testimonials -->
   <section id="testimonials" class="container">
-    <h2>Was Reisende sagen</h2>
+    <h2>Trusted by Travelers</h2>
     <div class="testimonials-grid">
       <div class="testimonial-card">
         <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <p class="testimonial-quote">„Ich habe 2 Stunden erspart und einen besseren Trip als allein in 3 Tagen geplant hätte."</p>
+        <p class="testimonial-quote">„2 Stunden Planung gespart. Besser als alle Guides zusammen."</p>
         <div class="testimonial-author">Lisa M.</div>
         <div class="testimonial-meta">Berlin → Barcelona</div>
       </div>
 
       <div class="testimonial-card">
         <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <p class="testimonial-quote">„Die KI kennt Ecken, die kein Reiseführer kennt. Unglaublich."</p>
+        <p class="testimonial-quote">„Die KI kennt Spots, die Reiseführer nicht mal erwähnen."</p>
         <div class="testimonial-author">Julian R.</div>
         <div class="testimonial-meta">Wien → Lissabon</div>
       </div>
 
       <div class="testimonial-card">
         <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <p class="testimonial-quote">„Nicht nur ein Itinerary. Ein perfekter Trip, der passt."</p>
+        <p class="testimonial-quote">„Ein Trip, der wirklich zu mir passt. Genau das, was ich brauchte."</p>
         <div class="testimonial-author">Sarah K.</div>
         <div class="testimonial-meta">Zürich → Amsterdam</div>
       </div>
@@ -1608,7 +1503,7 @@
     <div class="modal">
       <h2>API Key erforderlich</h2>
       <p>weekendr braucht einen <a href="https://console.anthropic.com" target="_blank" class="modal-link">Claude API Key</a> um Trips zu generieren.</p>
-      <p style="font-size: 0.85rem; color: var(--color-dark-gray);">Dein Key wird nur lokal in deinem Browser gespeichert. Wir haben keinen Zugriff darauf.</p>
+      <p style="font-size: 0.85rem; color: var(--color-dark-gray);">Dein Key wird nur lokal in deinem Browser gespeichert – kein Zugriff von unserer Seite.</p>
 
       <div class="modal-form-group">
         <label for="api-key-input">API Key</label>
@@ -1623,65 +1518,120 @@
   </div>
 
   <script>
-    // ==================== State Management ====================
+    // Cities Database
+    const cities = [
+      { name: 'Amsterdam', country: 'Niederlande', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Athen', country: 'Griechenland', img: 'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg' },
+      { name: 'Barcelona', country: 'Spanien', img: 'https://images.pexels.com/photos/3889857/pexels-photo-3889857.jpeg' },
+      { name: 'Berlin', country: 'Deutschland', img: 'https://images.pexels.com/photos/2876325/pexels-photo-2876325.jpeg' },
+      { name: 'Bern', country: 'Schweiz', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Budapest', country: 'Ungarn', img: 'https://images.pexels.com/photos/1276680/pexels-photo-1276680.jpeg' },
+      { name: 'Dublin', country: 'Irland', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Dubrovnik', country: 'Kroatien', img: 'https://images.pexels.com/photos/3756517/pexels-photo-3756517.jpeg' },
+      { name: 'Florenz', country: 'Italien', img: 'https://images.pexels.com/photos/3175220/pexels-photo-3175220.jpeg' },
+      { name: 'Frankfurt', country: 'Deutschland', img: 'https://images.pexels.com/photos/2876325/pexels-photo-2876325.jpeg' },
+      { name: 'Graz', country: 'Österreich', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Helsinki', country: 'Finnland', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Istanbul', country: 'Türkei', img: 'https://images.pexels.com/photos/1680775/pexels-photo-1680775.jpeg' },
+      { name: 'Kopenhagen', country: 'Dänemark', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Köln', country: 'Deutschland', img: 'https://images.pexels.com/photos/2876325/pexels-photo-2876325.jpeg' },
+      { name: 'Krakau', country: 'Polen', img: 'https://images.pexels.com/photos/1756188/pexels-photo-1756188.jpeg' },
+      { name: 'Lissabon', country: 'Portugal', img: 'https://images.pexels.com/photos/3915857/pexels-photo-3915857.jpeg' },
+      { name: 'London', country: 'Vereinigtes Königreich', img: 'https://images.pexels.com/photos/1084622/pexels-photo-1084622.jpeg' },
+      { name: 'Lyon', country: 'Frankreich', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Madrid', country: 'Spanien', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Mailand', country: 'Italien', img: 'https://images.pexels.com/photos/3175220/pexels-photo-3175220.jpeg' },
+      { name: 'Málaga', country: 'Spanien', img: 'https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg' },
+      { name: 'Manchester', country: 'Vereinigtes Königreich', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'München', country: 'Deutschland', img: 'https://images.pexels.com/photos/2876325/pexels-photo-2876325.jpeg' },
+      { name: 'Neapel', country: 'Italien', img: 'https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg' },
+      { name: 'Nizza', country: 'Frankreich', img: 'https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg' },
+      { name: 'Oslo', country: 'Norwegen', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Paris', country: 'Frankreich', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Prag', country: 'Tschechien', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Rom', country: 'Italien', img: 'https://images.pexels.com/photos/3175220/pexels-photo-3175220.jpeg' },
+      { name: 'Salzburg', country: 'Österreich', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Sofia', country: 'Bulgarien', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Split', country: 'Kroatien', img: 'https://images.pexels.com/photos/3756517/pexels-photo-3756517.jpeg' },
+      { name: 'Stockholm', country: 'Schweden', img: 'https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg' },
+      { name: 'Straßburg', country: 'Frankreich', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Stuttgart', country: 'Deutschland', img: 'https://images.pexels.com/photos/2876325/pexels-photo-2876325.jpeg' },
+      { name: 'Valencia', country: 'Spanien', img: 'https://images.pexels.com/photos/4288554/pexels-photo-4288554.jpeg' },
+      { name: 'Venedig', country: 'Italien', img: 'https://images.pexels.com/photos/3175220/pexels-photo-3175220.jpeg' },
+      { name: 'Verona', country: 'Italien', img: 'https://images.pexels.com/photos/3175220/pexels-photo-3175220.jpeg' },
+      { name: 'Wien', country: 'Österreich', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' },
+      { name: 'Zürich', country: 'Schweiz', img: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg' }
+    ];
+
     let selectedMoods = [];
     let apiKey = localStorage.getItem('weekendr_key') || null;
 
-    // ==================== Utilities ====================
-    function showError(message) {
-      const errorEl = document.getElementById('error-message');
-      errorEl.textContent = message;
-      errorEl.classList.add('show');
-      setTimeout(() => {
-        errorEl.classList.remove('show');
-      }, 5000);
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      setupAutoComplete();
+      setupMoodPills();
+      const nextFriday = getNextFriday();
+      document.getElementById('hero-date').value = nextFriday;
+      document.getElementById('gen-date').value = nextFriday;
+    });
+
+    // Autocomplete Setup
+    function setupAutoComplete() {
+      const inputs = ['hero-from', 'hero-to', 'gen-from', 'gen-to'];
+      inputs.forEach(id => {
+        const input = document.getElementById(id);
+        const suggestions = document.getElementById(id + '-suggestions');
+
+        input.addEventListener('input', (e) => {
+          const value = e.target.value.toLowerCase();
+          if (value.length < 1) {
+            suggestions.classList.remove('show');
+            return;
+          }
+
+          const filtered = cities.filter(c => c.name.toLowerCase().startsWith(value));
+
+          if (filtered.length === 0) {
+            suggestions.classList.remove('show');
+            return;
+          }
+
+          suggestions.innerHTML = filtered.map(c => `
+            <div class="suggestion-item" onclick="selectCity('${id}', '${c.name}')">
+              <div class="suggestion-city">${c.name}</div>
+              <div class="suggestion-country">${c.country}</div>
+            </div>
+          `).join('');
+          suggestions.classList.add('show');
+        });
+
+        input.addEventListener('blur', () => {
+          setTimeout(() => suggestions.classList.remove('show'), 200);
+        });
+      });
     }
 
-    function syncFormFields() {
-      const from = document.getElementById('hero-from').value;
-      const to = document.getElementById('hero-to').value;
-      const budget = document.getElementById('hero-budget').value;
-      const transport = document.getElementById('hero-transport').value;
-      const date = document.getElementById('hero-date').value;
-
-      document.getElementById('gen-from').value = from;
-      document.getElementById('gen-to').value = to;
-      document.getElementById('gen-budget').value = budget;
-      document.getElementById('gen-transport').value = transport;
-      document.getElementById('gen-date').value = date;
+    function selectCity(inputId, cityName) {
+      document.getElementById(inputId).value = cityName;
+      document.getElementById(inputId + '-suggestions').classList.remove('show');
     }
 
-    function setDestination(element) {
-      const cityName = element.querySelector('.destination-name').textContent;
+    function setDestination(cityName) {
       document.getElementById('hero-to').value = cityName;
       document.getElementById('gen-to').value = cityName;
       document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // ==================== Mood Pills ====================
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('#hero .mood-pill').forEach(pill => {
+    // Mood Pills
+    function setupMoodPills() {
+      document.querySelectorAll('.mood-pill').forEach(pill => {
         pill.addEventListener('click', function(e) {
           e.preventDefault();
           this.classList.toggle('active');
           updateSelectedMoods();
         });
       });
-
-      document.querySelectorAll('#gen-moods .mood-pill').forEach(pill => {
-        pill.addEventListener('click', function(e) {
-          e.preventDefault();
-          this.classList.toggle('active');
-          updateSelectedMoods();
-        });
-      });
-
-      const nextFriday = getNextFriday();
-      document.getElementById('hero-date').value = nextFriday;
-      document.getElementById('gen-date').value = nextFriday;
-
-      setupScrollReveal();
-    });
+    }
 
     function updateSelectedMoods() {
       selectedMoods = [];
@@ -1699,10 +1649,8 @@
       return nextFriday.toISOString().split('T')[0];
     }
 
-    // ==================== API Integration ====================
+    // Generate Trips
     function handleGenerateTrips() {
-      syncFormFields();
-
       const from = document.getElementById('gen-from').value.trim();
       const to = document.getElementById('gen-to').value.trim();
       const date = document.getElementById('gen-date').value;
@@ -1725,136 +1673,76 @@
       const to = document.getElementById('gen-to').value.trim();
       const date = document.getElementById('gen-date').value;
       const budget = document.getElementById('gen-budget').value;
-      const persons = document.getElementById('gen-persons').value;
-      const transport = document.getElementById('gen-transport').value;
-      const style = document.getElementById('gen-style').value;
+      const persons = '2';
+      const transport = 'flight';
+      const style = 'spontaneous';
 
-      const prompt = `Du bist ein europäischer Reise-Concierge mit Jahrzehnten Erfahrung. Ein Reisender fragt nach 3 perfekten Wochenend-Trips.
+      const prompt = `Du bist ein europäischer Reise-Concierge. Erstelle 3 perfekte Wochenend-Trips.
 
 EINGABEN:
 - Startort: ${from}
 - Zielort (optional): ${to || 'KI wählt spontan'}
 - Datum (Freitag): ${date}
-- Budget pro Person: ${budget} CHF
-- Anzahl Personen: ${persons}
-- Transport-Präferenz: ${transport || 'egal'}
-- Reisestil: ${style}
+- Budget: ${budget} CHF
+- Personen: ${persons}
 - Stimmung: ${selectedMoods.length > 0 ? selectedMoods.join(', ') : 'ausgewogen'}
 
-ANFORDERUNGEN:
-Erstelle EXAKT 3 JSON-Objekte mit folgender Struktur pro Trip:
+Erstelle EXAKT 3 JSON-Objekte mit dieser Struktur (nur JSON, keine Markdown):
 {
   "city": "Stadtname",
   "country": "Land",
   "emoji": "🏙️",
-  "tagline": "Kurze Beschreibung (max 8 Worte)",
-  "transport": "Zugdauer oder Flugdauer von ${from}",
-  "transportType": "flight|train|car|ferry",
-  "estimatedCost": "CHF XXX pro Person",
+  "tagline": "Kurze Beschreibung",
+  "transport": "Reisedauer",
+  "transportType": "flight|train|car",
+  "estimatedCost": "CHF XXX",
   "why": "Warum diese Stadt? (2 Sätze)",
-  "hotel": {
-    "name": "Name",
-    "type": "Boutique|Luxury|Design|Budget",
-    "area": "Stadtteil",
-    "pricePerNight": "CHF XXX"
-  },
-  "restaurants": [
-    {"name": "Name", "type": "Küche", "dish": "Spezialist", "area": "Stadtteil"},
-    {"name": "Name", "type": "Küche", "dish": "Spezialist", "area": "Stadtteil"},
-    {"name": "Name", "type": "Küche", "dish": "Spezialist", "area": "Stadtteil"}
-  ],
-  "nightlife": [
-    {"name": "Name", "type": "Bar|Club|Lounge", "vibe": "Beschreibung"},
-    {"name": "Name", "type": "Bar|Club|Lounge", "vibe": "Beschreibung"}
-  ],
-  "activities": [
-    {"name": "Aktivität", "duration": "2h", "price": "CHF XX"},
-    {"name": "Aktivität", "duration": "3h", "price": "CHF XX"},
-    {"name": "Aktivität", "duration": "2h", "price": "CHF XX"}
-  ],
-  "friday": [
-    {"time": "15:00", "icon": "✈️", "title": "Ankunft", "desc": "Detaillierte Beschreibung"},
-    {"time": "19:00", "icon": "🍽️", "title": "Dinner", "desc": "Detaillierte Beschreibung"}
-  ],
-  "saturday": [
-    {"time": "09:00", "icon": "🚶", "title": "Frühstück & Spaziergang", "desc": "..."},
-    {"time": "13:00", "icon": "🏛️", "title": "Museum/Sehenswürdigkeit", "desc": "..."},
-    {"time": "18:00", "icon": "☕", "title": "Kaffeepause", "desc": "..."},
-    {"time": "20:00", "icon": "🍽️", "title": "Dinner", "desc": "..."}
-  ],
-  "sunday": [
-    {"time": "09:00", "icon": "☕", "title": "Breakfast", "desc": "..."},
-    {"time": "12:00", "icon": "🛍️", "title": "Shopping/Spaziergang", "desc": "..."},
-    {"time": "15:00", "icon": "🚂", "title": "Abreise", "desc": "..."}
-  ],
-  "tags": ["tag1", "tag2", "tag3"],
+  "hotel": { "name": "...", "type": "...", "area": "...", "pricePerNight": "..." },
+  "restaurants": [{ "name": "...", "type": "...", "dish": "...", "area": "..." }],
+  "nightlife": [{ "name": "...", "type": "...", "vibe": "..." }],
+  "activities": [{ "name": "...", "duration": "...", "price": "..." }],
+  "friday": [{ "time": "...", "icon": "...", "title": "...", "desc": "..." }],
+  "saturday": [...],
+  "sunday": [...],
+  "tags": ["tag1", "tag2"],
   "colorAccent": "#c9a84c"
 }
-
-WICHTIG:
-- Nur JSON zurückgeben. KEINE Markdown-Backticks.
-- Echte Restaurants, echte Hotels, echte Stadttteile, keine Platzhalter.
-- Realistisch für ${persons} Personen, Budget ${budget} CHF.
-- Mindestens eine Stadt sollte unter ${to || 'spontan gewählte Orte'} sein.
-- Diverse Trips: eine Kultur-fokussiert, eine Relax/Food-fokussiert, eine Abenteuer/Party-fokussiert.
 
 Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
 
       const button = document.getElementById('gen-button');
       const originalText = button.textContent;
       button.disabled = true;
-      button.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div> Analysiere Europa...';
+      button.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
 
-      const messages = [
-        'Analysiere Europa...',
-        'Suche Verbindungen...',
-        'Erstelle deine Trips...',
-        'Wähle beste Spots...'
-      ];
+      const messages = ['Analysiere Europa...', 'Suche Verbindungen...', 'Erstelle deine Trips...', 'Wähle beste Spots...'];
       let messageIndex = 0;
       const messageInterval = setInterval(() => {
         messageIndex = (messageIndex + 1) % messages.length;
         button.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div> ${messages[messageIndex]}`;
       }, 2000);
 
-      // Call backend instead of direct API
       fetch('/api/generate-trips', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          apiKey: apiKey
-        })
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt, apiKey })
       })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(err => {
-            throw new Error(err.error || `API Error: ${response.status}`);
-          });
-        }
-        return response.json();
-      })
+      .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.error || `Error ${r.status}`); }))
       .then(data => {
         clearInterval(messageInterval);
         button.disabled = false;
         button.textContent = originalText;
 
-        const content = data.content[0].text;
-        let jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-
+        let jsonStr = data.content[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
         if (!jsonStr.startsWith('[')) {
           const match = jsonStr.match(/\[\s*\{[\s\S]*\}\s*\]/);
-          if (match) {
-            jsonStr = match[0];
-          }
+          if (match) jsonStr = match[0];
         }
 
         const trips = JSON.parse(jsonStr);
         renderTrips(trips);
         document.getElementById('results').classList.add('show');
-        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth' }), 100);
       })
       .catch(error => {
         clearInterval(messageInterval);
@@ -1868,15 +1756,17 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
       const grid = document.getElementById('trip-grid');
       grid.innerHTML = '';
 
+      const cityImgMap = {};
+      cities.forEach(c => { cityImgMap[c.name] = c.img; });
+
       trips.forEach((trip, index) => {
         const card = document.createElement('div');
         card.className = 'trip-card';
-
-        const imageUrl = `https://source.unsplash.com/featured/1200x600/?${trip.city.toLowerCase()},travel,city`;
+        const imgUrl = cityImgMap[trip.city] || `https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=800`;
 
         card.innerHTML = `
           <div class="trip-header">
-            <img src="${imageUrl}" alt="${trip.city}" loading="lazy">
+            <img src="${imgUrl}" alt="${trip.city}" loading="lazy">
             <div class="trip-header-overlay">
               <div class="trip-destination">${trip.emoji} ${trip.city}</div>
               <div class="trip-country">${trip.country}</div>
@@ -1939,7 +1829,7 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
               <div class="extras-item">
                 <div class="extras-item-name">${trip.hotel.name}</div>
                 <div class="extras-item-detail">${trip.hotel.type} • ${trip.hotel.area}</div>
-                <div class="extras-item-detail" style="color: var(--color-accent); margin-top: 0.3rem;">${trip.hotel.pricePerNight}/Nacht</div>
+                <div class="extras-item-detail" style="color: var(--color-accent);">${trip.hotel.pricePerNight}/Nacht</div>
               </div>
             </div>
 
@@ -1948,14 +1838,14 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
               ${trip.restaurants.map(r => `
                 <div class="extras-item">
                   <div class="extras-item-name">${r.name}</div>
-                  <div class="extras-item-detail">${r.type} • Spezialist: ${r.dish}</div>
-                  <div class="extras-item-detail" style="color: var(--color-dark-gray); margin-top: 0.2rem;">${r.area}</div>
+                  <div class="extras-item-detail">${r.type} • ${r.dish}</div>
+                  <div class="extras-item-detail">${r.area}</div>
                 </div>
               `).join('')}
             </div>
 
             <div class="extras-list">
-              <h4>🎉 Nachtleben</h4>
+              <h4>🎉 Nightlife</h4>
               ${trip.nightlife.map(n => `
                 <div class="extras-item">
                   <div class="extras-item-name">${n.name}</div>
@@ -1985,7 +1875,6 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
             <button class="action-btn" onclick="openGetYourGuide('${trip.city}')">🎟️ Aktivitäten</button>
           </div>
         `;
-
         grid.appendChild(card);
       });
     }
@@ -1998,7 +1887,6 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
       document.getElementById(tabId).classList.add('active');
     }
 
-    // ==================== Affiliate Links ====================
     function openSkyscanner(city) {
       window.open(`https://www.skyscanner.de/flights/?query=${encodeURIComponent(city)}`, '_blank');
     }
@@ -2011,14 +1899,9 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
       window.open(`https://www.getyourguide.de/s/?q=${encodeURIComponent(city)}`, '_blank');
     }
 
-    // ==================== API Key Modal ====================
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
-      if (!key) {
-        alert('Bitte gebe einen API Key ein.');
-        return;
-      }
-      if (!key.startsWith('sk-ant-')) {
+      if (!key || !key.startsWith('sk-ant-')) {
         alert('Ungültiges API Key Format.');
         return;
       }
@@ -2033,30 +1916,16 @@ Gib nur die JSON-Array zurück: [{ ... }, { ... }, { ... }]`;
       document.getElementById('api-key-input').value = '';
     }
 
-    document.getElementById('api-key-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        saveApiKey();
-      }
-    });
-
-    // ==================== Scroll Reveal ====================
-    function setupScrollReveal() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
-        });
-      }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      });
-
-      document.querySelectorAll('h2, .step, .destination-card, .testimonial-card').forEach(el => {
-        el.classList.add('reveal');
-        observer.observe(el);
-      });
+    function showError(message) {
+      const errorEl = document.getElementById('error-message');
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+      setTimeout(() => errorEl.classList.remove('show'), 5000);
     }
+
+    document.getElementById('api-key-input')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') saveApiKey();
+    });
   </script>
 
 </body>
