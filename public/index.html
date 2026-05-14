@@ -6467,7 +6467,7 @@
           <div class="place"><span class="line"></span>${trip.country || 'Europe'} · ${cityName}</div>
           <h1>${cityName.replace(/(\w+)$/, '<em>$1</em>')}</h1>
           <div class="stats">
-            <div><span class="lbl">Flights from ${origin}</span><span class="val">${flightPrice ? '€' + flightPrice : '€ live'}</span></div>
+            <div><span class="lbl">Flights from ${origin}</span><span class="val">${flightPrice ? priceFromRange(flightPrice) : 'check live'}</span></div>
             <div><span class="lbl">Flight time</span><span class="val">${flightTime}</span></div>
             <div><span class="lbl">Best for</span><span class="val">${(trip.tags || trip.vibeTags || ['Weekend']).slice(0,2).join(' · ')}</span></div>
           </div>
@@ -6502,7 +6502,7 @@
                 <div class="deal-title">${origin} <em style="font-style: italic; color: var(--accent);">→</em> ${cityName}</div>
                 <div class="deal-meta">${flightTime} · ${links.dates.friday.slice(5)} – ${links.dates.sunday.slice(5)} · 2 travellers</div>
                 <span class="avail-chip ${flightAvail.status}"><span class="av-dot"></span>${flightAvail.label}</span>
-                <div class="deal-price">€${flightPrice || 89}<span class="small">return per person · live</span></div>
+                <div class="deal-price">${priceFromRange(flightPrice || 89)}<span class="small">return per person · check live on Skyscanner</span></div>
                 <a class="deal-cta" href="${links.skyscanner}" target="_blank" rel="noopener">
                   See live prices
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
@@ -6513,7 +6513,7 @@
                 <div class="deal-title">Best <em style="font-style: italic; color: var(--accent);">value</em> stay</div>
                 <div class="deal-meta">Top-rated hotels · 2 nights · ${cityName} centre</div>
                 <span class="avail-chip popular"><span class="av-dot"></span>High demand</span>
-                <div class="deal-price">€${130 + ((cityName.length * 7) % 70)}<span class="small">per night · live</span></div>
+                <div class="deal-price">${priceRange(130 + ((cityName.length * 7) % 70))}<span class="small">approx · check live on Booking</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   See on Booking
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
@@ -6524,7 +6524,7 @@
                 <div class="deal-title">Weekend <em style="font-style: italic; color: var(--accent);">bundle</em></div>
                 <div class="deal-meta">Flight + 2-night stay + 1 experience · all-in</div>
                 <span class="avail-chip ${bundleAvail.status}"><span class="av-dot"></span>${bundleAvail.label}</span>
-                <div class="deal-price">€${(flightPrice || 89) + 260 + ((cityName.length * 11) % 80)}<span class="small">all-in per person</span></div>
+                <div class="deal-price">${priceFromRange((flightPrice || 89) + 260 + ((cityName.length * 11) % 80))}<span class="small">all-in estimate · 2 nights + 1 experience</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve bundle
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -6589,7 +6589,7 @@
         <div class="detail-section" style="text-align: center; padding-top: 2rem;">
           <h2 class="h-1" style="margin-bottom: 1.5rem;">A whole weekend in <em class="italic-accent">${cityName}</em>.</h2>
           <p class="lede" style="margin-bottom: 2rem; max-width: 540px; margin-left: auto; margin-right: auto;">
-            Flights, stay and one experience — all-in from <strong>€${(flightPrice || 89) + 260 + ((cityName.length * 11) % 80)}</strong>.
+            Flights, stay and one experience — all-in <strong>${priceFromRange((flightPrice || 89) + 260 + ((cityName.length * 11) % 80))}</strong> per person.
           </p>
           <a class="btn-primary" style="background: var(--ink); color: var(--cream); display: inline-flex;" href="${links.booking}" target="_blank" rel="noopener">
             Reserve this weekend
@@ -7317,7 +7317,7 @@
             <div class="listing-title">${h.name}</div>
             <div class="listing-desc">${h.description || h.vibe || ''}${h.neighbourhood ? ' · ' + h.neighbourhood : ''}</div>
             <div class="listing-foot">
-              <div class="listing-price">€${h.price_per_night || 120}<span class="per">per night</span></div>
+              <div class="listing-price">${priceRange(h.price_per_night || 120)}<span class="per">approx · per night</span></div>
               <span class="listing-cta">Live on Booking <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
             </div>
           </div>
@@ -7357,7 +7357,7 @@
             <div class="listing-title">${a.name}</div>
             <div class="listing-desc">${a.description || a.vibe || ''}</div>
             <div class="listing-foot">
-              <div class="listing-price">€${a.price_per_person || 45}<span class="per">per person</span></div>
+              <div class="listing-price">${priceRange(a.price_per_person || 45)}<span class="per">approx · per person</span></div>
               <span class="listing-cta">Live on GetYourGuide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
             </div>
           </div>
@@ -7988,6 +7988,35 @@
     return list;
   }
   
+  // ============================================================
+  // PRICE FORMATTING — honest ranges, never invented exact numbers
+  //
+  // Our underlying data has indicative numbers from research/averages,
+  // but we always display them as a +/- range so users see clearly
+  // these are approximations, not guaranteed prices. The real number
+  // comes from the partner site they're deep-linked to.
+  // ============================================================
+  function priceRange(n, opts = {}) {
+    if (n == null || n === 0 || n === '0') return opts.zero || 'Free';
+    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num)) return String(n);
+    // Tighter range for very low prices, wider for higher ones
+    const spread = num < 50 ? 0.22 : num < 200 ? 0.16 : num < 500 ? 0.13 : 0.10;
+    const low = Math.max(1, Math.floor(num * (1 - spread) / 5) * 5);
+    const high = Math.ceil(num * (1 + spread) / 5) * 5;
+    if (low === high) return '€' + low + (opts.suffix ? ' ' + opts.suffix : '');
+    return '€' + low + '–' + high + (opts.suffix ? ' ' + opts.suffix : '');
+  }
+  function priceFromRange(n, opts = {}) {
+    // For "from €X" displays — shows the low end of the range
+    if (n == null || n === 0) return opts.zero || 'Free';
+    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num)) return String(n);
+    const spread = num < 50 ? 0.22 : num < 200 ? 0.16 : num < 500 ? 0.13 : 0.10;
+    const low = Math.max(1, Math.floor(num * (1 - spread) / 5) * 5);
+    return 'from €' + low;
+  }
+
   function fmtFlight(h) {
     const hours = Math.floor(h);
     const mins = Math.round((h - hours) * 60);
