@@ -5891,6 +5891,185 @@
     // All used — cycle anyway (rare for cards > 4)
     return dishes[idx % dishes.length];
   }
+
+  // ============================================================
+  // ACTIVITY → WIKIPEDIA LANDMARK MAP
+  //
+  // Every entry here is the Wikipedia article slug for a real,
+  // famous attraction. The renderer matches the activity name
+  // against this list and pulls the verified Wikipedia lead image
+  // for that landmark. If no match → typographic placeholder
+  // (we never substitute a wrong photo).
+  //
+  // Patterns are case-insensitive substring matches.
+  // Listed roughly by city for editing clarity.
+  // ============================================================
+  const attractionWikiMap = [
+    // Barcelona
+    ['sagrada', 'Sagrada_Família'],
+    ['park güell', 'Park_Güell'],
+    ['boqueria', 'La_Boqueria'],
+    ['bunkers del carmel', 'Bunkers_del_Carmel'],
+    ['magic fountain', 'Magic_Fountain_of_Montjuïc'],
+    ['razzmatazz', 'Razzmatazz_(nightclub)'],
+    ['el born', 'El_Born,_Barcelona'],
+    ['barceloneta', 'Barceloneta_(Barcelona)'],
+    ['casa batlló', 'Casa_Batlló'],
+    ['casa milà', 'Casa_Milà'],
+    // Lisbon
+    ['tram 28', 'Tram_28_(Lisbon)'],
+    ['pastéis de belém', 'Jerónimos_Monastery'],
+    ['belém', 'Jerónimos_Monastery'],
+    ['sintra', 'Sintra'],
+    ['cabo da roca', 'Cabo_da_Roca'],
+    ['lx factory', 'LX_Factory'],
+    ['fado', 'Fado'],
+    ['alfama', 'Alfama'],
+    ['ginjinha', 'Ginjinha'],
+    // Budapest
+    ['széchenyi', 'Széchenyi_thermal_bath'],
+    ['gellért', 'Gellért_Baths'],
+    ['rudas', 'Rudas_Baths'],
+    ["fisherman's bastion", "Fisherman's_Bastion"],
+    ['margaret island', 'Margaret_Island'],
+    ['memento park', 'Memento_Park'],
+    ['great market hall', 'Great_Market_Hall,_Budapest'],
+    ['danube', 'Hungarian_Parliament_Building'],
+    ['ruin bar', 'Szimpla_Kert'],
+    ['szimpla', 'Szimpla_Kert'],
+    // Prague
+    ['prague castle', 'Prague_Castle'],
+    ['castle quarter', 'Prague_Castle'],
+    ['charles bridge', 'Charles_Bridge'],
+    ['karlštejn', 'Karlštejn_Castle'],
+    ['klementinum', 'Klementinum'],
+    ['vltava', 'Vltava'],
+    ['vyšehrad', 'Vyšehrad'],
+    ['black light', 'Black_Light_Theatre'],
+    // Krakow
+    ['auschwitz', 'Auschwitz_concentration_camp'],
+    ['wawel', 'Wawel_Castle'],
+    ['wieliczka', 'Wieliczka_Salt_Mine'],
+    ['kazimierz', 'Kazimierz'],
+    ['zakopane', 'Zakopane'],
+    ['milk-bar', 'Bar_mleczny'],
+    ['milk bar', 'Bar_mleczny'],
+    // Naples
+    ['pompeii', 'Pompeii'],
+    ['vesuvius', 'Mount_Vesuvius'],
+    ['naples underground', 'Naples_underground_geothermal_zone'],
+    ['quartieri spagnoli', 'Spanish_Quarters'],
+    ['castel dell', "Castel_dell'Ovo"],
+    ['procida', 'Procida'],
+    ['capri', 'Capri'],
+    // Porto
+    ['port wine', 'Port_wine'],
+    ['douro', 'Douro'],
+    ['livraria lello', 'Livraria_Lello'],
+    ['ribeira', 'Ribeira,_Porto'],
+    ['são bento', 'São_Bento_railway_station'],
+    ['foz', 'Foz_do_Douro'],
+    ['francesinha', 'Francesinha'],
+    ['matosinhos', 'Matosinhos'],
+    // Paris
+    ['louvre', 'Louvre'],
+    ["musée d'orsay", "Musée_d'Orsay"],
+    ['eiffel', 'Eiffel_Tower'],
+    ['père lachaise', 'Père_Lachaise_Cemetery'],
+    ['versailles', 'Palace_of_Versailles'],
+    ['canal saint-martin', 'Canal_Saint-Martin'],
+    ['seine', 'Seine'],
+    ['marais', 'Le_Marais'],
+    ['notre-dame', 'Notre-Dame_de_Paris'],
+    ['notre dame', 'Notre-Dame_de_Paris'],
+    ['croissant', 'Croissant'],
+    // Milan
+    ['duomo + rooftop', 'Milan_Cathedral'],
+    ['duomo', 'Milan_Cathedral'],
+    ['last supper', 'The_Last_Supper_(Leonardo)'],
+    ['galleria vittorio', 'Galleria_Vittorio_Emanuele_II'],
+    ['lake como', 'Lake_Como'],
+    ['brera', 'Pinacoteca_di_Brera'],
+    ['navigli', 'Navigli'],
+    ['san siro', 'San_Siro'],
+    ['risotto', 'Risotto_alla_milanese'],
+    // Vienna
+    ['schönbrunn', 'Schönbrunn_Palace'],
+    ['belvedere', 'Belvedere,_Vienna'],
+    ['hofburg', 'Hofburg'],
+    ['staatsoper', 'Vienna_State_Opera'],
+    ['naschmarkt', 'Naschmarkt'],
+    ['prater', 'Wiener_Prater'],
+    ['wachau', 'Wachau'],
+    ['coffee-house', 'Viennese_coffee_house'],
+    ['coffeehouse', 'Viennese_coffee_house'],
+    // Athens
+    ['acropolis museum', 'Acropolis_Museum'],
+    ['acropolis', 'Acropolis_of_Athens'],
+    ['plaka', 'Plaka'],
+    ['anafiotika', 'Anafiotika'],
+    ['cape sounion', 'Cape_Sounion'],
+    ['lycabettus', 'Mount_Lycabettus'],
+    ['hydra', 'Hydra_(island)'],
+    ['varvakios', 'Varvakios_Agora'],
+    ['central market', 'Varvakios_Agora'],
+    // Copenhagen
+    ['nyhavn', 'Nyhavn'],
+    ['tivoli', 'Tivoli_Gardens'],
+    ['christiania', 'Freetown_Christiania'],
+    ['louisiana museum', 'Louisiana_Museum_of_Modern_Art'],
+    ['frederiksberg', 'Frederiksberg_Gardens'],
+    ['refshaleøen', 'Refshaleøen'],
+    ['smørrebrød', 'Smørrebrød'],
+    // Dubrovnik
+    ['city walls', 'Walls_of_Dubrovnik'],
+    ['lokrum', 'Lokrum'],
+    ['mount srđ', 'Srđ'],
+    ['srđ', 'Srđ'],
+    ['elaphiti', 'Elaphiti_Islands'],
+    ['banje', 'Banje_Beach'],
+    ['konavle', 'Konavle'],
+    ['game of thrones', "King's_Landing"],
+    // Amalfi
+    ['path of the gods', 'Sentiero_degli_Dei'],
+    ['positano', 'Positano'],
+    ['ravello', 'Ravello'],
+    ['villa rufolo', 'Villa_Rufolo'],
+    ['marina di praia', 'Praiano'],
+    ['praiano', 'Praiano'],
+    ['lemon-grove', 'Sfusato_amalfitano'],
+    // Santorini
+    ['oia', 'Oia,_Greece'],
+    ['akrotiri', 'Akrotiri_(prehistoric_city)'],
+    ['nea kameni', 'Nea_Kameni'],
+    ['red beach', 'Red_Beach,_Santorini'],
+    ['fira-oia', 'Santorini'],
+    ['caldera', 'Santorini_caldera'],
+    ['santorini', 'Santorini'],
+    // Mykonos
+    ['delos', 'Delos'],
+    ['little venice', 'Little_Venice_(Mykonos)'],
+    ['windmills', 'Windmills_of_Mykonos'],
+    ['scorpios', 'Mykonos'],
+    ['paradise beach', 'Paradise_Beach_(Mykonos)']
+  ];
+
+  // Cross-page-render wiki slug tracker — no two activities/restaurants
+  // on the same page can resolve to the same Wikipedia image.
+  let usedActivitySlugs = new Set();
+  function resetActivityPool() { usedActivitySlugs = new Set(); }
+
+  function pickActivityWiki(activity, city) {
+    const name = (activity.name || '').toLowerCase();
+    // Walk the map in declaration order (city-clustered) — most specific first
+    for (const [pattern, slug] of attractionWikiMap) {
+      if (name.includes(pattern.toLowerCase()) && !usedActivitySlugs.has(slug)) {
+        usedActivitySlugs.add(slug);
+        return slug;
+      }
+    }
+    return null; // no Wikipedia article we trust → placeholder
+  }
   
   function wikiSlug(place) {
     if (!place) return '';
@@ -7331,8 +7510,10 @@
     if (!el) return;
     // Sort cheapest first — affordability is the platform identity
     activities.sort((a, b) => (a.price_per_person || 0) - (b.price_per_person || 0));
-    // Honest emoji-driven placeholder per activity category — better than
-    // wrong stock photo, perfect for the affordable / aesthetic vibe.
+    // Fresh Wikipedia slug pool so no two activities show the same image
+    resetActivityPool();
+    // Emoji-driven placeholder for activities without a Wikipedia landmark
+    // (private tours, generic experiences, etc.).
     const catEmoji = {
       Beach: '🌊', Nightlife: '🌙', Food: '🍽',
       Cultural: '🏛', Outdoor: '🥾', Tour: '🧭',
@@ -7341,16 +7522,22 @@
     el.innerHTML = activities.map((a, i) => {
       const av = availability(city + 'a' + i);
       const emoji = catEmoji[a.category] || '✦';
+      const wikiSlugForActivity = pickActivityWiki(a, city);
+      // If we have a verified Wikipedia article for this attraction,
+      // the image loads its lead photo. Otherwise — typographic placeholder.
+      const imgHtml = wikiSlugForActivity
+        ? `<div class="listing-img has-placeholder" data-label="${a.category || a.name || 'Experience'}" data-wiki="${wikiSlugForActivity}"><img alt="${a.name || 'Activity'}" loading="lazy" /></div>`
+        : `<div class="listing-img has-placeholder">
+             <div class="img-placeholder">
+               <div class="ip-mark">
+                 <span class="ip-emoji" style="font-size: clamp(2.2rem, 5vw, 3.4rem);">${emoji}</span>
+                 <span class="ip-tag">${a.category || 'Experience'}</span>
+               </div>
+             </div>
+           </div>`;
       return `
         <a class="listing" href="${links.getyourguideAct(a.name)}" target="_blank" rel="noopener">
-          <div class="listing-img has-placeholder">
-            <div class="img-placeholder">
-              <div class="ip-mark">
-                <span class="ip-emoji" style="font-size: clamp(2.2rem, 5vw, 3.4rem);">${emoji}</span>
-                <span class="ip-tag">${a.category || 'Experience'}</span>
-              </div>
-            </div>
-          </div>
+          ${imgHtml}
           <div class="listing-body">
             <span class="listing-rank">${a.category || 'Experience'}${a.duration ? ' · ' + a.duration : ''}</span>
             <span class="avail-chip ${av.status}"><span class="av-dot"></span>${av.label}</span>
