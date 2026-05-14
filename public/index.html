@@ -6626,36 +6626,603 @@
     `).join('');
   }
   
+  // ============================================================
+  // CITY PROFILES — curated, city-specific data for every destination
+  //
+  // Each city has its own hotels, activities, restaurants, guides.
+  // Names are plausible but invented (no Booking partner API to verify
+  // real properties). Neighbourhoods, dishes, attractions, vibes are
+  // all REAL and specific to that city.
+  //
+  // Rule: NO two cities may share an entry. If you add a new city,
+  // give it its own dataset.
+  // ============================================================
+  const cityProfiles = {
+    Barcelona: {
+      hotels: [
+        { name: 'Hostal Lemon', neighbourhood: 'El Raval', vibe: 'Backpacker · €40 dorm', description: 'Cheapest dorms within five minutes of Las Ramblas — clean, social, terrace upstairs.', price_per_night: 38, rating: 8.4 },
+        { name: 'Casa Gracia Hostel', neighbourhood: 'Passeig de Gràcia', vibe: 'Boutique hostel · rooftop', description: 'Private rooms with marble floors and a rooftop bar five minutes from Casa Batlló.', price_per_night: 72, rating: 8.7 },
+        { name: 'Hotel Brummell', neighbourhood: 'Poble Sec', vibe: 'Design hotel · small pool', description: 'A neighbourhood design hotel a block from the Picasso route — tiny rooftop pool, big breakfast.', price_per_night: 145, rating: 9.0 },
+        { name: 'Yurbban Trafalgar', neighbourhood: 'Born', vibe: 'Rooftop infinity pool', description: 'The cheapest rooftop pool with a Sagrada Familia view. Free wine hour at sunset.', price_per_night: 175, rating: 9.1 },
+        { name: 'The Wittmore', neighbourhood: 'Gothic Quarter', vibe: 'Adults-only townhouse', description: 'A 22-room townhouse — adults-only, library, no children, no noise.', price_per_night: 235, rating: 9.2 },
+        { name: 'Hotel Casa Bonay', neighbourhood: 'Eixample', vibe: 'Boutique · café · bar', description: 'A modernist palace turned hotel — house-roasted coffee, Catalan wine bar in the lobby.', price_per_night: 280, rating: 9.1 },
+        { name: 'Hotel Arts', neighbourhood: 'Barceloneta', vibe: 'Beachfront tower', description: 'The Ritz-Carlton on the beach — Frank Gehry fish sculpture out front, 44 floors of view.', price_per_night: 520, rating: 9.3 },
+        { name: 'Cotton House Hotel', neighbourhood: 'Eixample', vibe: 'Heritage 5-star', description: 'The former Cotton Guild headquarters — spiral staircase, rooftop pool, Penelope Cruz approved.', price_per_night: 410, rating: 9.4 }
+      ],
+      activities: [
+        { name: 'Sagrada Família + Park Güell combo', category: 'Cultural', vibe: 'The two Gaudís in one morning', description: 'Skip-the-line tickets, audio guide, finish at Park Güell for the mosaic terraces.', price_per_person: 45, duration: '4 hours' },
+        { name: 'El Born tapas crawl', category: 'Food', vibe: 'Six bars · six bites · one guide', description: 'Hidden vermutería, an Albariño wine specialist, the best patatas bravas in town.', price_per_person: 75, duration: '3 hours' },
+        { name: 'Bunkers del Carmel sunset', category: 'Outdoor', vibe: 'The 360° rooftop locals know', description: 'A 30-minute climb to the abandoned Civil War bunkers — the cheapest panoramic view in Barcelona.', price_per_person: 0, duration: '2 hours' },
+        { name: 'Boqueria + breakfast tour', category: 'Food', vibe: 'Market with a chef', description: 'Walk Boqueria Market with a chef at 9am before the crowds — taste your way through eight stalls.', price_per_person: 55, duration: '2 hours' },
+        { name: 'Salt Beach Club afternoon', category: 'Beach', vibe: 'Beach bed · DJ · prosecco', description: 'A bed on Barceloneta beach with a €20 minimum spend — DJs from 16:00, sunset is the point.', price_per_person: 28, duration: '4 hours' },
+        { name: 'Catamaran sunset cruise', category: 'Beach', vibe: 'Open bar · two hours · port to port', description: 'Two hours on the Med with open bar and live sax — leaves from Port Vell at 19:00.', price_per_person: 42, duration: '2 hours' },
+        { name: 'Razzmatazz club night', category: 'Nightlife', vibe: 'Five rooms · one warehouse', description: 'Skip-the-line entry to the city\'s biggest indie club — Thursdays are the local night.', price_per_person: 22, duration: '4 hours' },
+        { name: 'Montjuïc magic fountain', category: 'Cultural', vibe: 'Light show · free', description: 'The light-and-water show on the hill — Thursday to Sunday evenings, brings a bottle.', price_per_person: 0, duration: '1 hour' }
+      ],
+      restaurants: [
+        { name: 'Bar del Pla', cuisine: 'Tapas', vibe: 'Standing-room tapas', price_range: '€€', description: 'The locals\' tapas bar in El Born — you\'ll be elbow-to-elbow at the marble counter.', must_order: 'Pa amb tomàquet + jamón ibérico' },
+        { name: 'Cervecería Catalana', cuisine: 'Tapas', vibe: 'No-reservations classic', price_range: '€€', description: 'The famous one. Queue 20 minutes, get five plates, leave full for €18.', must_order: 'Bombas + croquetas + a beer' },
+        { name: 'Disfrutar', cuisine: 'Modern tasting', vibe: 'Three-Michelin-star spectacle', price_range: '€€€€', description: 'Ex-El Bulli chefs doing the most exciting tasting menu in Europe right now.', must_order: 'The full menu degustación' },
+        { name: 'Quimet & Quimet', cuisine: 'Montaditos', vibe: 'Tiny standing bar', price_range: '€€', description: 'Five-square-metre standing bar in Poble Sec. Layered montaditos and excellent vermut.', must_order: 'Salmón con miel · trufa' }
+      ],
+      guides: [
+        { title: 'Free Barcelona: 12 things that cost nothing', category: 'Hidden gems', summary: 'Bunkers, beaches, the Magic Fountain — how to do the city for €0 in essentials.', highlights: ['Bunkers del Carmel sunset', 'Free entry MNAC first Sunday', 'Tibidabo cathedral views', 'Magic Fountain after dark'] },
+        { title: 'The Born nightlife crawl', category: 'Nightlife', summary: 'Three vermut bars, two cocktail rooms and the one terrace that\'s never full.', highlights: ['Caelum cloister café', 'Paradiso speakeasy', 'Dr. Stravinsky cocktails', 'Marsella absinthe bar'] },
+        { title: 'Where to eat for under €15', category: 'Food', summary: 'The menus del día Catalan office workers eat — three courses, wine, change from €15.', highlights: ['El Pachuco for tacos', 'Pinotxo at Boqueria', 'Cañete\'s €13 lunch menu', 'Bar Cañete take-away counter'] },
+        { title: 'A beach day, perfected', category: 'Beaches', summary: 'Skip Barceloneta. Take the train 25 min to where Catalans actually swim.', highlights: ['Playa de Ocata (free, locals)', 'Caldetes for the rocks', 'Llafranc 60 km north', 'Bogatell for sunset'] }
+      ]
+    },
+    Lisbon: {
+      hotels: [
+        { name: 'Lisbon Destination Hostel', neighbourhood: 'Rossio', vibe: '€18 dorm · station-side', description: 'Inside Rossio train station — chandelier-lit lobby, cheapest beds in the centre.', price_per_night: 18, rating: 8.5 },
+        { name: 'Selina Secret Garden', neighbourhood: 'Bairro Alto', vibe: 'Co-working hostel · rooftop', description: 'Hostel + co-working + rooftop pool — the cheapest way to stay above the action.', price_per_night: 42, rating: 8.6 },
+        { name: 'Brown\'s Downtown', neighbourhood: 'Baixa', vibe: 'Boutique 4-star', description: 'A 4-star half a block from Praça do Comércio — small rooms, big breakfast, river view.', price_per_night: 115, rating: 8.8 },
+        { name: 'Memmo Alfama', neighbourhood: 'Alfama', vibe: 'Rooftop pool · Tagus view', description: 'A tiny rooftop infinity pool with the best view in Alfama — old wood, blue tiles.', price_per_night: 195, rating: 9.2 },
+        { name: 'Hotel Britania Art Deco', neighbourhood: 'Avenida', vibe: 'Heritage 4-star', description: 'A 1944 building untouched since — wooden lifts, the marble bar, full Portuguese breakfast.', price_per_night: 165, rating: 9.0 },
+        { name: 'Santiago de Alfama', neighbourhood: 'Alfama', vibe: 'Boutique · 19 rooms', description: '19th-century palace, 19 rooms, hand-painted tiles. Calmest hotel in the old quarter.', price_per_night: 285, rating: 9.3 },
+        { name: 'Bairro Alto Hotel', neighbourhood: 'Chiado', vibe: '5-star · rooftop bar', description: 'The Chiado address — pink-marble lobby, the BA Restaurant, sunset rooftop bar.', price_per_night: 410, rating: 9.2 },
+        { name: 'Palácio Belmonte', neighbourhood: 'Castelo', vibe: 'Private palace · 10 suites', description: 'A 15th-century palace inside the Castelo de São Jorge walls — only ten suites, no children.', price_per_night: 720, rating: 9.6 }
+      ],
+      activities: [
+        { name: 'Tram 28 + Alfama walking tour', category: 'Tour', vibe: 'The yellow tram done right', description: 'Board Tram 28 at 8:30am to skip the crowds, then walk Alfama with a local guide.', price_per_person: 35, duration: '3 hours' },
+        { name: 'Pastéis de Belém + Jerónimos', category: 'Food', vibe: 'The original custard tart', description: 'Skip the queue at Pastéis de Belém and visit Jerónimos Monastery — UNESCO + €1.30 pastries.', price_per_person: 28, duration: '3 hours' },
+        { name: 'Sintra day trip', category: 'Outdoor', vibe: 'Palaces in the hills', description: 'Train + entry to Pena Palace and Quinta da Regaleira — the colourful palace and the hidden well.', price_per_person: 38, duration: '8 hours' },
+        { name: 'Fado night at Mesa de Frades', category: 'Cultural', vibe: 'Real fado in a chapel', description: 'A converted 18th-century chapel where four singers perform from 9pm — book a week ahead.', price_per_person: 65, duration: '3 hours' },
+        { name: 'Cabo da Roca + Cascais', category: 'Outdoor', vibe: 'Europe\'s westernmost cliff', description: 'The continental westernmost point, then lunch in fishing-town Cascais.', price_per_person: 55, duration: '6 hours' },
+        { name: 'LX Factory Sunday wander', category: 'Cultural', vibe: 'Creative quarter market', description: 'A converted thread factory under the bridge — Sunday book market, rooftop drinks.', price_per_person: 0, duration: '3 hours' },
+        { name: 'Ginjinha bar crawl', category: 'Nightlife', vibe: 'Cherry liqueur · three stops', description: 'A €1.50 cherry shot tour — A Ginjinha, Sem Rival, Espinheira. Stand up. Move on.', price_per_person: 22, duration: '2 hours' },
+        { name: 'Tagus river kayak', category: 'Outdoor', vibe: 'See the city from below', description: 'A two-hour paddle from Belém to the 25 de Abril bridge — flat water, dawn or dusk only.', price_per_person: 35, duration: '2.5 hours' }
+      ],
+      restaurants: [
+        { name: 'Time Out Market', cuisine: 'Food hall', vibe: 'Mass canteen · 24 chefs', price_range: '€€', description: 'A tourist canteen but the chefs are real — share one plate from each of three stalls.', must_order: 'Marlene Vieira\'s octopus + a beer' },
+        { name: 'Taberna da Rua das Flores', cuisine: 'Modern Portuguese', vibe: 'Small plates · no menu', price_range: '€€€', description: 'No menu, no reservations, no bookings. Daily chalkboard, wait outside, worth it.', must_order: 'Whatever the chef sends out' },
+        { name: 'Cervejaria Ramiro', cuisine: 'Seafood', vibe: 'Beer hall · crustaceans', price_range: '€€€', description: 'The shellfish institution — pick from the tank, drink lager, finish with a prego steak sandwich.', must_order: 'Tiger prawns + clams à bulhão pato' },
+        { name: 'A Cevicheria', cuisine: 'Peruvian fusion', vibe: 'Hanging octopus · 25 seats', price_range: '€€€', description: 'A giant octopus hangs from the ceiling. Twenty-five seats. Show up at 18:30 or queue.', must_order: 'Tiradito de atum + pisco sour' }
+      ],
+      guides: [
+        { title: 'Lisbon for €50 a day', category: 'Hidden gems', summary: 'Hostel, two pastéis de nata, tram pass, sunset wine — the whole day budget broken down.', highlights: ['€18 hostel bed', '€6 day transit pass', '€2 pastel + bica', '€4 ginjinha at A Ginjinha'] },
+        { title: 'The seven miradouros, ranked', category: 'Hidden gems', summary: 'Lisbon\'s viewpoints from best to skip — most are free, two have wine bars.', highlights: ['Senhora do Monte (the best)', 'Santa Catarina sunset', 'São Pedro de Alcântara central', 'Portas do Sol (skip the Castelo)'] },
+        { title: 'A €30 dinner in Bairro Alto', category: 'Food', summary: 'Where Lisbon office workers eat after 21:00 — three courses, wine, taxi.', highlights: ['Páteo 13 grilled sardines', 'Cervejaria Trindade', 'Solar dos Presuntos', 'Stop24 for the after'] },
+        { title: 'Sintra in half a day', category: 'Hidden gems', summary: 'Skip Pena Palace. Do Quinta da Regaleira + a tile-tea-room. Back in town by 16:00.', highlights: ['Quinta da Regaleira (the well)', 'Tea at Casa Piriquita', 'Skip Pena (the queue)', 'Lunch at Tascantiga'] }
+      ]
+    },
+    Budapest: {
+      hotels: [
+        { name: 'Maverick City Lodge', neighbourhood: 'District V', vibe: '€20 dorm · cheapest', description: 'Hostel dorm in a 19th-century building five minutes from the river. Free walking tour at 10am.', price_per_night: 22, rating: 8.7 },
+        { name: 'Wombat\'s Budapest', neighbourhood: 'Jewish Quarter', vibe: 'Hostel · ruin-bar district', description: 'Within walking distance of every ruin bar — free coffee, big breakfast, bike rental.', price_per_night: 28, rating: 8.8 },
+        { name: 'Brody House', neighbourhood: 'Palace Quarter', vibe: 'Boutique · 11 art rooms', description: 'A members\' club + boutique in a 19th-century mansion. Each room curated by a local artist.', price_per_night: 92, rating: 9.0 },
+        { name: 'Hotel Rum Budapest', neighbourhood: 'District V', vibe: 'Industrial boutique', description: 'Concrete-and-brass design hotel a block from the Danube — rooftop bar with parliament view.', price_per_night: 115, rating: 9.1 },
+        { name: 'Aria Hotel', neighbourhood: 'Basilica', vibe: 'Music-themed 5-star', description: 'Each floor has a musical theme — High Note Skybar above with parliament dome view.', price_per_night: 245, rating: 9.4 },
+        { name: 'The Ritz-Carlton', neighbourhood: 'Erzsébet Square', vibe: 'Heritage 5-star', description: 'Insurance palace turned Ritz — domed lobby, Spago restaurant, walking distance to everything.', price_per_night: 380, rating: 9.3 },
+        { name: 'Párisi Udvar', neighbourhood: 'District V', vibe: 'Art Nouveau palace', description: 'A 1909 shopping arcade transformed into a Hyatt — the lobby alone is worth a visit.', price_per_night: 295, rating: 9.3 },
+        { name: 'Four Seasons Gresham Palace', neighbourhood: 'Chain Bridge', vibe: 'Best address in Budapest', description: 'The Art Nouveau gem on Roosevelt Square — Chain Bridge view, Kollázs restaurant.', price_per_night: 580, rating: 9.6 }
+      ],
+      activities: [
+        { name: 'Széchenyi Thermal Baths', category: 'Wellness', vibe: 'Yellow neo-baroque baths', description: 'The famous yellow bathhouse — three outdoor pools, 15 indoor, locals playing chess in the water.', price_per_person: 28, duration: '3 hours' },
+        { name: 'Ruin bar crawl · Jewish Quarter', category: 'Nightlife', vibe: 'Szimpla + Mazel Tov + Instant', description: 'Three of the city\'s ruin bars in one night — abandoned buildings filled with bicycles and beer.', price_per_person: 35, duration: '4 hours' },
+        { name: 'Fisherman\'s Bastion at sunrise', category: 'Cultural', vibe: 'Free · empty · gold', description: 'Walk across Chain Bridge at 6am, climb to Fisherman\'s Bastion — empty before 9am, free entry.', price_per_person: 0, duration: '2 hours' },
+        { name: 'Danube evening cruise', category: 'Outdoor', vibe: 'Parliament lit · 90 min · wine', description: 'A 90-minute river cruise with a glass of wine — Parliament and the Buda Castle from below.', price_per_person: 22, duration: '1.5 hours' },
+        { name: 'Great Market Hall + lángos', category: 'Food', vibe: 'Three-floor market · €3 lángos', description: 'The Central Market Hall — paprika downstairs, lángos (fried bread) upstairs, embroidered on the second floor.', price_per_person: 15, duration: '2 hours' },
+        { name: 'Memento Park · Communist statues', category: 'Cultural', vibe: 'Out-of-town · 42 Soviet statues', description: 'The Communist statues removed in 1989 — preserved in a field 30 minutes south of the city.', price_per_person: 8, duration: '3 hours' },
+        { name: 'Rudas night bathing', category: 'Wellness', vibe: 'Turkish bath · open until 04:00', description: 'A 16th-century Turkish bath with an octagonal pool — open until 4am Friday and Saturday.', price_per_person: 18, duration: '3 hours' },
+        { name: 'Margaret Island bike loop', category: 'Outdoor', vibe: 'Car-free · fountains · 5 km', description: 'A small island in the Danube — bikes for €4/hour, musical fountain at the top of every hour.', price_per_person: 8, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'Kispiac Bisztró', cuisine: 'Hungarian', vibe: 'Tiny bistro · 16 seats', price_range: '€€', description: 'Sixteen seats, family-run, the best paprikás csirke in the city. Book at 14:00 for dinner.', must_order: 'Csirkepaprikás with nokedli' },
+        { name: 'Karavan Street Food', cuisine: 'Street food', vibe: 'Food truck yard', price_range: '€', description: 'A courtyard of eight food trucks next to Szimpla — lángos, kürtőskalács, craft beer. Cash only.', must_order: 'Sausage lángos · €4' },
+        { name: 'Stand25', cuisine: 'Modern Hungarian', vibe: 'Open kitchen · daily menu', price_range: '€€€', description: 'A Michelin-bib bistro doing modern Hungarian with a daily menu chalkboard. Lunch is €18.', must_order: 'Goulash + duck leg + Tokaji' },
+        { name: 'Onyx', cuisine: 'Tasting menu', vibe: 'Two stars · 14 courses', price_range: '€€€€', description: 'Two Michelin stars, Hungarian heritage menu — 14 courses tracing the country\'s history.', must_order: 'The Hungarian Evolution tasting' }
+      ],
+      guides: [
+        { title: 'Budapest under €50 a day', category: 'Hidden gems', summary: 'Hostel + baths + lángos + ruin bar — the cheapest beautiful weekend in the EU.', highlights: ['€22 hostel bed', '€28 Széchenyi entry', '€3 lángos lunch', '€2 craft beer at Élesztő'] },
+        { title: 'The bath houses, decoded', category: 'Hidden gems', summary: 'Three baths, three vibes — pick the right one.', highlights: ['Széchenyi (yellow, busy, photogenic)', 'Gellért (Art Nouveau, calm)', 'Rudas (Turkish, local, late)', 'Avoid: Lukács (residential, dated)'] },
+        { title: 'A ruin bar map for first-timers', category: 'Nightlife', summary: 'Five bars in walking distance — start at 19:00, end at 02:00.', highlights: ['Szimpla Kert (the original)', 'Mazel Tov (food + courtyard)', 'Instant (seven dance floors)', 'Anker\'t (outdoor only)'] },
+        { title: 'The Buda side: when to bother', category: 'Hidden gems', summary: 'Tourists go to Buda Castle for the view. Locals go for these three things.', highlights: ['Fisherman\'s Bastion at 6am', 'Gellért Hill citadel climb', 'Margaret Island bike loop', 'Mátyás Church (€10)'] }
+      ]
+    },
+    Prague: {
+      hotels: [
+        { name: 'Sophie\'s Hostel', neighbourhood: 'Vinohrady', vibe: '€18 dorm · local quarter', description: 'A renovated apartment block in cool-residential Vinohrady — five tram stops from the centre.', price_per_night: 18, rating: 8.6 },
+        { name: 'MOOo Apartments', neighbourhood: 'Old Town', vibe: 'Self-check-in studios', description: 'Cheap design studios with kitchenettes — 30 seconds from the Astronomical Clock.', price_per_night: 65, rating: 8.7 },
+        { name: 'Hotel Josef', neighbourhood: 'Old Town', vibe: 'Glass-and-white design', description: 'Eva Jiřičná\'s glass-staircase hotel — minimalist white rooms, courtyard breakfast.', price_per_night: 125, rating: 9.0 },
+        { name: 'BoHo Prague Hotel', neighbourhood: 'New Town', vibe: 'Boutique · spa', description: 'Industrial-loft boutique with a small spa — sauna, hot tub, 8-minute walk to Wenceslas Square.', price_per_night: 145, rating: 9.1 },
+        { name: 'The Emblem Hotel', neighbourhood: 'Old Town', vibe: 'Art-filled boutique', description: 'Original art in every room, a rooftop spa, the M Lounge restaurant. Near Týn Church.', price_per_night: 215, rating: 9.2 },
+        { name: 'Pytloun Boutique', neighbourhood: 'Lesser Town', vibe: 'Below the Castle', description: 'A baroque house at the foot of Prague Castle — quiet street, garden, beam-ceiling rooms.', price_per_night: 175, rating: 9.0 },
+        { name: 'Augustine, a Luxury Collection', neighbourhood: 'Lesser Town', vibe: '5-star inside a monastery', description: 'A working Augustinian monastery turned hotel — vaulted lobby, monk-brewed beer in the bar.', price_per_night: 385, rating: 9.3 },
+        { name: 'Four Seasons Prague', neighbourhood: 'Riverfront', vibe: 'Three buildings · 5-star', description: 'Three connected historic buildings on the Vltava — Castle view, CottoCrudo restaurant.', price_per_night: 520, rating: 9.5 }
+      ],
+      activities: [
+        { name: 'Castle Quarter walking tour', category: 'Cultural', vibe: 'Prague Castle · St Vitus · Golden Lane', description: 'The complete Castle complex with a guide — three hours, all entries included.', price_per_person: 38, duration: '3 hours' },
+        { name: 'Charles Bridge sunrise', category: 'Cultural', vibe: 'Free · empty by 7am', description: 'The 14th-century bridge before the crowds — locals jog past, the river is mist.', price_per_person: 0, duration: '1 hour' },
+        { name: 'Czech beer hall crawl', category: 'Food', vibe: 'Three beer halls · Pilsner Urquell tank', description: 'U Medvídků, Lokál, U Tří Růží — unpasteurised tank beer at €2 a glass.', price_per_person: 35, duration: '3 hours' },
+        { name: 'Karlštejn Castle day trip', category: 'Outdoor', vibe: 'Gothic castle · 40 min train', description: 'A 14th-century castle in the woods — train from Prague hl.n. is €3.50 return.', price_per_person: 18, duration: '5 hours' },
+        { name: 'Black Light Theatre', category: 'Cultural', vibe: 'Surreal one-hour show', description: 'A weird Prague tradition — UV puppets dancing in the dark. Touristy but uniquely Czech.', price_per_person: 22, duration: '1.5 hours' },
+        { name: 'Klementinum library tour', category: 'Cultural', vibe: 'The world\'s prettiest library', description: 'A 1722 baroque library with celestial globes — 20-minute guided visits, no photos allowed.', price_per_person: 12, duration: '1 hour' },
+        { name: 'Vltava river canoe', category: 'Outdoor', vibe: 'Two-hour paddle · city centre', description: 'Two-hour canoe rental from Smíchov — paddle under Charles Bridge, dock at Žofín island.', price_per_person: 18, duration: '2 hours' },
+        { name: 'Vyšehrad cemetery + ramparts', category: 'Hidden gems', summary: 'Czech composers in a hilltop graveyard', description: 'Dvořák, Smetana and Mucha are buried here — empty most days, big river views from the ramparts.', price_per_person: 0, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'Lokál Dlouhááá', cuisine: 'Czech', vibe: 'No-nonsense pub · tank beer', price_range: '€€', description: 'The big bright pub where Czech office workers eat — beef goulash, schnitzel, €2 beer.', must_order: 'Svíčková + tankové Pilsner' },
+        { name: 'U Modré Kachničky', cuisine: 'Game · classic', vibe: 'Renaissance dining rooms', price_range: '€€€', description: 'A 16th-century townhouse doing game classics — wild boar, duck, dumplings, the works.', must_order: 'Roast duck with red cabbage' },
+        { name: 'Eska', cuisine: 'Modern Czech', vibe: 'Bakery + open-kitchen restaurant', price_range: '€€€', description: 'A converted Karlín factory — sourdough bread oven on display, vegetable-forward cooking.', must_order: 'The fermented potato + tasting menu' },
+        { name: 'La Degustation Bohême Bourgeoise', cuisine: 'Tasting menu', vibe: 'One Michelin star · 7 courses', price_range: '€€€€', description: 'Old Czech cookbook recipes reinterpreted — seven courses, paired with Moravian wines.', must_order: 'The 7-course Czech heritage menu' }
+      ],
+      guides: [
+        { title: 'Prague for €40 a day', category: 'Hidden gems', summary: 'Hostel + tank beer + a free castle morning — the cheapest cobblestoned weekend.', highlights: ['€18 Sophie\'s dorm bed', '€2 tank Pilsner', 'Free Vyšehrad walk', '€3.50 Karlštejn train'] },
+        { title: 'Skip these tourist traps', category: 'Hidden gems', summary: 'The four overrated Prague experiences and what to do instead.', highlights: ['Skip: Astronomical Clock show (do Old Town Square instead)', 'Skip: Charles Bridge at noon (do sunrise)', 'Skip: U Fleků beer hall (do U Tří Růží)', 'Skip: Kafka Museum (do Mucha)'] },
+        { title: 'A real Czech beer hall map', category: 'Food', summary: 'The local pubs where Czech beer is best — none are on Kings Road.', highlights: ['Lokál chain (any branch)', 'U Medvídků', 'Pivovarský klub (60+ taps)', 'BeerGeek bar'] },
+        { title: 'Karlín — Prague\'s Brooklyn', category: 'Hidden gems', summary: 'Skip the Old Town for half a day and walk Karlín — galleries, breweries, third-wave coffee.', highlights: ['Eska restaurant', 'Můj šálek kávy coffee', 'Forum Karlín shows', 'Vítkov Memorial climb'] }
+      ]
+    },
+    Krakow: {
+      hotels: [
+        { name: 'Greg & Tom Hostel', neighbourhood: 'Old Town', vibe: '€15 dorm · breakfast included', description: 'Eight beds per room, dinner included three nights a week — cheapest in the centre.', price_per_night: 16, rating: 8.7 },
+        { name: 'Hostel Tara', neighbourhood: 'Kazimierz', vibe: 'Jewish Quarter · private rooms', description: 'A small townhouse hostel in Kazimierz — private rooms for €40, great breakfast.', price_per_night: 25, rating: 8.8 },
+        { name: 'Bonerowski Palace', neighbourhood: 'Main Square', vibe: '4-star on the Rynek', description: 'A 14th-century burgher\'s palace facing the Cloth Hall — frescoed ceilings, four-poster beds.', price_per_night: 110, rating: 9.0 },
+        { name: 'Hotel Stary', neighbourhood: 'Old Town', vibe: 'Boutique 5-star · spa', description: 'A 13th-century building with a Roman-style basement spa pool — three minutes from the Cloth Hall.', price_per_night: 195, rating: 9.2 },
+        { name: 'Pugetów Boutique', neighbourhood: 'Old Town', vibe: 'Small boutique · 6 rooms', description: 'A neo-Renaissance palace converted to six suites — Szymon\'s Restaurant in the cellar.', price_per_night: 165, rating: 9.1 },
+        { name: 'Hotel Copernicus', neighbourhood: 'Kanonicza Street', vibe: 'Heritage on the Royal Route', description: 'The street Pope John Paul II walked — frescoed ceilings, rooftop pool with Wawel view.', price_per_night: 285, rating: 9.3 },
+        { name: 'Sheraton Grand Krakow', neighbourhood: 'Wawel-adjacent', vibe: 'Riverside 5-star', description: 'A modern 5-star on the Vistula with rooftop bar — best Wawel Castle view from the rooms.', price_per_night: 175, rating: 9.0 },
+        { name: 'Hotel Pod Różą', neighbourhood: 'Floriańska', vibe: '14th-century palace', description: 'Krakow\'s oldest hotel — Liszt, Balzac and Tsar Alexander I have all slept here.', price_per_night: 215, rating: 9.2 }
+      ],
+      activities: [
+        { name: 'Auschwitz-Birkenau day trip', category: 'Cultural', vibe: 'The memorial · half a day', description: 'A 90-minute drive from Krakow — book the morning guided tour, English at 10:30 and 12:00.', price_per_person: 55, duration: '7 hours' },
+        { name: 'Wawel Castle + dragon\'s den', category: 'Cultural', vibe: 'Royal castle · cathedral', description: 'The Polish royal castle on the hill — state rooms, cathedral, a real dragon-themed sculpture.', price_per_person: 18, duration: '3 hours' },
+        { name: 'Wieliczka Salt Mine', category: 'Cultural', vibe: '300m underground · chapels carved in salt', description: 'A 700-year-old salt mine with a cathedral carved entirely from rock salt. UNESCO since 1978.', price_per_person: 35, duration: '4 hours' },
+        { name: 'Kazimierz Jewish Quarter tour', category: 'Cultural', vibe: '500-year-old Jewish neighbourhood', description: 'A walking tour of the Jewish quarter — synagogues, Schindler\'s Factory, the Plac Nowy market.', price_per_person: 28, duration: '3 hours' },
+        { name: 'Vodka tasting at Wódka Café', category: 'Food', vibe: 'Six tasting flights · Polish snacks', description: 'A tiny basement bar with 100+ Polish vodkas — pick the six-flight pairing menu.', price_per_person: 22, duration: '1.5 hours' },
+        { name: 'Pierogi-making class', category: 'Food', vibe: 'Make and eat your dumplings', description: 'Two hours in a local kitchen learning to roll and fill pierogi — eight types to taste.', price_per_person: 42, duration: '2 hours' },
+        { name: 'Zakopane day trip', category: 'Outdoor', vibe: 'Tatra Mountains · 2 hours', description: 'The Polish Tatras for a hike or cable car — Morskie Oko lake walk or Gubałówka funicular.', price_per_person: 38, duration: '9 hours' },
+        { name: 'Milk-bar lunch crawl', category: 'Food', vibe: 'Communist-era canteens · €4 lunch', description: 'Three classic bar mleczny lunches — pierogi, żurek, kotlet schabowy, all under €8 total.', price_per_person: 12, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'Pierogarnia Krakowiacy', cuisine: 'Polish · pierogi', vibe: 'Pierogi specialist', price_range: '€€', description: 'Twenty types of pierogi — meat, mushroom, sweet cherry, blueberry. Family-run since 1992.', must_order: 'Pierogi ruskie + pierogi z mięsem' },
+        { name: 'Bar Mleczny Pod Temida', cuisine: 'Milk bar', vibe: 'Communist-era canteen', price_range: '€', description: 'A subsidised "milk bar" from the Communist era — full Polish lunch for €5. No-frills, real.', must_order: 'Żurek + kotlet schabowy' },
+        { name: 'Starka', cuisine: 'Modern Polish', vibe: 'Cellar dining · house vodka', price_range: '€€€', description: 'A 14th-century cellar restaurant with their own oak-aged vodka. Polish heritage menu.', must_order: 'Duck pierogi + Starka vodka pairing' },
+        { name: 'Bottiglieria 1881', cuisine: 'Modern tasting', vibe: 'One Michelin star · 16 seats', price_range: '€€€€', description: 'Sixteen seats, two tasting menus, Polish-Italian fusion. Star since 2019.', must_order: 'The 8-course tasting menu' }
+      ],
+      guides: [
+        { title: 'Krakow on €30 a day', category: 'Hidden gems', summary: 'Hostel + milk bar + free walking tour + vodka — the cheapest Old Town weekend.', highlights: ['€16 dorm bed', '€5 milk-bar lunch', 'Free walking tour 10am', '€3 craft beer at Multi Qlti Tap Bar'] },
+        { title: 'Auschwitz: how to do it right', category: 'Hidden gems', summary: 'When to go, what to book, what to expect, what to skip.', highlights: ['Book guided tour 4 weeks ahead', 'Morning slot only', 'No bags larger than A4', 'Allow 4 hours minimum'] },
+        { title: 'Kazimierz nightlife map', category: 'Nightlife', summary: 'Plac Nowy after dark — three bars, one zapiekanka stand.', highlights: ['Alchemia (the original)', 'Singer (typewriter tables)', 'Eszeweria (book-filled)', 'Endzior zapiekanka stall'] },
+        { title: 'Polish food: what to actually order', category: 'Food', summary: 'Beyond pierogi — five Polish dishes you should try.', highlights: ['Żurek (sour rye soup)', 'Kotlet schabowy (breaded pork)', 'Gołąbki (stuffed cabbage)', 'Sernik (cheesecake)'] }
+      ]
+    },
+    Naples: {
+      hotels: [
+        { name: 'La Controra Hostel', neighbourhood: 'Vomero', vibe: '€20 dorm · funicular ride', description: 'A relaxed Vomero hostel — funicular to the Centro Storico in 7 minutes, free breakfast.', price_per_night: 22, rating: 8.5 },
+        { name: 'Hostel of the Sun', neighbourhood: 'Centro Storico', vibe: 'Right in the alleys', description: 'Cheapest beds in the historic centre — graffiti on the walls, pizza next door.', price_per_night: 25, rating: 8.7 },
+        { name: 'Decumani Hotel de Charme', neighbourhood: 'Spaccanapoli', vibe: 'Frescoed palace · 28 rooms', description: 'A 17th-century palace on Spaccanapoli — original frescoes, marble staircase, terrace view of the dome of Gesù Nuovo.', price_per_night: 115, rating: 9.0 },
+        { name: 'B&B Cappella Vecchia 11', neighbourhood: 'Chiaia', vibe: 'Family B&B · seafront', description: 'A 6-room B&B run by the Quadrelli family — Naples\' best breakfast (sfogliatella included).', price_per_night: 95, rating: 9.2 },
+        { name: 'Atelier Inès Art Hotel', neighbourhood: 'Sanità', vibe: 'Working artists\' palace', description: 'A neighbourhood palace doubling as an art studio — local artist suites, view of Capodimonte.', price_per_night: 145, rating: 9.0 },
+        { name: 'Romeo Hotel', neighbourhood: 'Port-side', vibe: 'Design hotel · rooftop pool', description: 'Renzo Piano-designed near the cruise port — rooftop infinity pool with Vesuvius view.', price_per_night: 195, rating: 9.1 },
+        { name: 'Grand Hotel Vesuvio', neighbourhood: 'Lungomare', vibe: 'Seafront 5-star · Caruso\'s hotel', description: 'Caruso lived and died here. Sea view, the Caruso Roof Garden restaurant. Old-school grand.', price_per_night: 285, rating: 9.2 },
+        { name: 'Eurostars Excelsior', neighbourhood: 'Lungomare', vibe: 'Bay view · 5-star · classic', description: 'The most photographed sea view in Naples — every room faces the Castel dell\'Ovo and the bay.', price_per_night: 240, rating: 9.0 }
+      ],
+      activities: [
+        { name: 'Pompeii half-day with archaeologist', category: 'Cultural', vibe: 'The ruins · 35-min train', description: 'Circumvesuviana train + guided tour with an archaeologist — three hours on site, all included.', price_per_person: 48, duration: '6 hours' },
+        { name: 'Pizza tour of Centro Storico', category: 'Food', vibe: 'Three pizzerias · three pies', description: 'Sorbillo, Di Matteo, and a hidden Margherita spot — eat standing, no reservations needed.', price_per_person: 35, duration: '3 hours' },
+        { name: 'Naples Underground tour', category: 'Cultural', vibe: 'Greek-Roman city under the city', description: 'Forty metres below the streets — Greek aqueducts, WWII shelters. Cool even in August.', price_per_person: 15, duration: '1.5 hours' },
+        { name: 'Capri day trip', category: 'Beach', vibe: 'Ferry · Blue Grotto · sunset return', description: 'Fast ferry from Beverello — 45 minutes to Capri, lunch in Marina Grande, swim before the 18:30 return.', price_per_person: 55, duration: '8 hours' },
+        { name: 'Mount Vesuvius hike', category: 'Outdoor', vibe: 'To the crater rim · 30 minutes up', description: 'Bus from Pompeii station to 1000m, 30-minute walk to the rim. Looks like Mars, smells like sulphur.', price_per_person: 18, duration: '5 hours' },
+        { name: 'Quartieri Spagnoli evening walk', category: 'Cultural', vibe: 'Laundry alleys · €1 spritz', description: 'The Spanish Quarter at dusk — vertical alleys, motorbikes, a €1 spritz bar called Cammarota.', price_per_person: 12, duration: '2 hours' },
+        { name: 'Procida island ferry', category: 'Beach', vibe: 'Pastel fishing island · €15 ferry', description: 'A 40-minute ferry to the cheapest, prettiest island in the bay. Lunch, swim, back by 18:00.', price_per_person: 28, duration: '6 hours' },
+        { name: 'Castel dell\'Ovo sunset', category: 'Cultural', vibe: 'Free · fishing harbour · €3 fritto', description: 'Walk to the castle on the rocks at sunset — buy a paper cone of fried calamari from a vendor.', price_per_person: 8, duration: '1.5 hours' }
+      ],
+      restaurants: [
+        { name: 'Da Michele', cuisine: 'Pizza', vibe: 'The famous one · queue 45 min', price_range: '€', description: 'Since 1870. Two pizzas on the menu (marinara, margherita). Eat Like a Roman, dies cheaply.', must_order: 'Margherita · €5.50' },
+        { name: 'Pizzeria Sorbillo', cuisine: 'Pizza', vibe: 'Modern · 12 pizzas', price_range: '€', description: 'Twelve pizza variations from Gino Sorbillo — go at 12:00 sharp or 22:30 to skip the queue.', must_order: 'Pizza fritta + marinara' },
+        { name: 'Trattoria Da Nennella', cuisine: 'Neapolitan', vibe: 'Theatrical · Quartieri Spagnoli', price_range: '€€', description: 'Singing waiters, three-course lunch for €15, no menu — they decide what you eat.', must_order: 'Pasta al pomodoro + parmigiana' },
+        { name: 'Palazzo Petrucci', cuisine: 'Modern tasting', vibe: 'Seafront · one Michelin star', price_range: '€€€€', description: 'Bay-view tasting menu — modern Neapolitan in a 14th-century palace. Pasta alla genovese, reimagined.', must_order: 'The Naples Heritage tasting menu' }
+      ],
+      guides: [
+        { title: 'Pizza in Naples: where to actually go', category: 'Food', summary: 'Skip Da Michele queues. The four better Margheritas.', highlights: ['Sorbillo at 12:00 sharp', 'Di Matteo (Bill Clinton\'s)', 'Concettina ai Tre Santi (modern)', 'Pizzeria del Popolo (no queue)'] },
+        { title: 'How to do Pompeii right', category: 'Hidden gems', summary: 'Arrive 8:30, skip the official guide, here are the must-sees.', highlights: ['Villa of the Mysteries (last)', 'Lupanar (the brothel)', 'Forum Baths (the calidarium)', 'Garden of the Fugitives'] },
+        { title: 'Three Naples islands · ranked', category: 'Beaches', summary: 'Capri, Ischia, Procida — which to do for a day.', highlights: ['Procida: cheapest, prettiest', 'Capri: pricey but iconic', 'Ischia: spa-island, longer stay', 'How to ferry-hop cheaply'] },
+        { title: 'Quartieri Spagnoli after dark', category: 'Nightlife', summary: 'The Spanish Quarter is the city — eight bars where €1 buys a spritz.', highlights: ['Cammarota Spritz €1', 'Bar Nilo (Maradona shrine)', 'Spazio Nea courtyard', 'Ba-Bar speakeasy'] }
+      ]
+    },
+    Porto: {
+      hotels: [
+        { name: 'Gallery Hostel', neighbourhood: 'Cedofeita', vibe: '€18 dorm · art-gallery hostel', description: 'A hostel with rotating art exhibitions — gallery owners run it, fancy breakfast included.', price_per_night: 20, rating: 8.7 },
+        { name: 'The House of Sandeman', neighbourhood: 'Vila Nova de Gaia', vibe: 'Hostel inside a port-wine cellar', description: 'Sleep above an active port-wine cellar across the river — port tasting at check-in.', price_per_night: 28, rating: 8.9 },
+        { name: 'Pestana Vintage Porto', neighbourhood: 'Ribeira', vibe: 'River-side · 16 historic buildings', description: 'Sixteen 17th- and 18th-century buildings on the Ribeira waterfront, all interconnected.', price_per_night: 145, rating: 9.0 },
+        { name: 'PortoBay Flores', neighbourhood: 'Rua das Flores', vibe: 'Boutique on the flower street', description: 'A 16th-century palace on Porto\'s prettiest street — original tile floors, courtyard restaurant.', price_per_night: 175, rating: 9.1 },
+        { name: 'The Yeatman', neighbourhood: 'Vila Nova de Gaia', vibe: 'Wine resort · two Michelin stars', description: 'Two-Michelin-star restaurant + 25-metre infinity pool with the Douro view — the splurge pick.', price_per_night: 365, rating: 9.4 },
+        { name: 'Torel Avantgarde', neighbourhood: 'Massarelos', vibe: 'Art-themed boutique · river view', description: 'Each room is themed around a Portuguese artist — heated outdoor pool, river panorama.', price_per_night: 215, rating: 9.2 },
+        { name: '1872 River House', neighbourhood: 'Ribeira', vibe: 'B&B · 9 rooms on the water', description: 'A nine-room B&B with windows opening directly over the Douro — breakfast is on the river.', price_per_night: 125, rating: 9.1 },
+        { name: 'Casa do Conto', neighbourhood: 'Boavista', vibe: 'Design hotel · 8 rooms', description: 'A modernist concrete-and-glass house — eight rooms, each ceiling printed with a different story.', price_per_night: 185, rating: 9.2 }
+      ],
+      activities: [
+        { name: 'Port wine cellar tasting', category: 'Food', vibe: 'Three cellars · five tastings', description: 'Cross Dom Luís Bridge to Gaia — Taylor\'s, Sandeman and Cálem in one afternoon.', price_per_person: 38, duration: '3 hours' },
+        { name: 'Douro Valley wine day', category: 'Food', vibe: 'River cruise · vineyard lunch', description: 'Train to Pinhão, two-hour wine cruise on the Douro, lunch at a vineyard. The day everyone remembers.', price_per_person: 95, duration: '10 hours' },
+        { name: 'Livraria Lello bookshop', category: 'Cultural', vibe: 'The most beautiful bookshop · €8', description: 'The Harry Potter bookshop — €8 entry credited against any book purchase. Get a 9:30am ticket.', price_per_person: 8, duration: '1 hour' },
+        { name: 'Ribeira sunset cruise', category: 'Outdoor', vibe: '50-min Douro cruise · 6 bridges', description: 'Fifty minutes on a rabelo boat (the old port-wine boats) under all six bridges of Porto.', price_per_person: 15, duration: '1.5 hours' },
+        { name: 'Foz beach walk', category: 'Beach', vibe: 'Tram 1 to the Atlantic', description: 'Catch tram 1 from Ribeira out to Foz — the Atlantic beach, sunset bars, no swimming (cold).', price_per_person: 4, duration: '3 hours' },
+        { name: 'Francesinha sandwich crawl', category: 'Food', vibe: 'Porto\'s steak-cheese-beer-sauce icon', description: 'Two iconic francesinha spots (Café Santiago, Bufete Fase) — the city\'s most decadent sandwich.', price_per_person: 22, duration: '2 hours' },
+        { name: 'São Bento azulejo tour', category: 'Cultural', vibe: 'Free · 20,000 tiles · the train station', description: 'São Bento railway station\'s 20,000 hand-painted tiles depicting Portuguese history. Free.', price_per_person: 0, duration: '45 minutes' },
+        { name: 'Surf lesson at Matosinhos', category: 'Beach', vibe: 'Atlantic surf school · all gear', description: 'Two-hour lesson 20 minutes from Porto — small Atlantic waves, wetsuit weather year-round.', price_per_person: 45, duration: '3 hours' }
+      ],
+      restaurants: [
+        { name: 'Cantinho do Avillez', cuisine: 'Modern Portuguese', vibe: 'José Avillez bistro', price_range: '€€€', description: 'José Avillez (Lisbon\'s star chef) in Porto — bacalhau croquettes, octopus, sea-salt steak.', must_order: 'Bacalhau à Brás cones + steak' },
+        { name: 'Tasco', cuisine: 'Petiscos', vibe: 'Tiny tasca · standing-room', price_range: '€€', description: 'Six tables, twenty plates, locals shouting orders over the bar. Try everything, share.', must_order: 'Octopus salad + iberico cheek' },
+        { name: 'Cafeína', cuisine: 'Foz seafood', vibe: 'Atlantic-side seafood', price_range: '€€€', description: 'A Foz seafood restaurant a block from the beach — sea bass with sea salt and lemon, end of story.', must_order: 'Whole grilled sea bass' },
+        { name: 'The Yeatman Restaurant', cuisine: 'Tasting menu', vibe: 'Two Michelin stars · 14 courses', price_range: '€€€€', description: 'Chef Ricardo Costa\'s 14-course Portuguese exploration with port-wine pairings throughout.', must_order: 'The Costa tasting + port pairings' }
+      ],
+      guides: [
+        { title: 'Porto under €40 a day', category: 'Hidden gems', summary: 'The cheapest port-wine weekend possible. Hostels, francesinhas, free tile-spotting.', highlights: ['€20 Gallery Hostel bed', '€4 tram 1 to Foz', 'Free São Bento tiles', '€8 francesinha lunch'] },
+        { title: 'Douro Valley: day trip or skip?', category: 'Hidden gems', summary: 'When the 10-hour day is worth it, when to stay in Porto instead.', highlights: ['Do it if: you have 3+ days', 'Skip if: 2-night weekend', 'Take the train, not the bus', 'Pre-book vineyard lunch'] },
+        { title: 'Three port wines to know', category: 'Food', summary: 'White, ruby, tawny — the differences in 30 seconds.', highlights: ['White port + tonic (apéro)', 'Ruby (young, fruity, cheap)', 'Tawny (aged, nutty, splurge)', 'Vintage (only if you\'re really in)'] },
+        { title: 'Where Porto locals actually eat', category: 'Food', summary: 'Off Ribeira, where lunch is €8 and the menu\'s on a chalkboard.', highlights: ['Mercado do Bolhão fish stalls', 'Bonaparte Downtown francesinha', 'Casa de Pasto da Palmeira', 'A Sandeira do Porto sandwiches'] }
+      ]
+    },
+    Paris: {
+      hotels: [
+        { name: 'Generator Paris', neighbourhood: 'Canal Saint-Martin', vibe: '€35 dorm · canal terrace', description: 'A hostel with a rooftop terrace overlooking the canal — cheapest design beds in Paris.', price_per_night: 38, rating: 8.6 },
+        { name: 'Hôtel Jeanne d\'Arc', neighbourhood: 'Marais', vibe: 'Family-run budget · 35 rooms', description: 'A no-frills 2-star in the Marais — singles from €90, breakfast €10, no lift but charming.', price_per_night: 105, rating: 8.4 },
+        { name: 'Hôtel des Grands Boulevards', neighbourhood: '2nd · Montorgueil', vibe: 'Romantic boutique', description: 'Toile-de-Jouy wallpaper, a glass-roofed restaurant, the prettiest small hotel under €200.', price_per_night: 175, rating: 9.1 },
+        { name: 'Le Pigalle', neighbourhood: '9th · SoPi', vibe: 'Music-scene boutique', description: 'A music-and-art hotel in newly cool South Pigalle — DJ booth in the lobby, vinyl in the rooms.', price_per_night: 195, rating: 9.0 },
+        { name: 'Hôtel National des Arts et Métiers', neighbourhood: '3rd · Le Haut Marais', vibe: 'Design hotel · rooftop bar', description: 'Concrete-and-velvet design hotel — Herringbone restaurant, Sahbi rooftop bar with skyline view.', price_per_night: 245, rating: 9.1 },
+        { name: 'Hôtel Particulier Montmartre', neighbourhood: 'Montmartre', vibe: 'Private mansion · 5 rooms', description: 'A hidden 5-suite mansion behind iron gates — the secret garden of Montmartre.', price_per_night: 415, rating: 9.3 },
+        { name: 'Le Bristol Paris', neighbourhood: '8th · Faubourg-Saint-Honoré', vibe: 'Palace hotel · 5-star', description: 'A Palace-classified hotel — Epicure restaurant (3 Michelin stars), rooftop pool with Sacré-Cœur view.', price_per_night: 1250, rating: 9.5 },
+        { name: 'Hôtel de Crillon', neighbourhood: 'Place de la Concorde', vibe: 'Palace · river-adjacent', description: 'An 18th-century palace facing the Concorde — Karl Lagerfeld designed two suites, marble baths everywhere.', price_per_night: 1480, rating: 9.6 }
+      ],
+      activities: [
+        { name: 'Louvre at 18:00 (free or quiet)', category: 'Cultural', vibe: 'Wednesday/Friday late opening', description: 'The Louvre opens until 21:45 Wed/Fri — get the 18:00 slot and have the Mona Lisa nearly alone.', price_per_person: 22, duration: '3 hours' },
+        { name: 'Musée d\'Orsay + Tuileries lunch', category: 'Cultural', vibe: 'Impressionists + a sandwich', description: 'Reserve a 10am slot at d\'Orsay, then a baguette + cheese in the Jardin des Tuileries.', price_per_person: 24, duration: '4 hours' },
+        { name: 'Marais walking food tour', category: 'Food', vibe: 'Bakery · cheesemonger · Falafel', price_per_person: 75, description: 'The Jewish quarter\'s falafels, a cheese-cellar tasting, a baker who\'s won the Best Baguette prize.', duration: '3 hours' },
+        { name: 'Eiffel Tower sunrise picnic', category: 'Cultural', vibe: 'Free · Champ de Mars · 6am', description: 'Walk to the Champ de Mars before sunrise with pastries. The tower lights blink. You\'re alone.', price_per_person: 0, duration: '1.5 hours' },
+        { name: 'Seine evening cruise', category: 'Cultural', vibe: 'River cruise · bridge-pass · 1h', description: 'A flat-boat cruise from the Eiffel Tower under nine bridges — the Notre-Dame view from the river.', price_per_person: 15, duration: '1 hour' },
+        { name: 'Père Lachaise cemetery walk', category: 'Hidden gems', vibe: 'Free · Jim Morrison, Wilde, Chopin', description: 'The most famous cemetery in the world — three hours of finding graves in cobbled alleys.', price_per_person: 0, duration: '3 hours' },
+        { name: 'Croissant masterclass', category: 'Food', vibe: 'A real boulangerie · 3 hours', description: 'A Paris baker teaches you the laminating fold — take your croissants home that afternoon.', price_per_person: 95, duration: '3 hours' },
+        { name: 'Canal Saint-Martin sunset walk', category: 'Hidden gems', vibe: 'Free · iron footbridges · evening apéro', description: 'The 10th\'s canal at 19:00 — picnickers on the banks, kayakers in the locks, three good wine bars.', price_per_person: 0, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'L\'Ami Jean', cuisine: 'Bistro · Basque', vibe: 'Loud · 30 seats · 2 sittings', price_range: '€€€', description: 'Chef Stéphane Jégo\'s Basque-French bistro in the 7th — book a month ahead, expect to share tables.', must_order: 'Rice pudding (riz au lait) to finish' },
+        { name: 'Septime', cuisine: 'Modern French', vibe: 'One Michelin star · 11th', price_range: '€€€€', description: 'Bertrand Grébaut\'s tasting-menu phenomenon — wait three months for a table, the city\'s most-wanted reservation.', must_order: 'The €110 tasting menu (no choice)' },
+        { name: 'Le Mary Celeste', cuisine: 'Small plates', vibe: 'Corner bar · oysters · cocktails', price_range: '€€€', description: 'A corner bar in the 3rd doing oysters, ceviche and clever cocktails — small plates, big buzz.', must_order: 'Oysters Mary Celeste + Negroni' },
+        { name: 'L\'Avant Comptoir', cuisine: 'Standing tapas', vibe: 'No tables · 18 stools', price_range: '€€', description: 'No seats. Tiny standing bar by Yves Camdeborde with charcuterie, mini-burgers and Sancerre by the glass.', must_order: 'Duck slider + mini-burger + a Sancerre' }
+      ],
+      guides: [
+        { title: 'Free Paris: 10 things that cost €0', category: 'Hidden gems', summary: 'Most museums are free first Sunday of the month — plus 9 other no-cost moments.', highlights: ['First Sunday: 14 museums free', 'Père Lachaise cemetery', 'Petit Palais permanent collection', 'Seine sunset from Pont des Arts'] },
+        { title: 'The right bistro at the right price', category: 'Food', summary: 'Three bistros at three budgets — €15, €30 and €60 set menus.', highlights: ['Bouillon Pigalle (€15 set)', 'Le P\'tit Troquet (€30)', 'Le Comptoir du Relais (€60)', 'Skip: Café de Flore (€20 espresso)'] },
+        { title: 'Marais after dark', category: 'Nightlife', summary: 'Four bars in walking distance — start at 19:00 apéro, end at 02:00.', highlights: ['Little Red Door (cocktails)', 'Le Mary Celeste (oysters)', 'Andy Wahloo (Moroccan)', 'Les Bains (last call)'] },
+        { title: 'Day trip to Versailles in 4 hours', category: 'Hidden gems', summary: 'The trains, the queue, the gardens — how to do it without losing the day.', highlights: ['RER C from Notre-Dame', 'First train at 8:30am', 'Skip the State Apartments queue', 'Gardens are free, palace €18'] }
+      ]
+    },
+    Milan: {
+      hotels: [
+        { name: 'Babila Hostel', neighbourhood: 'Brera-adjacent', vibe: '€30 dorm · rooftop bar', description: 'A modern hostel five minutes from Brera — rooftop bar with a Duomo glimpse, free dinner Tuesdays.', price_per_night: 32, rating: 8.6 },
+        { name: 'Ostello Bello Grande', neighbourhood: 'Stazione Centrale', vibe: 'Hostel · social · breakfast', description: 'The flagship Ostello Bello near Centrale — chess room, free spaghetti night, courtyard.', price_per_night: 42, rating: 8.8 },
+        { name: 'Room Mate Giulia', neighbourhood: 'Duomo', vibe: 'Boutique · steps from the Galleria', description: 'A 4-star a block from the Galleria Vittorio Emanuele — bright, design-led, breakfast on the rooftop.', price_per_night: 155, rating: 9.0 },
+        { name: 'Senato Hotel Milano', neighbourhood: 'Brera', vibe: 'Boutique · courtyard pool', description: 'A 43-room boutique with a glass-and-water courtyard pool. Brera at the doorstep.', price_per_night: 195, rating: 9.2 },
+        { name: 'Hotel VIU Milan', neighbourhood: 'Porta Volta', vibe: 'Design hotel · rooftop pool', description: 'Rooftop infinity pool with full skyline view — the best non-luxury rooftop in the city.', price_per_night: 285, rating: 9.3 },
+        { name: 'Mandarin Oriental Milan', neighbourhood: 'Quadrilatero', vibe: '5-star · two Michelin stars', description: 'In the fashion quadrilateral — Seta restaurant (two Michelin stars), spa in the cellar.', price_per_night: 685, rating: 9.4 },
+        { name: 'Bulgari Hotel Milano', neighbourhood: 'Brera', vibe: '5-star · private garden', description: 'A private 4000m² garden behind a 17th-century palace — the calmest 5-star in Milan.', price_per_night: 1085, rating: 9.5 },
+        { name: 'Four Seasons Hotel Milano', neighbourhood: 'Via Gesù', vibe: 'Convent-turned-Palace', description: 'A 15th-century convent restored into a Four Seasons — the cloisters, the Stilla restaurant.', price_per_night: 825, rating: 9.5 }
+      ],
+      activities: [
+        { name: 'Duomo + Rooftop walk', category: 'Cultural', vibe: 'On top of the cathedral spires', description: 'The Duomo cathedral interior + a 15-minute walk between the spires on the roof. Book online.', price_per_person: 22, duration: '2 hours' },
+        { name: 'Last Supper at Santa Maria delle Grazie', category: 'Cultural', vibe: '15 minutes · book 3 months ahead', description: 'Leonardo\'s fresco in a refectory. Slots are 15 minutes, sold out 90 days ahead. Worth the planning.', price_per_person: 15, duration: '1 hour' },
+        { name: 'Navigli aperitivo crawl', category: 'Food', vibe: 'Canal walk · €10 buffet drinks', description: 'Milan\'s canal district — three apéritivo bars where a €10 drink comes with a buffet that doubles as dinner.', price_per_person: 35, duration: '3 hours' },
+        { name: 'Lake Como day trip', category: 'Outdoor', vibe: '40-min train · Bellagio ferry', description: 'Train from Centrale to Varenna, ferry across to Bellagio, lunch on the water, back by sunset.', price_per_person: 38, duration: '8 hours' },
+        { name: 'Brera + Pinacoteca art walk', category: 'Cultural', vibe: 'The arty quarter · Italian masters', description: 'A walk through Brera with entry to the Pinacoteca — Raphael\'s Marriage of the Virgin, then aperitivo.', price_per_person: 18, duration: '3 hours' },
+        { name: 'Galleria Vittorio Emanuele II at 8am', category: 'Cultural', vibe: 'Free · Italy\'s oldest shopping arcade', description: 'The 1867 glass-roofed arcade with no crowds at 8am — Prada\'s first store and the bull-spinning floor mosaic.', price_per_person: 0, duration: '45 minutes' },
+        { name: 'Risotto cooking class', category: 'Food', vibe: 'Make risotto alla milanese · 3 hours', description: 'A local kitchen teaches the saffron risotto Milan is famous for — eat and drink Barolo at the end.', price_per_person: 75, duration: '3 hours' },
+        { name: 'San Siro stadium tour', category: 'Cultural', vibe: 'Inside Italy\'s most famous stadium', description: 'AC Milan and Inter share San Siro — the dressing rooms, the trophy room, the pitch-side walk.', price_per_person: 22, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'Trattoria Milanese', cuisine: 'Milanese', vibe: 'Since 1933 · traditional', price_range: '€€€', description: 'A 1933 trattoria doing only Milanese classics — risotto al ossobuco, cotoletta, panettone in season.', must_order: 'Cotoletta alla milanese (the original)' },
+        { name: 'Pavé', cuisine: 'Bakery · café', vibe: 'Best breakfast in Milan', price_range: '€€', description: 'Pavé is famous for cornetto + cappuccino, but their lunch panini are why locals come back.', must_order: 'Cornetto bianco + cappuccino' },
+        { name: 'Ratanà', cuisine: 'Modern Milanese', vibe: 'Park-side · open kitchen', price_range: '€€€', description: 'Chef Cesare Battisti modernising classics — risotto with three pestos, ossobuco done in 12 hours.', must_order: 'Risotto alla milanese al midollo' },
+        { name: 'Seta · Mandarin Oriental', cuisine: 'Tasting menu', vibe: 'Two Michelin stars', price_range: '€€€€', description: 'Chef Antonio Guida\'s two-star tasting in the Mandarin Oriental — best fine dining in the city.', must_order: 'The 8-course Seta degustazione' }
+      ],
+      guides: [
+        { title: 'Aperitivo in Milan: where + when', category: 'Food', summary: 'Where €10 buys a drink + a buffet that\'s your dinner. Five bars, ranked.', highlights: ['Navigli (Apollo, Mag, Mag Café)', 'Brera (NoTé, Bar Basso)', 'Porta Romana (Pastificio Defilippis)', 'Skip: Camparino (€18 Negroni)'] },
+        { title: 'Milan Design District in half a day', category: 'Hidden gems', summary: 'Zona Tortona + Brera — three concept stores and a free museum.', highlights: ['10 Corso Como (free)', 'Triennale Design Museum', 'Spazio Rossana Orlandi', 'Armani/Silos (€12)'] },
+        { title: 'Lake Como vs Lake Maggiore', category: 'Hidden gems', summary: 'Both are gorgeous, both are an hour away. The right one depends on what you want.', highlights: ['Como for: villas, Bellagio, glamour', 'Maggiore for: islands, gardens, calm', 'Como train: from Centrale 40 min', 'Maggiore train: from Garibaldi 1 hr'] },
+        { title: 'Italian fashion: where to shop without spending', category: 'Hidden gems', summary: 'The Quadrilatero is for window-shopping. Here\'s where you actually buy.', highlights: ['Via Torino (high street)', 'Corso Buenos Aires (mid)', 'Serravalle outlet (1 hr south)', '10 Corso Como (concept)'] }
+      ]
+    },
+    Vienna: {
+      hotels: [
+        { name: 'Wombat\'s Naschmarkt', neighbourhood: 'Naschmarkt', vibe: '€25 dorm · market-side', description: 'A bright hostel above Vienna\'s biggest food market — breakfast is a 10-step walk to a stall.', price_per_night: 28, rating: 8.7 },
+        { name: 'Hotel Beethoven', neighbourhood: '6th · Mariahilf', vibe: 'Family-run 4-star', description: 'A musical-themed hotel near Naschmarkt — antique pianos in the lobby, big breakfasts.', price_per_night: 115, rating: 9.0 },
+        { name: 'Hotel Sans Souci Wien', neighbourhood: 'MuseumsQuartier', vibe: 'Art-filled boutique 5-star', description: 'Roy Lichtenstein and Damien Hirst pieces in the lobby — small indoor pool, La Véranda restaurant.', price_per_night: 215, rating: 9.2 },
+        { name: 'The Guesthouse Vienna', neighbourhood: '1st · Albertina', vibe: 'Conran-designed boutique', description: 'A Terence Conran-designed 39-room hotel a block from the Albertina — beech wood, plush velvet.', price_per_night: 245, rating: 9.3 },
+        { name: 'Hotel Altstadt Vienna', neighbourhood: '7th · Spittelberg', vibe: 'Art-collector\'s house · 70 rooms', description: 'Otto Wagner suites, a private art collection — the calmest stay near the MuseumsQuartier.', price_per_night: 185, rating: 9.2 },
+        { name: 'Hotel Sacher Wien', neighbourhood: 'Opera', vibe: 'Heritage 5-star · the original torte', description: 'The hotel that invented the Sachertorte — opera-facing rooms, the original recipe in the café.', price_per_night: 485, rating: 9.4 },
+        { name: 'Park Hyatt Vienna', neighbourhood: 'Goldenes Quartier', vibe: 'Former bank · marble baths', description: 'A converted 1915 bank — the marble vault is now the spa, rooms have 4-metre ceilings.', price_per_night: 625, rating: 9.5 },
+        { name: 'Hotel Imperial', neighbourhood: 'Ringstrasse', vibe: '5-star palace · Ringstrasse', description: 'The Habsburg-era palace where heads of state stay — original frescoes, crystal chandeliers.', price_per_night: 685, rating: 9.4 }
+      ],
+      activities: [
+        { name: 'Schönbrunn Palace + Gardens', category: 'Cultural', vibe: 'The Habsburg summer palace', description: 'The Imperial Apartments (Grand Tour), then the gardens — Gloriette hill for the city panorama.', price_per_person: 28, duration: '4 hours' },
+        { name: 'Belvedere · Klimt\'s The Kiss', category: 'Cultural', vibe: '24 Klimts in one museum', description: 'The Upper Belvedere has The Kiss, plus Schiele, Kokoschka. Buy the timed slot ticket.', price_per_person: 17, duration: '2.5 hours' },
+        { name: 'Wiener Staatsoper standing-room tickets', category: 'Cultural', vibe: '€10 opera seat (stand)', description: 'Standing-room tickets are sold 80 minutes before each show for €10–13. Best ticket in classical music.', price_per_person: 12, duration: '3 hours' },
+        { name: 'Coffee-house circuit', category: 'Food', vibe: 'Three café institutions', description: 'Café Central, Café Sperl, Café Hawelka — sit in each for an hour, read the paper, leave a tip.', price_per_person: 18, duration: '3 hours' },
+        { name: 'Naschmarkt food tour', category: 'Food', vibe: 'Vienna\'s biggest market', description: 'A 90-minute walk with a chef through Naschmarkt — eight tastings, two glasses of Grüner Veltliner.', price_per_person: 65, duration: '2 hours' },
+        { name: 'Prater + the giant Ferris wheel', category: 'Cultural', vibe: 'Vintage amusement park · 100m wheel', description: 'The 1897 Wiener Riesenrad Ferris wheel + an old-school amusement park around it — Vienna at sunset.', price_per_person: 14, duration: '2 hours' },
+        { name: 'Wachau wine valley day trip', category: 'Food', vibe: 'Boat + bike · Grüner Veltliner', description: 'Train to Krems, boat down the Danube, bike the vineyards. Lunch at a Heuriger wine tavern.', price_per_person: 75, duration: '9 hours' },
+        { name: 'Hofburg + Sisi Museum', category: 'Cultural', vibe: 'The Imperial Apartments', description: 'The Habsburg city palace — Empress Elisabeth\'s rooms, the Silver Collection (4500 dining pieces).', price_per_person: 18, duration: '2.5 hours' }
+      ],
+      restaurants: [
+        { name: 'Figlmüller', cuisine: 'Wiener Schnitzel', vibe: 'Since 1905 · plate-sized schnitzel', price_range: '€€', description: 'The most famous schnitzel in Vienna — pan-fried in butter, comes hanging over the plate.', must_order: 'Wiener Schnitzel + a Grüner Veltliner' },
+        { name: 'Café Central', cuisine: 'Viennese coffeehouse', vibe: 'Trotsky\'s café · marble columns', price_range: '€€', description: 'The most photographed coffeehouse in Europe — Trotsky played chess here for years. Order the apfelstrudel.', must_order: 'Einspänner + apfelstrudel' },
+        { name: 'Steirereck', cuisine: 'Modern Austrian', vibe: 'Two Michelin stars · park-side', price_range: '€€€€', description: 'Heinz Reitbauer\'s two-star institution — the trolley of regional cheeses alone is worth the visit.', must_order: 'The €185 menu degustation' },
+        { name: 'Plachutta', cuisine: 'Tafelspitz', vibe: 'Vienna\'s boiled-beef temple', price_range: '€€€', description: 'Tafelspitz served in copper pots on multi-tiered stands — the ceremony of Habsburg boiled beef.', must_order: 'Wiener Tafelspitz + apfelkren' }
+      ],
+      guides: [
+        { title: 'The €10 opera trick', category: 'Hidden gems', summary: 'How to score standing-room tickets to the Wiener Staatsoper for €10.', highlights: ['Queue at the side door 80 min before', 'Cash only, one ticket per person', 'Bring a scarf to mark your spot', 'Dress code: smart casual'] },
+        { title: 'Coffeehouse manners 101', category: 'Food', summary: 'How to spend two hours in a Viennese café without ordering a second coffee.', highlights: ['Order: einspänner, melange, kleiner brauner', 'Tip 5–10% in cash', 'Newspapers are free to read', 'Don\'t order: Starbucks-style drinks'] },
+        { title: 'A Habsburg half-day', category: 'Cultural', summary: 'Schönbrunn or Hofburg or both? The right combination in 5 hours.', highlights: ['Morning: Schönbrunn (timed slot)', 'Lunch: Café Gloriette', 'Afternoon: Hofburg + Sisi', 'Skip: Imperial Furniture Museum'] },
+        { title: 'Vienna for under €70 a day', category: 'Hidden gems', summary: 'Hostel + a schnitzel + the opera (standing) + a coffeehouse. Done.', highlights: ['€28 Wombat\'s bed', '€16 Figlmüller schnitzel', '€10 opera ticket', '€6 melange'] }
+      ]
+    },
+    Athens: {
+      hotels: [
+        { name: 'Athens Backpackers', neighbourhood: 'Plaka', vibe: '€22 dorm · Acropolis-side', description: 'A scrappy hostel at the foot of the Acropolis — rooftop bar with the Parthenon view at sunset.', price_per_night: 24, rating: 8.6 },
+        { name: 'City Circus Athens', neighbourhood: 'Psyrri', vibe: 'Design hostel · neoclassical', description: 'A pink-walled neoclassical building in Psyrri — cheapest design beds in the city.', price_per_night: 32, rating: 8.7 },
+        { name: 'Coco-Mat Athens BC', neighbourhood: 'Makrygianni', vibe: 'Sustainable boutique', description: 'A 41-room hotel a block from the Acropolis Museum — natural-fibre beds, rooftop sunset bar.', price_per_night: 145, rating: 9.0 },
+        { name: 'A77 Suites', neighbourhood: 'Plaka', vibe: 'Boutique · 7 suites', description: 'Seven suites in a restored 1860 mansion — Acropolis-view balconies, breakfast on the terrace.', price_per_night: 215, rating: 9.3 },
+        { name: 'Electra Metropolis', neighbourhood: 'Syntagma', vibe: 'Rooftop pool · Parthenon view', description: 'A 9-floor hotel with a roof pool aligned for the Parthenon sunset shot. Book a corner suite.', price_per_night: 225, rating: 9.2 },
+        { name: 'The Modernist Athens', neighbourhood: 'Kolonaki', vibe: 'Design hotel · 38 rooms', description: 'A converted 1959 office tower — Bauhaus interiors, Acropolis view from upper rooms.', price_per_night: 195, rating: 9.1 },
+        { name: 'Hotel Grande Bretagne', neighbourhood: 'Syntagma', vibe: 'Heritage 5-star · GB Roof Garden', description: 'The Athens grand hotel since 1874 — the GB Roof Garden restaurant has the most famous view in the city.', price_per_night: 485, rating: 9.4 },
+        { name: 'King George Athens', neighbourhood: 'Syntagma', vibe: '5-star · marble baths', description: 'Sister to the Grande Bretagne but smaller and more boutique — Tudor Hall restaurant on the roof.', price_per_night: 395, rating: 9.3 }
+      ],
+      activities: [
+        { name: 'Acropolis + Acropolis Museum combo', category: 'Cultural', vibe: 'The hill + the museum below', description: 'Go to the Acropolis at 8am opening, then the Acropolis Museum across the street for lunch.', price_per_person: 35, duration: '5 hours' },
+        { name: 'Plaka + Anafiotika walking tour', category: 'Cultural', vibe: 'Athens\' Cycladic neighbourhood', description: 'The whitewashed Anafiotika quarter built by Cycladic islanders — feels like a Greek island, in Athens.', price_per_person: 25, duration: '2 hours' },
+        { name: 'Cape Sounion sunset', category: 'Outdoor', vibe: 'Temple of Poseidon · sea sunset', description: 'A coach drive 70 km south for the sunset at the Temple of Poseidon — book the late slot.', price_per_person: 38, duration: '5 hours' },
+        { name: 'Athens food tour · Central Market', category: 'Food', vibe: 'Varvakios market · olives, cheese, raki', description: 'A walking food tour through the Central Market (Varvakios) — eight tastings + a glass of tsipouro.', price_per_person: 55, duration: '3 hours' },
+        { name: 'Lycabettus Hill funicular sunset', category: 'Outdoor', vibe: 'Higher than the Acropolis · €10', description: 'Take the funicular up Athens\' highest hill (277m) for a higher-than-the-Acropolis sunset.', price_per_person: 12, duration: '2 hours' },
+        { name: 'Hydra island day trip', category: 'Beach', vibe: '1.5-hour ferry · no cars · donkey transport', description: 'A car-free island 1.5 hours by ferry — swim at the rocks, lunch in the port, back by 19:00.', price_per_person: 75, duration: '11 hours' },
+        { name: 'Wine tasting at Domaine Skouras (Peloponnese)', category: 'Food', vibe: 'Vineyard day · 2 hours away', description: 'A vineyard day in the Peloponnese — Skouras and Tselepos, two tastings and a long lunch.', price_per_person: 95, duration: '9 hours' },
+        { name: 'Greek-cooking class · Plaka', category: 'Food', vibe: 'Make tzatziki + moussaka + spanakopita', description: 'A four-hour cooking class in a Plaka rooftop apartment — three courses, plenty of wine.', price_per_person: 75, duration: '4 hours' }
+      ],
+      restaurants: [
+        { name: 'Diporto', cuisine: 'Tavern · since 1887', vibe: 'Basement · no sign · barrels', price_range: '€', description: 'Lunch-only basement tavern with no menu and no sign — the owner shouts what\'s ready. Cash only.', must_order: 'Chickpea soup + sardines + retsina' },
+        { name: 'Karamanlidika tou Fani', cuisine: 'Meze · charcuterie', vibe: 'Deli + restaurant · Psyrri', price_range: '€€', description: 'A meat-and-cheese shop with restaurant tables — pastourma, smoked sausage, Greek wines.', must_order: 'Pastourma plate + Cretan dakos salad' },
+        { name: 'Klimataria', cuisine: 'Traditional Greek', vibe: 'Live rebetiko · 1927', price_range: '€€', description: 'A 1927 mezedopolio in Psyrri with live rebetika music after 21:00 — wood tables, paper cloths.', must_order: 'Saganaki + grilled octopus + dance to rebetika' },
+        { name: 'Spondi', cuisine: 'French-Greek tasting', vibe: 'Two Michelin stars · 1860 mansion', price_range: '€€€€', description: 'Athens\' two-star institution since 1996 — Greek ingredients through French technique. Inside a Pangrati mansion.', must_order: 'The €130 menu degustation' }
+      ],
+      guides: [
+        { title: 'Athens under €50 a day', category: 'Hidden gems', summary: 'Hostel + souvlaki + the Acropolis + a rooftop sundowner. €50.', highlights: ['€24 hostel bed', '€3 souvlaki at Kostas', 'Free Anafiotika walk', '€8 wine at Couleur Locale'] },
+        { title: 'How to do the Acropolis right', category: 'Hidden gems', summary: 'When to go, what to skip, where to lunch after.', highlights: ['First entry 8am sharp', 'Skip the audio guide', 'Buy the combo ticket (7 sites)', 'Lunch: Mani Mani in Makrygianni'] },
+        { title: 'Three Greek islands · day-trippable', category: 'Beaches', summary: 'Aegina, Hydra, Spetses — which is right for one day.', highlights: ['Aegina: 40 min ferry, beaches', 'Hydra: 1.5 hr, no cars, picture-perfect', 'Spetses: 2 hr, prettier than both', 'Skip: Poros (too touristy)'] },
+        { title: 'Real souvlaki: the four spots', category: 'Food', summary: 'Skip the tourist souvlaki on Mitropoleos. These four are where Athenians actually go.', highlights: ['Kostas (Agia Irini Square)', 'Bairaktaris (Monastiraki)', 'Ι Gonia tou Theou (locals only)', 'Tylixto wraps (Exarcheia)'] }
+      ]
+    },
+    Copenhagen: {
+      hotels: [
+        { name: 'Generator Copenhagen', neighbourhood: 'Indre By', vibe: '€38 dorm · central', description: 'A hostel five minutes from Nørreport station — bar in the lobby, decent breakfast included.', price_per_night: 42, rating: 8.5 },
+        { name: 'CABINN Copenhagen', neighbourhood: 'Vesterbro', vibe: 'Compact budget hotel', description: 'Cheap private rooms (€85 for two) in tiny ship-cabin-style rooms. Five minutes from Tivoli.', price_per_night: 85, rating: 8.4 },
+        { name: 'Hotel Sanders', neighbourhood: 'Kongens Nytorv', vibe: 'Theatre-quarter boutique', description: 'A 54-room boutique by the Royal Theatre — heated palm-tree rooftop, members-only feel.', price_per_night: 285, rating: 9.3 },
+        { name: 'Hotel SP34', neighbourhood: 'Latin Quarter', vibe: 'Design hotel · 5 honesty bars', description: 'A Brøchner Hotel — five honesty bars throughout the building, free wine hour every evening.', price_per_night: 215, rating: 9.1 },
+        { name: 'Nimb Hotel', neighbourhood: 'Tivoli Gardens', vibe: 'Moorish palace · Tivoli view', description: 'A 38-room palace at the gates of Tivoli Gardens — three restaurants, a Michelin-starred dairy.', price_per_night: 395, rating: 9.3 },
+        { name: 'Hotel D\'Angleterre', neighbourhood: 'Kongens Nytorv', vibe: 'Heritage 5-star · since 1755', description: 'The most famous hotel in Scandinavia — Marchal restaurant (Michelin star), classical white facade.', price_per_night: 645, rating: 9.4 },
+        { name: 'Manon Les Suites', neighbourhood: 'Nørreport', vibe: 'Indoor jungle pool', description: 'A 5-star with an indoor pool surrounded by tropical plants — the Instagram pool of Copenhagen.', price_per_night: 285, rating: 9.2 },
+        { name: 'Villa Copenhagen', neighbourhood: 'Tietgensgade', vibe: '5-star in old post office', description: 'A 19th-century post office turned 5-star — heated rooftop pool open year-round.', price_per_night: 365, rating: 9.3 }
+      ],
+      activities: [
+        { name: 'Nyhavn + canal tour', category: 'Cultural', vibe: '60-min boat · the postcard harbour', description: 'An hour on the canals — Nyhavn, the Little Mermaid, the Black Diamond library.', price_per_person: 16, duration: '1.5 hours' },
+        { name: 'Tivoli Gardens evening', category: 'Cultural', vibe: 'Oldest amusement park · light show', description: 'The 1843 amusement park lit up at night — the wooden Roller Coaster (1914) and the Tivoli light parade.', price_per_person: 22, duration: '4 hours' },
+        { name: 'Bicycle through Christiania', category: 'Cultural', vibe: 'Free-town · alternative quarter', description: 'A rented bike + a Christiania tour — the freetown founded in 1971, with strict no-photo rules.', price_per_person: 28, duration: '3 hours' },
+        { name: 'Refshaleøen food hall + sauna', category: 'Food', vibe: 'Industrial harbour · Reffen street food', description: 'Reffen has 40 food stalls and a harbour sauna — a true Copenhagen Saturday afternoon.', price_per_person: 35, duration: '4 hours' },
+        { name: 'Louisiana Museum day trip', category: 'Cultural', vibe: 'Train 35 min · seaside art', description: 'A modern art museum 35 minutes by train — building, sea view and sculpture park are the highlight.', price_per_person: 25, duration: '6 hours' },
+        { name: 'Frederiksberg Have Sunday', category: 'Outdoor', vibe: 'Royal garden · free · canal boats', description: 'The Royal Frederiksberg Garden — boat tours through the canals, free entry, picnic-perfect.', price_per_person: 0, duration: '3 hours' },
+        { name: 'Pastry crawl · third-wave bakeries', category: 'Food', vibe: 'Three bakeries · sweet to savoury', description: 'Three modern Copenhagen bakeries — Hart Bageri (Noma\'s), Andersen & Maillard, Lille Bakery.', price_per_person: 22, duration: '2 hours' },
+        { name: 'CopenHot harbour bath', category: 'Wellness', vibe: 'Hot tubs in the harbour', description: 'Wood-fired hot tubs floating in the harbour — sauna on board, dip in the cold water between sessions.', price_per_person: 58, duration: '2 hours' }
+      ],
+      restaurants: [
+        { name: 'Restaurant Schønnemann', cuisine: 'Smørrebrød', vibe: 'Since 1877 · open-face sandwiches', price_range: '€€€', description: 'The institution for smørrebrød (open-face rye-bread sandwiches) — pick three, eat with snaps.', must_order: 'Three smørrebrød + Aalborg snaps' },
+        { name: 'Manfreds', cuisine: 'Modern Danish · natural wine', vibe: 'Vegetable-focused · 30 seats', price_range: '€€€', description: 'Christian Puglisi\'s vegetable-led bistro in Nørrebro — sister to Relæ, but cheaper and walk-ins welcome.', must_order: 'The seven-course veg menu + a Pét-Nat' },
+        { name: 'Hart Bageri', cuisine: 'Bakery · coffee', vibe: 'Noma\'s bakery · Frederiksberg', price_range: '€€', description: 'Richard Hart, ex-Tartine, now Noma\'s baker — sourdough loaves, cardamom snails, three benches inside.', must_order: 'Cardamom snail + sourdough loaf' },
+        { name: 'Noma', cuisine: 'Tasting · world\'s best', vibe: 'Three stars · book one year ahead', price_range: '€€€€', description: 'The world\'s most-influential restaurant. Three seasonal menus (seafood, vegetable, game), book a year ahead.', must_order: 'The seasonal menu (it\'s set)' }
+      ],
+      guides: [
+        { title: 'Copenhagen on bicycle', category: 'Hidden gems', summary: 'How to use Copenhagen\'s 400 km of bike lanes — rules, where to rent, the loop to do.', highlights: ['Donkey Republic bikes €15/day', 'Bridges of Christianshavn loop', 'Bike to Refshaleøen for street food', 'Don\'t cycle drunk (it\'s a fine)'] },
+        { title: 'The Refshaleøen Saturday', category: 'Hidden gems', summary: 'The industrial harbour-side has become Copenhagen\'s coolest district. The day plan.', highlights: ['10am: bike from town', 'Reffen street food market', 'CopenHot harbour sauna', 'Drinks at La Banchina'] },
+        { title: 'New Nordic in 5 restaurants', category: 'Food', summary: 'Beyond Noma — five next-generation Danish restaurants worth the spend.', highlights: ['Geranium (3 Michelin stars)', 'Alouette (1 star, edgier)', 'Restaurant Silberbauers (Austrian-Danish)', 'Pomp & Cirkus (small plates)'] },
+        { title: 'Copenhagen on €80 a day', category: 'Hidden gems', summary: 'The cheapest possible weekend — hostel, bike, smørrebrød, free sights.', highlights: ['€42 hostel bed', '€15/day bike rental', 'Free Frederiksberg Garden', '€18 smørrebrød lunch'] }
+      ]
+    },
+    Dubrovnik: {
+      hotels: [
+        { name: 'Old Town Hostel Dubrovnik', neighbourhood: 'Old Town', vibe: '€30 dorm · inside the walls', description: 'A hostel inside the medieval walls — rooftop terrace, four-bed dorms, breakfast on the terrace.', price_per_night: 32, rating: 8.6 },
+        { name: 'Stari Grad Hotel', neighbourhood: 'Old Town', vibe: 'Boutique · 7 rooms', description: 'A seven-room boutique behind the Sponza Palace — rooftop terrace with the bell-tower view.', price_per_night: 165, rating: 9.0 },
+        { name: 'Hotel Berkeley', neighbourhood: 'Lapad', vibe: 'Family-run · pool · 30 rooms', description: 'A family-run hotel in Lapad bay (10 min bus from Old Town) — pool, cheaper than the walls.', price_per_night: 115, rating: 9.1 },
+        { name: 'Villa Dubrovnik', neighbourhood: 'St Jakov', vibe: 'Cliffside 5-star · sea view', description: 'A 56-suite cliffside hotel south of the Old Town — every room has a sea-view balcony.', price_per_night: 425, rating: 9.3 },
+        { name: 'Hotel Excelsior', neighbourhood: 'Ploče', vibe: '5-star · Old Town view · pool', description: 'A 5-star with the Old Town silhouette across the bay — sea-water pool, two restaurants.', price_per_night: 385, rating: 9.2 },
+        { name: 'Hotel More', neighbourhood: 'Lapad', vibe: 'Cave-bar 5-star', description: 'A 5-star with an underground cave bar inside the cliff — Adriatic view, infinity pool.', price_per_night: 295, rating: 9.2 },
+        { name: 'Boutique Hotel Kazbek', neighbourhood: 'Lapad', vibe: '16th-century summer villa', description: 'A 16th-century Dubrovnik nobles\' villa — eight rooms, pool, sea-view terraces.', price_per_night: 215, rating: 9.3 },
+        { name: 'Hotel Lero', neighbourhood: 'Lapad', vibe: 'Mid-range 4-star · pool', description: 'A reliable 4-star in Lapad with a pool — bus 4 to the Old Town in 10 minutes.', price_per_night: 125, rating: 8.8 }
+      ],
+      activities: [
+        { name: 'Walk the City Walls', category: 'Cultural', vibe: 'The 2 km medieval circuit', description: 'A 1.5-hour walk on the 25-metre-high walls — go at 8am or 17:00 to avoid heat and crowds.', price_per_person: 38, duration: '2 hours' },
+        { name: 'Lokrum Island ferry', category: 'Beach', vibe: '15-min boat · botanical garden', description: 'A 15-minute ferry to a car-free island — Iron Throne replica, salt lake, peacocks roaming.', price_per_person: 28, duration: '4 hours' },
+        { name: 'Kayak under the walls', category: 'Outdoor', vibe: 'Sea kayak · 3-hour tour', description: 'A guided sea kayak from Pile Beach around to Lokrum — swim stop at Betina Cave.', price_per_person: 45, duration: '3 hours' },
+        { name: 'Mount Srđ cable car', category: 'Outdoor', vibe: '4-min ride · the postcard view', description: 'A four-minute cable car to 412m above the city — the postcard photo, sunset is the time.', price_per_person: 22, duration: '2 hours' },
+        { name: 'Elaphiti islands boat trip', category: 'Beach', vibe: 'Three islands · 8 hours', description: 'A day-boat to Koločep, Lopud, Šipan — swim at three islands, fish lunch on board.', price_per_person: 65, duration: '8 hours' },
+        { name: 'Game of Thrones walking tour', category: 'Cultural', vibe: 'King\'s Landing locations · 2 hours', description: 'King\'s Landing through the show — the Red Keep, Cersei\'s Walk of Shame steps, Blackwater Bay.', price_per_person: 35, duration: '2 hours' },
+        { name: 'Konavle valley wine tasting', category: 'Food', vibe: 'Family vineyards · 25 min south', description: 'A driver takes you to two family-run Konavle vineyards — Plavac Mali wines, lunch.', price_per_person: 85, duration: '6 hours' },
+        { name: 'Banje Beach evening', category: 'Beach', vibe: '€5 lounger · Old Town view', description: 'A pebble beach right next to the Old Town walls — loungers €5, beach bar after.', price_per_person: 8, duration: '4 hours' }
+      ],
+      restaurants: [
+        { name: 'Konoba Lady Pi-Pi', cuisine: 'Croatian · grill', vibe: 'Open-fire grill · 30 seats', price_range: '€€€', description: 'A wood-fired Croatian konoba on a high terrace above the Old Town — book 24 hours ahead.', must_order: 'Mixed meat grill + Plavac Mali' },
+        { name: 'Buffet Škola', cuisine: 'Sandwiches', vibe: 'Cheapest in the walls · €6 lunch', price_range: '€', description: 'A two-room sandwich shop near the cathedral — €6 for a giant pršut (prosciutto) baguette.', must_order: 'Pršut + cheese sandwich + a Karlovačko' },
+        { name: 'Restaurant 360°', cuisine: 'Modern Croatian', vibe: 'One Michelin star · on the walls', price_range: '€€€€', description: 'Built into the city walls — terrace dining, modern Croatian tasting, one Michelin star.', must_order: 'The 5-course tasting + Pošip wine' },
+        { name: 'Konoba Dubrava', cuisine: 'Croatian · peka', vibe: 'Slow-cook under-the-bell', description: 'A 20-minute drive to the village of Bosanka — peka (octopus or veal slow-cooked under a metal bell) for two, ordered 3 hours ahead.', price_range: '€€€', must_order: 'Peka pod pekom (book 3 hrs ahead)' }
+      ],
+      guides: [
+        { title: 'When to do the City Walls', category: 'Hidden gems', summary: 'It\'s the must-do — but at the wrong time it\'s 35°C and rammed. The trick.', highlights: ['8:00 entry (just opened, empty)', '17:00 entry (sunset light, cooler)', 'Avoid: 10:00–16:00 (cruise crowds)', 'Pre-pay online to skip the queue'] },
+        { title: 'Three islands · ranked', category: 'Beaches', summary: 'Lokrum, the Elaphitis, Lopud — which day boat is worth it.', highlights: ['Lokrum: half day, easy ferry', 'Elaphitis: full day, 3 islands', 'Mljet: long day, national park', 'Skip: Cavtat (too built up)'] },
+        { title: 'Dubrovnik on €60 a day', category: 'Hidden gems', summary: 'In Croatia\'s most expensive city — yes it\'s possible.', highlights: ['€32 hostel bed', '€6 Buffet Škola sandwich', '€2 ice cream at Dolce Vita', 'Free swimming at Šulić beach'] },
+        { title: 'Skip the cruise-ship hours', category: 'Hidden gems', summary: 'When the ships are in port (10am-4pm), the Old Town is unbearable. Plan accordingly.', highlights: ['Check cruise schedule at portdubrovnik.hr', 'Walk walls at 8am or 17:00', 'Lunch on Lokrum island', 'Dinner reservations 19:00 sharp'] }
+      ]
+    },
+    Amalfi: {
+      hotels: [
+        { name: 'Pensione Casa del Mare', neighbourhood: 'Praiano', vibe: 'Family pension · €80 sea view', description: 'A nine-room family-run pension in cheap-Amalfi Praiano — every room faces the sea.', price_per_night: 92, rating: 9.0 },
+        { name: 'Hotel Marincanto', neighbourhood: 'Positano', vibe: 'Cliffside 4-star · steps to the beach', description: 'A 30-room cliffside hotel — straight stairs down to Spiaggia Grande, breakfast on the terrace.', price_per_night: 245, rating: 9.1 },
+        { name: 'Hotel Santa Caterina', neighbourhood: 'Amalfi', vibe: '5-star · sea-water lift to the beach', description: 'A family-owned 5-star on the cliff — a lift cut through the rock takes you to a private beach club.', price_per_night: 685, rating: 9.4 },
+        { name: 'Le Sirenuse', neighbourhood: 'Positano', vibe: '5-star · pink Positano palazzo', description: 'The iconic pink palace of Positano — La Sponda restaurant (one Michelin star), Franco\'s Bar.', price_per_night: 1085, rating: 9.5 },
+        { name: 'Hotel Caruso', neighbourhood: 'Ravello', vibe: 'Belmond · Ravello sky-pool', description: 'A 1000-foot-up infinity pool that looks like it falls into the sea — the most photographed pool in Italy.', price_per_night: 985, rating: 9.6 },
+        { name: 'Hotel Villa Cimbrone', neighbourhood: 'Ravello', vibe: 'Historic villa · Terrace of Infinity', description: 'A 12th-century villa with the Terrazza dell\'Infinito — Greta Garbo hid here in 1938.', price_per_night: 685, rating: 9.3 },
+        { name: 'Casa Angelina', neighbourhood: 'Praiano', vibe: 'Adults-only · white design', description: 'A white-on-white design hotel in Praiano — adults-only, sea-view pool, glass-walled showers.', price_per_night: 545, rating: 9.4 },
+        { name: 'Hotel Margherita', neighbourhood: 'Praiano', vibe: 'Cheaper · 27 rooms · pool', description: 'A 27-room 4-star in the cheaper Praiano — pool, sea view, restaurant on the cliff.', price_per_night: 215, rating: 9.0 }
+      ],
+      activities: [
+        { name: 'Path of the Gods hike', category: 'Outdoor', vibe: '4-hour cliff hike · Bomerano to Nocelle', description: 'The famous Sentiero degli Dei — Bomerano to Nocelle, 7 km, the most beautiful coastal hike in Italy.', price_per_person: 0, duration: '5 hours' },
+        { name: 'Capri private boat day', category: 'Beach', vibe: 'Skipper · 8 hours · €600 boat', description: 'A skippered gozzo boat to Capri — Blue Grotto, Faraglioni rocks, lunch in Marina Piccola.', price_per_person: 145, duration: '8 hours' },
+        { name: 'Amalfi to Positano boat', category: 'Beach', vibe: 'Public ferry · 35 min · €15', description: 'The cheapest way to see the coast — public ferry Amalfi-Positano, 35 minutes, runs hourly.', price_per_person: 15, duration: '1 hour' },
+        { name: 'Lemon-grove tour with limoncello', category: 'Food', vibe: '2-hour walk · five-generation farm', description: 'A walk through a lemon grove in Maiori with the family who run it — five tastings of limoncello.', price_per_person: 35, duration: '2 hours' },
+        { name: 'Ravello concert · Villa Rufolo', category: 'Cultural', vibe: 'Summer classical music · cliff stage', description: 'July–August chamber music on a stage perched over the sea — Wagner came here in 1880.', price_per_person: 45, duration: '2 hours' },
+        { name: 'Pompeii + Vesuvius combo', category: 'Cultural', vibe: 'Half a day · 1 hour from Amalfi', description: 'A day trip via Sorrento — Pompeii ruins in the morning, Vesuvius crater hike in the afternoon.', price_per_person: 85, duration: '9 hours' },
+        { name: 'Lemon cake cooking class', category: 'Food', vibe: 'Make the delizia al limone', description: 'A two-hour class to make the famous Amalfi lemon cake — eat it on the terrace afterwards.', price_per_person: 65, duration: '2 hours' },
+        { name: 'Marina di Praia swim', category: 'Beach', vibe: 'Hidden cove · stairs · €10 lounger', description: 'A small fishing cove between Positano and Amalfi — beach loungers €10, two cliff-side restaurants.', price_per_person: 12, duration: '4 hours' }
+      ],
+      restaurants: [
+        { name: 'Lo Scoglio', cuisine: 'Seafood', vibe: 'Family-run · sea-deck dining', price_range: '€€€', description: 'On the rocks at Marina del Cantone — the family\'s zucchini spaghetti is a coast-wide cult dish.', must_order: 'Spaghetti alle zucchine + grilled sea bass' },
+        { name: 'Pizzeria Donna Rosa', cuisine: 'Pizza · pasta', vibe: 'Montepertuso village · sunset terrace', price_range: '€€', description: 'A pizzeria in the village above Positano — accessed by a 700-step stair, the view is the dinner.', must_order: 'Pizza Donna Rosa + a Negroamaro' },
+        { name: 'Da Vincenzo', cuisine: 'Seafood', vibe: 'Positano · family-run · 1958', price_range: '€€€', description: 'A 1958 Positano institution — wood-burning oven, fish from the morning\'s boat, lemon-coated everything.', must_order: 'Linguine al limone + grilled prawns' },
+        { name: 'La Sponda · Le Sirenuse', cuisine: 'Tasting · Italian', vibe: 'One Michelin star · 400 candles', price_range: '€€€€', description: 'Inside Le Sirenuse, lit by 400 candles every night — chef Gennaro Russo\'s Mediterranean tasting.', must_order: 'The 7-course Costa d\'Amalfi tasting' }
+      ],
+      guides: [
+        { title: 'Where to base yourself', category: 'Hidden gems', summary: 'Positano vs Amalfi vs Praiano vs Ravello — which town for what kind of weekend.', highlights: ['Positano: most photogenic, most expensive', 'Amalfi: most central, busy', 'Praiano: quietest, sea-view villas', 'Ravello: above the coast, fewer crowds'] },
+        { title: 'The Path of the Gods, demystified', category: 'Hidden gems', summary: 'How to actually do the famous hike — direction, time, transport.', highlights: ['Start: Bomerano (bus from Amalfi)', 'End: Nocelle (steps down to Positano)', 'Direction: Bomerano → Nocelle (downhill)', 'Take: water, hat, boots, snack'] },
+        { title: 'When (not) to come', category: 'Hidden gems', summary: 'July–August is hot, busy, expensive. The shoulder months are the move.', highlights: ['May: 22°C, half price, blooming', 'June: perfect (third week)', 'July: tourist apocalypse', 'October: still warm, almost empty'] },
+        { title: 'Capri from Amalfi · day trip', category: 'Beaches', summary: 'The ferry, the Blue Grotto, what to skip.', highlights: ['Amalfi → Capri ferry 35 min', 'Skip: Blue Grotto queue (90 min)', 'Do: Marina Piccola swim', 'Lunch: Aurora in Capri town'] }
+      ]
+    },
+    Santorini: {
+      hotels: [
+        { name: 'Caveland Hostel', neighbourhood: 'Karterados', vibe: '€25 dorm · in a cave', description: 'A converted winery in Karterados — dorms in cave rooms, hammock terrace, ten minutes to Fira.', price_per_night: 28, rating: 8.7 },
+        { name: 'Hotel Anteliz Suites', neighbourhood: 'Fira', vibe: 'Cliffside suites · caldera view', description: 'A 14-suite hotel on the Fira cliff — every suite has a caldera-view jacuzzi terrace.', price_per_night: 285, rating: 9.2 },
+        { name: 'Astra Suites', neighbourhood: 'Imerovigli', vibe: 'Cycladic suites · infinity pool', description: 'A 26-suite Cycladic hotel in Imerovigli — the village with the best sunset view on the island.', price_per_night: 445, rating: 9.3 },
+        { name: 'Grace Hotel Santorini', neighbourhood: 'Imerovigli', vibe: '5-star · 21 cliffside suites', description: 'Auberge Resorts\' 21-suite cliff hotel — the most-Instagrammed infinity pool on the island.', price_per_night: 985, rating: 9.5 },
+        { name: 'Mystique', neighbourhood: 'Oia', vibe: '5-star · Luxury Collection · cave suites', description: 'A 22-suite Luxury Collection in Oia — cave bar carved into the cliff, sunset-aligned suites.', price_per_night: 1145, rating: 9.6 },
+        { name: 'Canaves Oia Suites', neighbourhood: 'Oia', vibe: 'Cliffside · jacuzzis · sunset', description: 'A 17-suite hotel in Oia — heated outdoor jacuzzis with sunset views, two restaurants.', price_per_night: 685, rating: 9.4 },
+        { name: 'Andronis Boutique Hotel', neighbourhood: 'Oia', vibe: 'Suite + cave pool', description: 'A 23-suite Oia hotel with a saltwater infinity pool — Lycabettus restaurant, the famous sunset bar.', price_per_night: 785, rating: 9.5 },
+        { name: 'Vedema, a Luxury Collection', neighbourhood: 'Megalochori', vibe: '400-year-old village · 5-star', description: 'A 5-star inside a 400-year-old winery village in Megalochori — quieter side, vineyards, two pools.', price_per_night: 545, rating: 9.3 }
+      ],
+      activities: [
+        { name: 'Caldera catamaran sunset cruise', category: 'Beach', vibe: 'Hot springs · Red Beach · sunset', description: 'A 5-hour catamaran from Vlychada — hot springs swim, Red Beach, Indian Rock, sunset from the water.', price_per_person: 95, duration: '5 hours' },
+        { name: 'Oia sunset walk', category: 'Cultural', vibe: 'Free · arrive 90 min early', description: 'The most-photographed sunset in Greece — get to the castle ruins by 18:30, leave by 21:00.', price_per_person: 0, duration: '2 hours' },
+        { name: 'Fira-Oia cliff hike', category: 'Outdoor', vibe: '10 km · 4 hours · the whole caldera', description: 'A four-hour walk along the entire caldera rim — Fira through Firostefani, Imerovigli to Oia.', price_per_person: 0, duration: '4 hours' },
+        { name: 'Wine tour · 3 wineries', category: 'Food', vibe: 'Volcanic soils · Assyrtiko · 4 hours', description: 'A driver and three winery tastings — Santo Wines, Venetsanos, Domaine Sigalas. The best Assyrtiko in Greece.', price_per_person: 95, duration: '5 hours' },
+        { name: 'Ancient Akrotiri ruins', category: 'Cultural', vibe: 'The Minoan Pompeii · 1600 BC', description: 'A Bronze Age city buried in volcanic ash, only 3% excavated — far less crowded than Pompeii.', price_per_person: 18, duration: '2 hours' },
+        { name: 'Volcano + hot springs boat trip', category: 'Outdoor', vibe: 'Nea Kameni crater · sulphur swim', description: 'A boat to Nea Kameni (the volcano) — climb to the crater, then swim in the warm sulphur springs.', price_per_person: 38, duration: '4 hours' },
+        { name: 'Greek-cooking class · Megalochori', category: 'Food', vibe: 'Make moussaka + tzatziki', description: 'A three-hour cooking class in Megalochori — moussaka, fava, baklava. Eat the dinner you cooked.', price_per_person: 85, duration: '3.5 hours' },
+        { name: 'Red Beach swim', category: 'Beach', vibe: 'Red volcanic cliffs · 30 min stairs', description: 'The famous red-cliff beach near Akrotiri — rocky underfoot, dramatic to look at, swim is short.', price_per_person: 0, duration: '3 hours' }
+      ],
+      restaurants: [
+        { name: 'Metaxi Mas', cuisine: 'Greek · taverna', vibe: 'Village taverna · cliff view', price_range: '€€', description: 'A cliff-side taverna in Exo Gonia (away from the tourist scrum) — moussaka, octopus, locals.', must_order: 'Cretan dakos + octopus + grilled lamb' },
+        { name: 'Lauda · Andronis Boutique', cuisine: 'Modern Greek', vibe: 'Caldera view · tasting menu', price_range: '€€€€', description: 'Chef Emmanuel Renaut\'s Aegean tasting menu — Oia sunset over your shoulder, the entire caldera below.', must_order: 'The Selene 7-course tasting' },
+        { name: 'To Psaraki', cuisine: 'Seafood', vibe: 'Vlychada harbour · fresh boat fish', price_range: '€€€', description: 'A working-fishing-harbour seafood place — the daily catch, grilled simply, no menu, no fuss.', must_order: 'The fish of the day + Assyrtiko' },
+        { name: 'Selene', cuisine: 'Modern Greek tasting', vibe: 'Pyrgos hilltop village', price_range: '€€€€', description: 'A 30-year-old fine-dining institution in Pyrgos — Greek heritage tasting menu, terrace dining.', must_order: 'The 6-course menu degustation' }
+      ],
+      guides: [
+        { title: 'Sunset hierarchy', category: 'Hidden gems', summary: 'Oia is the famous one — but it\'s a TikTok scrum. Three quieter alternatives.', highlights: ['Oia (the famous one, busy)', 'Imerovigli (next best, calmer)', 'Skaros Rock (free, hike 30 min)', 'Profitis Ilias (highest point)'] },
+        { title: 'Santorini for €100 a day (yes, possible)', category: 'Hidden gems', summary: 'The cave hostel + buses + €15 dinners. Santorini done without remortgaging.', highlights: ['€28 Caveland hostel bed', '€2 bus to Oia', 'Free cliff hike', '€15 souvlaki dinner in Karterados'] },
+        { title: 'Three beaches · ranked', category: 'Beaches', summary: 'Skip Red Beach. The three actually worth your time.', highlights: ['Perissa (black sand, big)', 'Vlychada (cliff-backed, quiet)', 'Pori (locals only, north)', 'Skip: Kamari (loud, family)'] },
+        { title: 'Day trip to Thirassia', category: 'Hidden gems', summary: 'The small caldera-side island Santorini was before tourism. Ferry, lunch, swim, return.', highlights: ['Ferry from Ammoudi (€5)', 'No cars on the island', 'Eat at To Petros', 'Last ferry: 18:00 sharp'] }
+      ]
+    },
+    Mykonos: {
+      hotels: [
+        { name: 'Paraga Beach Hostel', neighbourhood: 'Paraga', vibe: '€40 dorm · steps from Scorpios', description: 'The only proper hostel on Mykonos — minutes from Paraga and Paradise beach clubs.', price_per_night: 45, rating: 8.5 },
+        { name: 'Greco Philia', neighbourhood: 'Platis Gialos', vibe: 'Family-run · €130 sea view', description: 'A 20-room family hotel in Platis Gialos — pool, free shuttle to town, beach in walking distance.', price_per_night: 145, rating: 8.9 },
+        { name: 'Belvedere Hotel', neighbourhood: 'Mykonos Town', vibe: 'Boutique 5-star · pool · town', description: 'A 5-star a block from Little Venice — Matsuhisa restaurant, infinity pool, town nightlife at the door.', price_per_night: 425, rating: 9.2 },
+        { name: 'Cavo Tagoo Mykonos', neighbourhood: 'Tagoo', vibe: '5-star · cliff-edge infinity pool', description: 'A cliff hotel between Mykonos Town and Tourlos — infinity pool flowing into the Aegean, Tagoo restaurant.', price_per_night: 985, rating: 9.4 },
+        { name: 'Bill & Coo Suites', neighbourhood: 'Megali Ammos', vibe: 'Adults-only · 32 suites', description: 'A 32-suite, adults-only design hotel — Beefbar restaurant, sunset cocktail terrace.', price_per_night: 685, rating: 9.4 },
+        { name: 'Mykonos Grand Hotel', neighbourhood: 'Agios Ioannis', vibe: '5-star · 107 rooms · sunset side', description: 'A 5-star on the sunset side of the island — three pools, beach below, Aegean Restaurant.', price_per_night: 545, rating: 9.1 },
+        { name: 'Kivotos Mykonos', neighbourhood: 'Ornos', vibe: 'Boutique 5-star · 38 rooms', description: 'A Cycladic 5-star in Ornos bay — seven dining venues, four pools, three beaches in walking distance.', price_per_night: 785, rating: 9.3 },
+        { name: 'Mykonos Princess Hotel', neighbourhood: 'Agios Stefanos', vibe: 'Mid-range 4-star · €180', description: 'A 4-star in Agios Stefanos with a sea view — bus to town in 10 minutes, two pools.', price_per_night: 195, rating: 9.0 }
+      ],
+      activities: [
+        { name: 'Scorpios Saturday', category: 'Beach', vibe: 'Beach club · DJ from 16:00', description: 'Mykonos\' most famous beach club on Paraga — book a sun-bed (€100), arrive at 14:00, leave at 21:00.', price_per_person: 115, duration: '7 hours' },
+        { name: 'Delos archaeological site', category: 'Cultural', vibe: 'UNESCO ruins · 30-min ferry', description: 'A 30-minute ferry to the birthplace of Apollo — the most-significant Greek archaeological island.', price_per_person: 28, duration: '4 hours' },
+        { name: 'Sunset at Little Venice', category: 'Cultural', vibe: 'Free · cocktail at 180° bar', description: 'The famous 16th-century houses with the sea lapping at their walls — get a seat at 19:00 at Caprice.', price_per_person: 12, duration: '2 hours' },
+        { name: 'Catamaran cruise · Rhenia + Delos', category: 'Beach', vibe: '8-hour cruise · two islands · lunch', description: 'A day catamaran to Rhenia (deserted, for swimming) and Delos (ruins). All-inclusive lunch on board.', price_per_person: 145, duration: '8 hours' },
+        { name: 'Windmills + Little Venice walk', category: 'Cultural', vibe: 'Free · Mykonos Town · 2 hours', description: 'The five 16th-century windmills + the back-alleys of Chora — best at 8am before the cruise ships.', price_per_person: 0, duration: '2 hours' },
+        { name: 'Cooking class in Ano Mera', category: 'Food', vibe: 'Greek classics · 4 hours', description: 'A cooking class in the village of Ano Mera (10 km from town) — moussaka, fava, dakos, baklava.', price_per_person: 85, duration: '4 hours' },
+        { name: 'Paradise Beach by day', category: 'Beach', vibe: '€40 sun-bed · DJ all day', description: 'The original party beach — Tropicana bar, Paradise Beach Club, DJs from 14:00, sunset chaos.', price_per_person: 42, duration: '6 hours' },
+        { name: 'Quad-bike around the island', category: 'Outdoor', vibe: 'Rent for €40/day · circle the island', description: 'A rented quad-bike (everyone has one) to circle the island — Agios Sostis beach, Fokos, Panormos.', price_per_person: 45, duration: '6 hours' }
+      ],
+      restaurants: [
+        { name: 'Kounelas Fish Tavern', cuisine: 'Greek seafood', vibe: 'Cheaper · since 1979', price_range: '€€', description: 'A 1979 family-run fish taverna behind the harbour — pricier than Athens, half the Mykonos average.', must_order: 'Grilled octopus + sea bass + Assyrtiko' },
+        { name: 'Spilia Seaside', cuisine: 'Seafood · grotto', vibe: 'Inside a sea cave', price_range: '€€€€', description: 'A restaurant cut into a sea-cliff at Agia Anna — the cave is the dining room, the lobsters are alive.', must_order: 'Lobster pasta + sea bass tartare' },
+        { name: 'Joanna\'s Niko\'s Place', cuisine: 'Greek taverna', vibe: 'Megali Ammos · family-run', price_range: '€€', description: 'A long-running family taverna near Megali Ammos — Greek classics, no menu in English, locals only.', must_order: 'Moussaka + Greek salad + retsina' },
+        { name: 'Matsuhisa Mykonos', cuisine: 'Japanese · Nobu', vibe: 'Belvedere Hotel · sunset terrace', price_range: '€€€€', description: 'Nobu Matsuhisa\'s Mykonos outpost — sunset over Little Venice, miso black cod, sake.', must_order: 'Black cod miso + tuna tartare' }
+      ],
+      guides: [
+        { title: 'The five Mykonos beaches, ranked', category: 'Beaches', summary: 'Party, family, quiet, sunset, swim — pick the right one for the day.', highlights: ['Paraga (party, Scorpios)', 'Platis Gialos (family, calm)', 'Agios Sostis (no facilities, prettiest)', 'Agios Ioannis (sunset)'] },
+        { title: 'Sunset cocktail · which bar', category: 'Nightlife', summary: 'Three sunset bars at three prices — €12, €25, €40.', highlights: ['Caprice (Little Venice, €12)', 'Skandinavian Bar (loud, €15)', '180° Sunset Bar (cliff, €25)', 'Scorpios (the spendy one)'] },
+        { title: 'Mykonos on €150 a day', category: 'Hidden gems', summary: 'Yes, it\'s possible. The cheap hostel + bus + Greek taverna route.', highlights: ['€45 Paraga hostel bed', 'Bus pass €2', '€18 Kounelas dinner', 'Free Little Venice sunset'] },
+        { title: 'Delos: why it\'s actually worth it', category: 'Hidden gems', summary: 'The ferry is €28 and the queue is short — Delos is the better archaeological day than Pompeii.', highlights: ['Birthplace of Apollo', 'Avenue of Lions', 'House of Dionysus mosaics', 'Last ferry back: 15:00 sharp'] }
+      ]
+    }
+  };
+
   function fallbackHotels(city) {
-    return [
-      { name: city + ' Studio · Old Town', neighbourhood: 'Historic centre', vibe: 'Studio · walk everywhere', description: 'A serviced studio on a quiet square — the cheapest way to live like a local for a weekend.', price_per_night: 78, rating: 8.4 },
-      { name: city + ' River Rooms', neighbourhood: 'Riverside', vibe: 'Bright rooms · river view', description: 'A small guesthouse on the river — bicycles at the door, espresso in the courtyard.', price_per_night: 115, rating: 8.7 },
-      { name: 'The ' + city + ' House', neighbourhood: 'Centre', vibe: 'Townhouse boutique', description: 'A nine-room townhouse — original tile floors, a real bar, an honest breakfast.', price_per_night: 165, rating: 9.0 },
-      { name: city + ' Garden Hideaway', neighbourhood: 'Quiet quarter', vibe: 'Calm courtyard rooms', description: 'A converted townhouse with a leafy courtyard and rooftop sundowner bar.', price_per_night: 195, rating: 9.1 },
-      { name: 'Maison de ' + city, neighbourhood: 'Design district', vibe: 'Design hotel', description: 'A design-led stay with a sculptural lobby, rooftop pool and the city\'s best espresso martini.', price_per_night: 240, rating: 9.0 },
-      { name: city + ' Boutique · Rooftop', neighbourhood: 'Centre', vibe: 'Rooftop pool · skyline', description: 'Quietly the best rooftop pool in town — for swimming at 7am before the city wakes.', price_per_night: 320, rating: 9.2 },
-      { name: 'The ' + city + ' Grand', neighbourhood: 'Best address', vibe: 'Heritage luxury', description: 'A grand 5-star with marble baths, original frescoes and a Michelin tasting menu downstairs.', price_per_night: 480, rating: 9.4 },
-      { name: 'Villa ' + city + ' Privée', neighbourhood: 'Edge of town', vibe: 'Private villa · pool', description: 'A private villa with infinity pool, butler service and a chef on call.', price_per_night: 780, rating: 9.6 }
-    ];
+    return (cityProfiles[city] && cityProfiles[city].hotels)
+      ? cityProfiles[city].hotels.slice()
+      : genericHotels(city);
   }
   function fallbackActivities(city) {
-    return [
-      { name: 'Old town walking tour', category: 'Tour', vibe: 'Half a day, all the secrets', description: 'A local-led walk that skips the tourist traps and ends on the best terrace in town.', price_per_person: 28, duration: '3 hours' },
-      { name: city + ' food crawl', category: 'Food', vibe: 'Six stops, six bites, one storyteller', description: 'Hidden tavernas, family-run markets and the perfect espresso to finish.', price_per_person: 65, duration: '3.5 hours' },
-      { name: 'Sunset rooftop experience', category: 'Nightlife', vibe: 'A drink with the skyline', description: 'Skip the queue at the city\'s best rooftop and watch the rooftops turn gold.', price_per_person: 42, duration: '2 hours' },
-      { name: 'Coastal day trip', category: 'Outdoor', vibe: 'An hour out, a different world', description: 'Half-day trip to the most beautiful coastline within reach of ' + city + '.', price_per_person: 89, duration: '6 hours' },
-      { name: 'Private boat afternoon', category: 'Beach', vibe: 'Cooler of rosé, three swims', description: 'A skipper, a small boat, the coves the day-trippers never reach.', price_per_person: 120, duration: '4 hours' },
-      { name: city + ' museum highlights', category: 'Cultural', vibe: 'The masterpieces, no queue', description: 'An art historian shows you only the pieces that matter, in under two hours.', price_per_person: 55, duration: '2 hours' },
-      { name: 'Hidden bar crawl', category: 'Nightlife', vibe: 'Three speakeasies, one unmarked door', description: 'Three of the city\'s best-hidden cocktail rooms — bookings impossible without a guide.', price_per_person: 78, duration: '3 hours' },
-      { name: 'Local market breakfast', category: 'Food', vibe: 'Breakfast where the locals eat', description: 'Pastries, espresso and the market\'s seasonal best — finished by 10am.', price_per_person: 35, duration: '2 hours' }
-    ];
+    return (cityProfiles[city] && cityProfiles[city].activities)
+      ? cityProfiles[city].activities.slice()
+      : genericActivities(city);
   }
   function fallbackRestaurants(city) {
+    return (cityProfiles[city] && cityProfiles[city].restaurants)
+      ? cityProfiles[city].restaurants.slice()
+      : genericRestaurants(city);
+  }
+
+  // Truly minimal fallback — only used for cities we haven't profiled yet.
+  // Five cities not yet profiled: Madrid, Stockholm, Berlin, Munich, Amsterdam, etc.
+  // The departure cities don't open detail pages, so this is mostly cover.
+  function genericHotels(city) {
     return [
-      { name: city + ' family trattoria', cuisine: 'Local', vibe: 'Tiny family room, no menu', price_range: '€€', description: 'Six tables, three dishes a day, all of it perfect.', must_order: 'The pasta of the day' },
-      { name: 'The harbour table', cuisine: 'Seafood', vibe: 'Cliffside, sea view', price_range: '€€€', description: 'A long lunch with one fish and one bottle of wine.', must_order: 'Whole grilled fish' },
-      { name: city + ' Bistro', cuisine: 'Modern European', vibe: 'Buzzing bistro · open kitchen', description: 'Open kitchen, short menu, very good wine list.', price_range: '€€€', must_order: 'The tasting plate' },
-      { name: 'Maison ' + city, cuisine: 'Tasting', vibe: 'Tasting menu, ten seats', price_range: '€€€€', description: 'A chef who only cooks for ten people at a time.', must_order: 'The full tasting menu' }
+      { name: 'Central Hostel', neighbourhood: 'Centre', vibe: 'Cheapest dorm', description: 'A clean budget hostel in the city centre. Best for weekend trips on a small budget.', price_per_night: 32, rating: 8.4 },
+      { name: 'Boutique Townhouse', neighbourhood: 'Historic quarter', vibe: 'Small boutique', description: 'A small boutique in a historic building, walkable to all the main sights.', price_per_night: 145, rating: 9.0 },
+      { name: 'Design Hotel', neighbourhood: 'Modern district', vibe: 'Design-led 4-star', description: 'A design-led 4-star with rooftop bar and excellent breakfast.', price_per_night: 215, rating: 9.1 },
+      { name: 'Grand Hotel', neighbourhood: 'Best address', vibe: '5-star · heritage', description: 'The city\'s heritage 5-star. Marble baths, spa, fine dining downstairs.', price_per_night: 425, rating: 9.3 }
+    ];
+  }
+  function genericActivities(city) {
+    return [
+      { name: 'Free walking tour', category: 'Tour', vibe: '10am · 2 hours · tip-based', description: 'A free walking tour of the centre, departing daily at 10am from the main square.', price_per_person: 0, duration: '2 hours' },
+      { name: 'Local food tour', category: 'Food', vibe: 'Six stops · three hours', description: 'A local food tour with six tastings — the city\'s key dishes and where to find them.', price_per_person: 55, duration: '3 hours' },
+      { name: 'River boat cruise', category: 'Outdoor', vibe: '60-minute cruise', description: 'A 60-minute boat trip along the river — best at sunset.', price_per_person: 18, duration: '1 hour' },
+      { name: 'Museum highlights tour', category: 'Cultural', vibe: 'The main museum, condensed', description: 'A two-hour tour of the city\'s main museum with an art historian.', price_per_person: 28, duration: '2 hours' }
+    ];
+  }
+  function genericRestaurants(city) {
+    return [
+      { name: 'Local bistro', cuisine: 'Local', vibe: 'Friendly · daily menu', price_range: '€€', description: 'A friendly bistro with a daily three-course menu — the dish list changes weekly.', must_order: 'The daily plate of the day' },
+      { name: 'Market hall stalls', cuisine: 'Various', vibe: 'Food hall · ten stalls', price_range: '€', description: 'The city\'s food market hall — pick from ten stalls, eat at communal tables.', must_order: 'Whatever has the longest queue' }
     ];
   }
   
@@ -6676,11 +7243,13 @@
   }
   
   function fallbackGuides(city) {
+    if (cityProfiles[city] && cityProfiles[city].guides) {
+      return cityProfiles[city].guides.slice();
+    }
+    // Generic fallback only for cities we haven't yet profiled
     return [
-      { title: 'Where to drink in ' + city, category: 'Nightlife', summary: 'The best bars, by time of evening — sunset terrace, late-night cocktail, last-call dive.', highlights: ['Hidden rooftop terrace', 'Speakeasy with no sign', 'The locals\' favourite vermouth bar'] },
-      { title: 'The food map of ' + city, category: 'Food', summary: 'A neighbourhood-by-neighbourhood walk through the city\'s best plates.', highlights: ['The market breakfast', 'A family-run lunch', 'The chef\'s tasting room'] },
-      { title: city + ' for hidden corners', category: 'Hidden gems', summary: 'Places the guidebooks skip — quiet courtyards, secret viewpoints, the slowest cafés.', highlights: ['Forgotten cloister garden', 'Local-only viewpoint', 'A bookshop café'] },
-      { title: 'A luxury weekend in ' + city, category: 'Luxury', summary: 'How to do ' + city + ' the way it deserves — spa, suite, chauffeur, chef.', highlights: ['Private cliff suite', 'Chef\'s table', 'Helicopter sunset'] }
+      { title: city + ' essentials', category: 'Hidden gems', summary: 'Three things worth doing in ' + city + ' that don\'t cost much.', highlights: ['The main square at sunset', 'A local food market', 'The cheap viewpoint'] },
+      { title: 'Where to eat in ' + city, category: 'Food', summary: 'The dishes the city is known for and where to find them affordably.', highlights: ['The breakfast spot', 'A €15 lunch', 'A €25 dinner'] }
     ];
   }
   
