@@ -2227,7 +2227,9 @@
       opacity: 0.7;
       mix-blend-mode: screen;
     }
-    /* Side gleam — light catches the edge */
+    /* Side gleam — light catches the edge.
+       pointer-events:none AND a low z-index so this decorative layer
+       never sits above clickable content inside the card. */
     .glass-card::after {
       content: '';
       position: absolute;
@@ -2237,7 +2239,10 @@
       pointer-events: none;
       opacity: 0.4;
       mix-blend-mode: overlay;
+      z-index: 0;
     }
+    .glass-card::before { z-index: 0; }
+    .glass-card > * { position: relative; z-index: 1; }
     .glass-pill {
       position: relative;
       background:
@@ -4118,13 +4123,16 @@
       100% { transform: translate(1%, 2%)   scale(1.03) rotate(0.2deg); }
     }
 
-    /* Sections sit above the ambient so the orbs glow through. Most
-       sections drop their solid backgrounds and use transparent frosted
-       veils so the colourful ambient bleeds through every glass card. */
-    section, header, footer, nav, .hero, .results, .detail, .story-reader {
+    /* Sections sit above the ambient so the orbs glow through. We ONLY
+       touch in-flow sections — fixed-positioned overlays (nav, modals,
+       drawers, results, detail, story-reader, loading) must keep their
+       own positioning. Overriding those broke every modal / click target. */
+    section, header, footer, main {
       position: relative;
       z-index: 1;
     }
+    /* Hero stays at flow level but keeps its overflow-hidden behaviour */
+    .hero { position: relative; z-index: 1; }
     
     /* Sections as frosted veils — the body ambient now bleeds through
        every section. Each section adds its own subtle tint + backdrop
