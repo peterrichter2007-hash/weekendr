@@ -2200,19 +2200,19 @@
     .glass-card {
       position: relative;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.08) 100%),
-        rgba(255, 255, 253, 0.45);
-      backdrop-filter: saturate(2.4) blur(80px) brightness(1.12);
-      -webkit-backdrop-filter: saturate(2.4) blur(80px) brightness(1.12);
+        linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.22) 35%, rgba(255,255,255,0.12) 100%),
+        rgba(255, 255, 253, 0.70);
+      backdrop-filter: saturate(1.6) blur(28px);
+      -webkit-backdrop-filter: saturate(1.6) blur(28px);
       border: 1px solid rgba(255, 255, 255, 0.7);
       border-radius: 28px;
       box-shadow:
         inset 0 1.5px 0 rgba(255, 255, 255, 1),
         inset 0 -1px 0 rgba(18, 17, 15, 0.06),
         0 0 0 1px rgba(18, 17, 15, 0.04),
-        0 24px 56px -16px rgba(18, 17, 15, 0.28),
-        0 60px 120px -24px rgba(18, 17, 15, 0.22);
-      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+        0 20px 48px -16px rgba(18, 17, 15, 0.24);
+      transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+      contain: paint;
     }
     /* Specular top-edge highlight (Vision-Pro "wet edge") */
     .glass-card::before {
@@ -2286,27 +2286,25 @@
     .cg-ambient .orb {
       position: absolute;
       border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.55;
-      will-change: transform;
+      filter: blur(60px);
+      opacity: 0.45;
     }
+    /* Animations removed — `filter: blur` is GPU-expensive and animating
+       a blurred radial gradient burns frames. Static orbs look identical. */
     .cg-ambient .orb.a {
       top: -10%; left: -8%;
       width: 520px; height: 520px;
       background: radial-gradient(circle, rgba(217, 184, 130, 0.55) 0%, transparent 60%);
-      animation: orbFloat 22s ease-in-out infinite;
     }
     .cg-ambient .orb.b {
       bottom: -15%; right: -10%;
       width: 600px; height: 600px;
       background: radial-gradient(circle, rgba(195, 158, 110, 0.4) 0%, transparent 60%);
-      animation: orbFloat 28s ease-in-out infinite -8s;
     }
     .cg-ambient .orb.c {
       top: 30%; right: 35%;
       width: 380px; height: 380px;
       background: radial-gradient(circle, rgba(255, 232, 196, 0.5) 0%, transparent 60%);
-      animation: orbFloat 26s ease-in-out infinite -14s;
     }
     @keyframes orbFloat {
       0%, 100% { transform: translate(0, 0) scale(1); }
@@ -2386,14 +2384,14 @@
       align-items: stretch;
     }
     
-    /* Form glass panel — hero-grade Vision-Pro surface */
+    /* Form glass panel — strong but performant */
     .cg-panel {
       position: relative;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.18) 28%, rgba(255,255,255,0.06) 100%),
-        rgba(255, 255, 253, 0.40);
-      backdrop-filter: saturate(2.5) blur(90px) brightness(1.14);
-      -webkit-backdrop-filter: saturate(2.5) blur(90px) brightness(1.14);
+        linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.22) 28%, rgba(255,255,255,0.10) 100%),
+        rgba(255, 255, 253, 0.72);
+      backdrop-filter: saturate(1.6) blur(36px);
+      -webkit-backdrop-filter: saturate(1.6) blur(36px);
       border: 1px solid rgba(255, 255, 255, 0.78);
       border-radius: 32px;
       padding: clamp(1.5rem, 2.6vw, 2.2rem);
@@ -2401,8 +2399,8 @@
         inset 0 1.5px 0 rgba(255, 255, 255, 1),
         inset 0 -1px 0 rgba(18, 17, 15, 0.06),
         0 0 0 1px rgba(18, 17, 15, 0.04),
-        0 40px 80px -20px rgba(18, 17, 15, 0.32),
-        0 80px 160px -32px rgba(18, 17, 15, 0.22);
+        0 32px 64px -20px rgba(18, 17, 15, 0.28);
+      contain: paint;
     }
     .cg-panel::before {
       content: '';
@@ -2826,19 +2824,17 @@
       position: relative;
       aspect-ratio: 16 / 11;
       background:
-        radial-gradient(circle at 30% 20%, rgba(248, 220, 168, 0.32) 0%, transparent 50%),
-        radial-gradient(circle at 70% 70%, rgba(196, 215, 224, 0.28) 0%, transparent 50%),
-        linear-gradient(135deg, rgba(255, 255, 253, 0.55) 0%, rgba(255, 255, 253, 0.35) 100%);
-      backdrop-filter: saturate(2.4) blur(80px) brightness(1.12);
-      -webkit-backdrop-filter: saturate(2.4) blur(80px) brightness(1.12);
+        radial-gradient(circle at 30% 20%, rgba(248, 220, 168, 0.28) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(196, 215, 224, 0.22) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-2) 0%, var(--bg-3) 100%);
       border: 1px solid rgba(255, 255, 255, 0.78);
       box-shadow:
         inset 0 1.5px 0 rgba(255, 255, 255, 1),
         inset 0 -1px 0 rgba(18, 17, 15, 0.06),
         0 0 0 1px rgba(18, 17, 15, 0.04),
-        0 40px 80px -20px rgba(18, 17, 15, 0.32),
-        0 80px 160px -32px rgba(18, 17, 15, 0.22);
+        0 32px 64px -20px rgba(18, 17, 15, 0.28);
       border-radius: 32px;
+      contain: layout paint;
     }
     .map-frame::after {
       content: '';
@@ -4098,29 +4094,20 @@
       background: var(--bg);
       position: relative;
     }
-    /* Fixed ambient atmosphere behind everything — vibrant orbs that the
-       glass layers refract. Without this colour the blur is invisible. */
+    /* Fixed ambient atmosphere behind everything — static gradient,
+       NO animation (animated radial gradients = constant repaint = lag).
+       The warmth is provided by the gradient itself, not motion. */
     body::before {
       content: '';
       position: fixed;
-      inset: -10%;
+      inset: 0;
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(ellipse 70vw 60vh at 8% 12%, rgba(234, 196, 138, 0.85) 0%, transparent 50%),
-        radial-gradient(ellipse 65vw 55vh at 92% 22%, rgba(214, 156, 90, 0.55) 0%, transparent 50%),
-        radial-gradient(ellipse 75vw 65vh at 18% 65%, rgba(186, 218, 232, 0.65) 0%, transparent 55%),
-        radial-gradient(ellipse 80vw 70vh at 85% 78%, rgba(218, 184, 230, 0.45) 0%, transparent 55%),
-        radial-gradient(ellipse 60vw 50vh at 50% 100%, rgba(248, 218, 168, 0.55) 0%, transparent 55%),
-        radial-gradient(ellipse 50vw 45vh at 0% 92%, rgba(196, 158, 102, 0.40) 0%, transparent 55%);
-      animation: ambientDrift 40s ease-in-out infinite alternate;
-      will-change: transform;
-    }
-    @keyframes ambientDrift {
-      0%   { transform: translate(0, 0)     scale(1)    rotate(0deg);  }
-      33%  { transform: translate(2%, -2%)  scale(1.06) rotate(0.5deg); }
-      66%  { transform: translate(-2%, 1.5%) scale(0.98) rotate(-0.4deg); }
-      100% { transform: translate(1%, 2%)   scale(1.03) rotate(0.2deg); }
+        radial-gradient(ellipse 70vw 60vh at 8% 12%, rgba(234, 196, 138, 0.55) 0%, transparent 55%),
+        radial-gradient(ellipse 70vw 60vh at 92% 22%, rgba(214, 156, 90, 0.32) 0%, transparent 55%),
+        radial-gradient(ellipse 80vw 70vh at 18% 70%, rgba(186, 218, 232, 0.40) 0%, transparent 60%),
+        radial-gradient(ellipse 70vw 60vh at 85% 82%, rgba(218, 184, 230, 0.26) 0%, transparent 60%);
     }
 
     /* Sections sit above the ambient so the orbs glow through. We ONLY
@@ -4134,63 +4121,47 @@
     /* Hero stays at flow level but keeps its overflow-hidden behaviour */
     .hero { position: relative; z-index: 1; }
     
-    /* Sections as frosted veils — the body ambient now bleeds through
-       every section. Each section adds its own subtle tint + backdrop
-       blur so the colour underneath is softened but never blocked. */
+    /* Sections — opaque colour layers. NO backdrop-filter at this scale,
+       it kills performance on Vercel/mid-range hardware. The body ambient
+       provides the warm atmosphere; glass cards do the focused blur. */
     .manifesto {
-      background: linear-gradient(180deg, rgba(255,255,253,0.45) 0%, rgba(255,255,253,0.30) 100%);
-      backdrop-filter: blur(36px) saturate(1.6);
-      -webkit-backdrop-filter: blur(36px) saturate(1.6);
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
       border-bottom: 1px solid var(--hairline);
     }
     .editorial {
       background:
-        radial-gradient(circle at 85% -10%, rgba(255,235,200,0.40) 0%, transparent 50%),
-        rgba(255,255,253,0.38);
-      backdrop-filter: blur(40px) saturate(1.6);
-      -webkit-backdrop-filter: blur(40px) saturate(1.6);
+        radial-gradient(ellipse 60% 50% at 85% -10%, rgba(255,225,180,0.40) 0%, transparent 65%),
+        var(--bg-2);
       border-bottom: 1px solid var(--hairline);
     }
     .collection {
-      background: rgba(255,255,253,0.30);
-      backdrop-filter: blur(40px) saturate(1.5);
-      -webkit-backdrop-filter: blur(40px) saturate(1.5);
+      background: var(--bg);
       border-bottom: 1px solid var(--hairline);
     }
     .collection.alt {
       background:
-        radial-gradient(circle at 15% 50%, rgba(248,220,180,0.32) 0%, transparent 55%),
-        rgba(255,255,253,0.42);
-      backdrop-filter: blur(40px) saturate(1.6);
-      -webkit-backdrop-filter: blur(40px) saturate(1.6);
+        radial-gradient(ellipse 50% 60% at 15% 50%, rgba(248,220,180,0.30) 0%, transparent 60%),
+        var(--bg-2);
       border-bottom: 1px solid var(--hairline);
     }
     .map-section {
       background:
-        radial-gradient(circle at 50% 0%, rgba(255,232,196,0.40) 0%, transparent 55%),
-        rgba(255,255,253,0.35);
-      backdrop-filter: blur(40px) saturate(1.6);
-      -webkit-backdrop-filter: blur(40px) saturate(1.6);
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,232,196,0.36) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg-3) 60%, var(--bg-2) 100%);
       border-bottom: 1px solid var(--hairline-strong);
     }
     .stories {
-      background: linear-gradient(180deg, rgba(255,255,253,0.32) 0%, rgba(255,255,253,0.45) 100%);
-      backdrop-filter: blur(40px) saturate(1.5);
-      -webkit-backdrop-filter: blur(40px) saturate(1.5);
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
       border-bottom: 1px solid var(--hairline);
     }
     .cta-band {
       background:
-        radial-gradient(circle at 50% 100%, rgba(214,184,140,0.45) 0%, transparent 60%),
-        rgba(255,255,253,0.40);
-      backdrop-filter: blur(40px) saturate(1.7);
-      -webkit-backdrop-filter: blur(40px) saturate(1.7);
+        radial-gradient(ellipse 60% 50% at 50% 100%, rgba(214,184,140,0.40) 0%, transparent 65%),
+        var(--bg-3);
       border-top: 1px solid var(--hairline-strong);
     }
     .concierge-light {
-      background: linear-gradient(180deg, rgba(255,255,253,0.35) 0%, rgba(255,255,253,0.50) 60%, rgba(255,255,253,0.40) 100%);
-      backdrop-filter: blur(40px) saturate(1.6);
-      -webkit-backdrop-filter: blur(40px) saturate(1.6);
+      background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 60%, var(--bg-2) 100%);
     }
     .concierge-light .cg-ambient .orb.a {
       background: radial-gradient(circle, rgba(184, 148, 94, 0.30) 0%, transparent 65%);
@@ -8089,6 +8060,10 @@
   
   // -- Smooth wheel inertia (lightweight Lenis-style) --
   (function smoothScroll() {
+    // Disabled — native browser scroll is smoother than the custom RAF
+    // wheel handler on most setups. Re-enable by setting
+    // window.MV_SMOOTH = true before this script runs.
+    if (!window.MV_SMOOTH) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (window.innerWidth < 900) return; // skip on mobile (native smoothness)
     let current = window.scrollY;
@@ -8136,13 +8111,19 @@
     const headline = document.querySelector('.hero-headline');
     const sub = document.querySelector('.hero-sub');
     if (!stage) return;
-    window.addEventListener('scroll', () => {
-      const y = window.scrollY;
+    let y = 0, ticking = false;
+    function apply() {
+      ticking = false;
       if (y > window.innerHeight) return;
-      stage.style.transform = `translateY(${y * 0.32}px)`;
-      stage.style.filter = `blur(${Math.min(y * 0.008, 6)}px)`;
-      if (headline) headline.style.transform = `translateY(${y * -0.12}px)`;
-      if (sub) sub.style.opacity = 1 - y / (window.innerHeight * 0.6);
+      // Use transform only (no filter:blur — that triggers expensive
+      // re-compositing on every scroll frame). Translate is GPU-cheap.
+      stage.style.transform = `translate3d(0, ${y * 0.30}px, 0)`;
+      if (headline) headline.style.transform = `translate3d(0, ${y * -0.10}px, 0)`;
+      if (sub) sub.style.opacity = Math.max(0, 1 - y / (window.innerHeight * 0.55));
+    }
+    window.addEventListener('scroll', () => {
+      y = window.scrollY;
+      if (!ticking) { requestAnimationFrame(apply); ticking = true; }
     }, { passive: true });
   })();
   
@@ -8179,6 +8160,9 @@
   
   // -- Subtle pin float on cursor proximity (map magic) --
   (function mapCursorMagnet() {
+    // Disabled — recalculates every pin's position on every mousemove,
+    // which fights Leaflet's own rendering loop. Subtle effect, big cost.
+    if (!window.MV_MAGNET) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!matchMedia('(hover: hover)').matches) return;
     const frame = document.getElementById('mapFrame');
