@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#F6F1E8" />
   <title>Maison Voyage — The Cheapest Beautiful Weekends in Europe</title>
-  <meta name="description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples. Live prices, curated for under €600." />
+  <meta name="description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples. Curated for under €600." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4852,7 +4852,7 @@
           <span class="value">17 · Europe only</span>
         </div>
         <div>
-          <span class="label">Live price sources</span>
+          <span class="label">Price-check via</span>
           <span class="value">Skyscanner · Booking</span>
         </div>
         <div>
@@ -5043,7 +5043,7 @@
     <div class="wrap">
       <div class="section-head">
         <div class="left reveal">
-          <div class="eyebrow"><span class="dot"></span>The Atlas · live prices</div>
+          <div class="eyebrow"><span class="dot"></span>The Atlas · indicative pricing</div>
           <h2 class="h-1">Where can we <em class="italic-accent">actually go</em>?</h2>
           <p class="lede" style="margin-top: 1.2rem; max-width: 580px;">
             Tap your home airport. We'll quietly rank the most beautiful weekends within reach — sorted by what's worth the money.
@@ -5080,10 +5080,10 @@
           <!-- Real interactive Leaflet map -->
           <div id="leafletMap" class="leaflet-host" aria-label="Interactive map of Europe"></div>
 
-          <!-- Live status pill -->
+          <!-- Source note — indicative prices, not live -->
           <div class="map-live glass-pill">
             <span class="live-dot"></span>
-            <span>Live prices · Skyscanner</span>
+            <span>Indicative · click for Skyscanner</span>
           </div>
 
           <!-- Dynamic stat tray -->
@@ -6687,22 +6687,30 @@
   - All descriptions concise, specific, EDITORIAL — never robotic
   - Europe only`;
   
+    // Hard timeout — if AI hangs we never block the page. The curated
+    // baseline is already on screen by the time this returns.
+    const ctrl = new AbortController();
+    const timeoutId = setTimeout(() => ctrl.abort(), 12000);
     try {
       const res = await fetch('/api/generate-trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey })
+        body: JSON.stringify({ prompt, apiKey }),
+        signal: ctrl.signal
       });
+      clearTimeout(timeoutId);
       if (!res.ok) return null;
       const data = await res.json();
       const text = data.content?.[0]?.text || '';
       const cleaned = text.replace(/```json|```/g, '').trim();
       const match = cleaned.match(/\{[\s\S]*\}/);
-      const parsed = JSON.parse(match ? match[0] : cleaned);
+      if (!match) return null;
+      const parsed = JSON.parse(match[0]);
       try { localStorage.setItem(cityCacheKey(city), JSON.stringify(parsed)); } catch (e) {}
       return parsed;
     } catch (e) {
-      console.error('City fetch failed', e);
+      clearTimeout(timeoutId);
+      // Silent — baseline already on screen
       return null;
     }
   }
@@ -6719,8 +6727,9 @@
     const smartD = smartDestinations.find(x => x.key === cityName);
     const flightPrice = smartD ? smartD.prices[origin] : null;
     const flightTime = smartD ? fmtFlight(smartD.flights[origin]) : '2h flight';
-    const flightAvail = availability(cityName + 'fl');
-    const bundleAvail = availability(cityName + 'bn');
+    // No fake availability indicators on the top deals — they used to
+    // be hashed heuristics ("Limited · 4 left"). Now we just label the
+    // deal source honestly.
   
     detail.innerHTML = `
       <div class="detail-hero">
@@ -6753,7 +6762,7 @@
         <div class="city-deals">
           <div class="source-strip">
             <span class="lpulse"></span>
-            <span>Live · <strong>Skyscanner</strong> · <strong>Booking</strong> · <strong>GetYourGuide</strong> · <strong>Open-Meteo</strong></span>
+            <span>Estimates · book live on <strong>Skyscanner</strong> · <strong>Booking</strong> · <strong>GetYourGuide</strong> · weather live via <strong>Open-Meteo</strong></span>
             <span style="margin-left: auto;">Weekend: <strong>${links.dates.friday}</strong> → <strong>${links.dates.sunday}</strong></span>
           </div>
   
@@ -6776,10 +6785,9 @@
                 <span class="deal-source"><span class="sdot"></span>Skyscanner · Flight</span>
                 <div class="deal-title">${origin} <em style="font-style: italic; color: var(--accent);">→</em> ${cityName}</div>
                 <div class="deal-meta">${flightTime} · ${links.dates.friday.slice(5)} – ${links.dates.sunday.slice(5)} · 2 travellers</div>
-                <span class="avail-chip ${flightAvail.status}"><span class="av-dot"></span>${flightAvail.label}</span>
-                <div class="deal-price">${priceFromRange(flightPrice || 89)}<span class="small">return per person · check live on Skyscanner</span></div>
+                <div class="deal-price">${priceFromRange(flightPrice || 89)}<span class="small">return p/p · estimate · book live on Skyscanner</span></div>
                 <a class="deal-cta" href="${links.skyscanner}" target="_blank" rel="noopener">
-                  See live prices
+                  Search on Skyscanner
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                 </a>
               </div>
@@ -6787,8 +6795,7 @@
                 <span class="deal-source"><span class="sdot"></span>Booking · Stay</span>
                 <div class="deal-title">Best <em style="font-style: italic; color: var(--accent);">value</em> stay</div>
                 <div class="deal-meta">Top-rated hotels · 2 nights · ${cityName} centre</div>
-                <span class="avail-chip popular"><span class="av-dot"></span>High demand</span>
-                <div class="deal-price">${priceRange(130 + ((cityName.length * 7) % 70))}<span class="small">approx · check live on Booking</span></div>
+                <div class="deal-price">${priceRange(130 + ((cityName.length * 7) % 70))}<span class="small">approx p/n · book live on Booking</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   See on Booking
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
@@ -6798,7 +6805,6 @@
                 <span class="deal-source"><span class="sdot"></span>Bundle · Maison AI</span>
                 <div class="deal-title">Weekend <em style="font-style: italic; color: var(--accent);">bundle</em></div>
                 <div class="deal-meta">Flight + 2-night stay + 1 experience · all-in</div>
-                <span class="avail-chip ${bundleAvail.status}"><span class="av-dot"></span>${bundleAvail.label}</span>
                 <div class="deal-price">${priceFromRange((flightPrice || 89) + 260 + ((cityName.length * 11) % 80))}<span class="small">all-in estimate · 2 nights + 1 experience</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve bundle
@@ -6815,7 +6821,7 @@
             <h2>Where to stay</h2>
           </div>
           <div class="city-deals">
-            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Hand-ranked by value — cheapest realistic options plus a few indulgent rooms. Each opens live availability on Booking.com.</p>
+            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Hand-ranked by value — our suggestions for cheapest realistic options plus a few indulgent rooms. Click any card to search live on Booking.com.</p>
             <div class="listing-grid" id="cityHotels">${skeletonListings(6)}</div>
           </div>
         </div>
@@ -6826,7 +6832,7 @@
             <h2>What to do</h2>
           </div>
           <div class="city-deals">
-            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Personalised for ${cityName} — what this city is truly famous for. Powered by GetYourGuide live prices.</p>
+            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Personalised for ${cityName} — what this city is truly famous for. Click any card to search live on GetYourGuide.</p>
             <div class="listing-grid" id="cityActivities">${skeletonListings(8)}</div>
           </div>
         </div>
@@ -7529,19 +7535,33 @@
   }
   
   async function populateCityListings(city, origin, links) {
-    let data = await fetchCityData(city, origin);
-    if (!data) {
-      data = {
-        hotels: fallbackHotels(city),
-        activities: fallbackActivities(city),
-        restaurants: fallbackRestaurants(city),
-        guides: fallbackGuides(city)
-      };
+    // 1. Render the curated dataset IMMEDIATELY so the page never sits
+    //    on skeletons. This is the honest default — real-world entries
+    //    we've researched, not random AI output.
+    const baseline = {
+      hotels: fallbackHotels(city),
+      activities: fallbackActivities(city),
+      restaurants: fallbackRestaurants(city),
+      guides: fallbackGuides(city)
+    };
+    renderHotels(baseline.hotels, city, links);
+    renderActivities(baseline.activities, city, links);
+    renderRestaurants(baseline.restaurants, city, links);
+    renderGuides(baseline.guides, city, links);
+
+    // 2. Optionally enhance with AI in the background. If the user has
+    //    no key, or the AI is slow / errors / times out — the curated
+    //    data above stays. The user always sees content.
+    try {
+      const enhanced = await fetchCityData(city, origin);
+      if (!enhanced) return;
+      if (Array.isArray(enhanced.hotels) && enhanced.hotels.length) renderHotels(enhanced.hotels, city, links);
+      if (Array.isArray(enhanced.activities) && enhanced.activities.length) renderActivities(enhanced.activities, city, links);
+      if (Array.isArray(enhanced.restaurants) && enhanced.restaurants.length) renderRestaurants(enhanced.restaurants, city, links);
+      if (Array.isArray(enhanced.guides) && enhanced.guides.length) renderGuides(enhanced.guides, city, links);
+    } catch (e) {
+      // Silent — baseline already on screen
     }
-    if (data.hotels) renderHotels(data.hotels, city, links);
-    if (data.activities) renderActivities(data.activities, city, links);
-    if (data.restaurants) renderRestaurants(data.restaurants, city, links);
-    renderGuides(data.guides || fallbackGuides(city), city, links);
   }
   
   function fallbackGuides(city) {
@@ -7598,7 +7618,7 @@
     // stock photo would erode trust. Hotels.com/Hopper does the same.
     const tagByRank = ['Cheapest', 'Best value', 'Top pick', 'Top pick', 'Top pick', 'Top pick', 'Splurge', 'Splurge'];
     el.innerHTML = hotels.map((h, i) => {
-      const av = availability(city + 'h' + i);
+      const badge = valueBadge(i);
       const rank = i === 0 ? 'Cheapest stay' : i === 1 ? 'Best value' : i === hotels.length - 1 ? 'Splurge' : 'Top pick';
       const placeholderTag = tagByRank[i] || 'Stay';
       const initial = (h.name || '').trim().charAt(0).toUpperCase() || 'H';
@@ -7614,13 +7634,13 @@
             </div>
           </div>
           <div class="listing-body">
-            <span class="listing-rank">${rank}${h.rating ? ' · ★ ' + h.rating : ''}</span>
-            <span class="avail-chip ${av.status}"><span class="av-dot"></span>${av.label}</span>
+            <span class="listing-rank">${rank}</span>
+            ${badge ? `<span class="avail-chip ${badge.status}"><span class="av-dot"></span>${badge.label}</span>` : ''}
             <div class="listing-title">${h.name}</div>
             <div class="listing-desc">${h.description || h.vibe || ''}${h.neighbourhood ? ' · ' + h.neighbourhood : ''}</div>
             <div class="listing-foot">
               <div class="listing-price">${priceRange(h.price_per_night || 120)}<span class="per">approx · per night</span></div>
-              <span class="listing-cta">Live on Booking <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
+              <span class="listing-cta">Search on Booking <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
             </div>
           </div>
         </a>
@@ -7643,7 +7663,7 @@
       Wellness: '🧘', Boat: '⛵', Music: '🎶'
     };
     el.innerHTML = activities.map((a, i) => {
-      const av = availability(city + 'a' + i);
+      const badge = valueBadge(i);
       const emoji = catEmoji[a.category] || '✦';
       const wikiSlugForActivity = pickActivityWiki(a, city);
       // If we have a verified Wikipedia article for this attraction,
@@ -7663,12 +7683,12 @@
           ${imgHtml}
           <div class="listing-body">
             <span class="listing-rank">${a.category || 'Experience'}${a.duration ? ' · ' + a.duration : ''}</span>
-            <span class="avail-chip ${av.status}"><span class="av-dot"></span>${av.label}</span>
+            ${badge ? `<span class="avail-chip ${badge.status}"><span class="av-dot"></span>${badge.label}</span>` : ''}
             <div class="listing-title">${a.name}</div>
             <div class="listing-desc">${a.description || a.vibe || ''}</div>
             <div class="listing-foot">
               <div class="listing-price">${priceRange(a.price_per_person || 45)}<span class="per">approx · per person</span></div>
-              <span class="listing-cta">Live on GetYourGuide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
+              <span class="listing-cta">Search on GetYourGuide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
             </div>
           </div>
         </a>
@@ -8337,15 +8357,18 @@
   // ====== AVAILABILITY HEURISTIC ======
   // Deterministic per city + day. In a real production deploy these would be
   // replaced by live partner API calls (Skyscanner/Booking inventory).
-  function availability(seed) {
-    let h = 0;
-    const str = seed + new Date().toDateString();
-    for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    const n = Math.abs(h) % 100;
-    if (n < 14) return { status: 'limited', label: 'Limited · ' + (2 + (n % 4)) + ' left' };
-    if (n < 34) return { status: 'popular', label: 'Popular today' };
-    return { status: 'available', label: 'Available' };
+  // Honest "value badge" — replaces the old hashed availability heuristic.
+  // We don't have real-time inventory access, so we never claim it.
+  // We DO know which of OUR ranked entries are at the top — so the only
+  // chip we ever show is "Best value" on indexes 0-1 of a sorted list.
+  function valueBadge(idx) {
+    if (idx === 0) return { status: 'available', label: 'Best value' };
+    if (idx === 1) return { status: 'popular',   label: 'Top pick' };
+    return null;
   }
+  // Kept for any legacy callers; returns a no-op so the chip simply
+  // doesn't render. NEVER use this for new code.
+  function availability() { return null; }
   
   // ====== LEAFLET MAP ======
   let leafletMap = null;
@@ -8473,13 +8496,12 @@
       if (!coords) return;
       const isBest = top3.has(d.key);
       const isTop = i === 0;
-      const av = availability(d.key);
   
       const html = `
         <div class="lf-pin ${isBest ? 'best' : ''}">
           <div class="lf-chip">
             <span class="lf-dot"></span>
-            <span class="lf-price">€${d.price}</span>
+            <span class="lf-price">${priceFromRange(d.price)}</span>
             <span class="lf-name">${d.key}</span>
           </div>
         </div>
@@ -8503,11 +8525,10 @@
             </div>
           </div>
           <div class="lf-pop-body">
-            <span class="lf-pop-avail ${av.status}"><span class="av-dot"></span>${av.label}</span>
             <h4>${d.key}</h4>
             <div class="vibe">${d.vibe}</div>
             <div class="row">
-              <div class="price">€${d.price}<span class="per">return</span></div>
+              <div class="price">${priceFromRange(d.price)}<span class="per">return · estimate</span></div>
               <span class="cta">View city <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
             </div>
           </div>
@@ -8557,7 +8578,7 @@
     const cheapest = ranked.reduce((a, b) => a.price < b.price ? a : b, ranked[0]);
     const shortest = ranked.reduce((a, b) => a.flight < b.flight ? a : b, ranked[0]);
     if (document.getElementById('ms-from')) {
-      document.getElementById('ms-from').textContent = `€${cheapest.price}`;
+      document.getElementById('ms-from').textContent = priceFromRange(cheapest.price);
       document.getElementById('ms-flight').textContent = fmtFlight(shortest.flight);
       document.getElementById('ms-count').textContent = ranked.length;
     }
@@ -8568,15 +8589,14 @@
       items.innerHTML = ranked.slice(0, 10).map((d, i) => {
         const isBest = i === 0;
         const isCheap = d.price < 80;
-        const av = availability(d.key);
         return `
           <div class="ml-item ${isBest ? 'best' : ''}" data-key="${d.key}">
             <div class="ml-img has-placeholder" data-label="${d.key}" data-wiki="${d.key}"><img alt="${d.key}" loading="lazy" /></div>
             <div class="ml-info">
               <div class="ml-name">${d.key} ${isBest ? '<span class="ml-badge">Best value</span>' : i < 3 ? '<span class="ml-badge cool">Top pick</span>' : ''}</div>
-              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)}<span class="dot"></span><span class="ml-avail ${av.status}">${av.label}</span></div>
+              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)}</div>
             </div>
-            <div class="ml-price ${isCheap ? 'cheap' : ''}">€${d.price}</div>
+            <div class="ml-price ${isCheap ? 'cheap' : ''}">${priceFromRange(d.price)}</div>
           </div>
         `;
       }).join('');
