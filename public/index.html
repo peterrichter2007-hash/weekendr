@@ -6698,6 +6698,204 @@
   }
 
   // ============================================================
+  // FAMOUS RESTAURANT → Wikipedia article
+  // Only well-known restaurants that have their own verified Wikipedia
+  // page. Family-run trattorias and small bars don't — those fall back
+  // to specific-dish or country-dish images via the priority below.
+  // ============================================================
+  const restaurantWikiMap = {
+    // Barcelona
+    'Disfrutar':                       'Disfrutar',
+    'Quimet & Quimet':                 'Tapas',                       // very known tapas concept
+    // Lisbon
+    'Time Out Market':                 'Time_Out_Market_Lisbon',
+    'Cervejaria Ramiro':               'Cervejaria_Ramiro',
+    // Naples
+    'Da Michele':                      "L'Antica_Pizzeria_da_Michele",
+    'Pizzeria Sorbillo':               'Pizzeria_Sorbillo',
+    'Trattoria Da Nennella':           'Trattoria_Da_Nennella',
+    // Vienna
+    'Figlmüller':                      'Figlmüller',
+    'Café Central':                    'Café_Central_(Vienna)',
+    'Steirereck':                      'Steirereck',
+    'Plachutta':                       'Plachutta',
+    // Athens
+    'Spondi':                          'Spondi',
+    // Copenhagen
+    'Restaurant Schønnemann':          'Smørrebrød',                   // restaurant has no page but is THE smørrebrød place
+    'Noma':                            'Noma_(restaurant)',
+    // Paris
+    'Septime':                         'Septime_(restaurant)',
+    // Budapest
+    'Onyx':                            'Onyx_(restaurant)',
+    // Krakow
+    'Bottiglieria 1881':               'Bottiglieria_1881',
+    // Prague
+    'Lokál Dlouhááá':                  'Pilsner_Urquell',
+    'Eska':                            'Czech_cuisine',
+    'La Degustation Bohême Bourgeoise':'Bohemian_cuisine',
+    // Porto
+    'Cantinho do Avillez':             'José_Avillez',
+    'The Yeatman Restaurant':          'The_Yeatman_Hotel',
+    // Amalfi
+    'La Sponda · Le Sirenuse':         'Le_Sirenuse'
+  };
+
+  // ============================================================
+  // DISH KEYWORD → Wikipedia
+  // For non-famous restaurants we read the must_order / cuisine field
+  // and surface the SPECIFIC dish article. Honest: shows what they
+  // actually serve instead of a generic country dish.
+  // ============================================================
+  const dishKeywordWiki = [
+    // Italian
+    ['pizza margherita',   'Pizza_Margherita'],
+    ['pizza fritta',       'Pizza_fritta'],
+    ['margherita',         'Pizza_Margherita'],
+    ['marinara',           'Pizza_marinara'],
+    ['carbonara',          'Spaghetti_alla_carbonara'],
+    ['amatriciana',        'Bucatini_all%27amatriciana'],
+    ['risotto',            'Risotto_alla_milanese'],
+    ['cotoletta',          'Cotoletta_alla_milanese'],
+    ['ossobuco',           'Ossobuco'],
+    ['tiramisu',           'Tiramisu'],
+    ['gnocchi',            'Gnocchi'],
+    ['lasagne',            'Lasagne'],
+    ['parmigiana',         'Parmigiana'],
+    ['linguine al limone', 'Linguine'],
+    ['spaghetti',          'Spaghetti'],
+    ['negroni',            'Negroni'],
+    ['aperol',             'Aperol_spritz'],
+    ['panettone',          'Panettone'],
+    ['sfogliatella',       'Sfogliatella'],
+    // Spanish
+    ['paella',             'Paella'],
+    ['tapas',              'Tapas'],
+    ['sangria',            'Sangria'],
+    ['gazpacho',           'Gazpacho'],
+    ['jamón',              'Jamón_ibérico'],
+    ['tortilla',           'Spanish_omelette'],
+    ['patatas bravas',     'Patatas_bravas'],
+    ['bombas',             'Bombas_(Catalan_food)'],
+    ['croquetas',          'Croqueta'],
+    ['vermut',             'Vermouth'],
+    ['pa amb tomàquet',    'Pa_amb_tomàquet'],
+    ['montadito',          'Montadito'],
+    // Portuguese
+    ['pastel de nata',     'Pastel_de_nata'],
+    ['bacalhau',           'Bacalhau_à_brás'],
+    ['francesinha',        'Francesinha'],
+    ['caldo verde',        'Caldo_verde'],
+    ['prego',              'Prego_(sandwich)'],
+    ['ginjinha',           'Ginjinha'],
+    ['bifana',             'Bifana'],
+    ['octopus',            'Octopus_as_food'],
+    // French
+    ['croissant',          'Croissant'],
+    ['coq au vin',         'Coq_au_vin'],
+    ['bouillabaisse',      'Bouillabaisse'],
+    ['macaron',            'Macaron'],
+    ['steak frites',       'Steak_frites'],
+    ['ratatouille',        'Ratatouille'],
+    ['rice pudding',       'Rice_pudding'],
+    ['riz au lait',        'Rice_pudding'],
+    ['oysters',            'Oyster'],
+    ['sancerre',           'Sancerre_wine'],
+    // Greek
+    ['souvlaki',           'Souvlaki'],
+    ['moussaka',           'Moussaka'],
+    ['tzatziki',           'Tzatziki'],
+    ['greek salad',        'Greek_salad'],
+    ['spanakopita',        'Spanakopita'],
+    ['gyros',              'Gyros'],
+    ['baklava',            'Baklava'],
+    ['retsina',            'Retsina'],
+    ['feta',               'Feta'],
+    ['dakos',              'Dakos'],
+    ['saganaki',           'Saganaki'],
+    ['pastourma',          'Pastırma'],
+    // Austrian
+    ['wiener schnitzel',   'Wiener_Schnitzel'],
+    ['schnitzel',          'Schnitzel'],
+    ['sachertorte',        'Sachertorte'],
+    ['apfelstrudel',       'Apfelstrudel'],
+    ['tafelspitz',         'Tafelspitz'],
+    ['einspänner',         'Einspänner'],
+    ['melange',            'Wiener_Melange'],
+    // Hungarian
+    ['goulash',            'Goulash'],
+    ['gulyás',             'Goulash'],
+    ['lángos',             'Lángos'],
+    ['paprikás',           'Chicken_paprikash'],
+    ['paprikash',          'Chicken_paprikash'],
+    ['dobos',              'Dobos_torte'],
+    ['kürtőskalács',       'Kürtőskalács'],
+    // Czech
+    ['svíčková',           'Svíčková'],
+    ['trdelník',           'Trdelník'],
+    ['pilsner',            'Pilsner_Urquell'],
+    ['tankové pilsner',    'Pilsner_Urquell'],
+    // Polish
+    ['pierogi',            'Pierogi'],
+    ['kotlet schabowy',    'Kotlet_schabowy'],
+    ['żurek',              'Żurek'],
+    ['bigos',              'Bigos'],
+    ['gołąbki',            'Cabbage_roll'],
+    ['sernik',             'Sernik'],
+    ['vodka',              'Polish_vodka'],
+    // Danish / Nordic
+    ['smørrebrød',         'Smørrebrød'],
+    ['frikadeller',        'Frikadeller'],
+    ['snaps',              'Akvavit'],
+    ['cardamom',           'Cardamom_bun'],
+    ['sourdough',          'Sourdough'],
+    // Croatian
+    ['burek',              'Burek'],
+    ['pašticada',          'Pašticada'],
+    ['plavac mali',        'Plavac_mali'],
+    ['peka',               'Peka'],
+    // Swiss
+    ['fondue',             'Fondue'],
+    ['raclette',           'Raclette'],
+    ['rösti',              'Rösti']
+  ];
+
+  // Pick the most specific dish slug from a string. Respects dedup so
+  // two restaurants on the same page never get the same dish photo.
+  function pickDishFromString(str) {
+    if (!str) return null;
+    const lower = str.toLowerCase();
+    for (const [kw, slug] of dishKeywordWiki) {
+      if (lower.includes(kw) && !usedDishSlugs.has(slug)) {
+        usedDishSlugs.add(slug);
+        return slug;
+      }
+    }
+    return null;
+  }
+
+  function pickRestaurantWiki(r) {
+    // 1) The restaurant itself is famous enough to have a Wikipedia article
+    if (r.name && restaurantWikiMap[r.name] && !usedDishSlugs.has(restaurantWikiMap[r.name])) {
+      const slug = restaurantWikiMap[r.name];
+      usedDishSlugs.add(slug);
+      return slug;
+    }
+    // 2) The must_order field mentions a specific dish we know
+    const fromMust = pickDishFromString(r.must_order);
+    if (fromMust) return fromMust;
+    // 3) The cuisine field mentions a specific dish concept
+    const fromCuisine = pickDishFromString(r.cuisine);
+    if (fromCuisine) return fromCuisine;
+    // 4) The vibe / description sometimes names the speciality
+    const fromVibe = pickDishFromString(r.vibe);
+    if (fromVibe) return fromVibe;
+    const fromDesc = pickDishFromString(r.description);
+    if (fromDesc) return fromDesc;
+    return null;
+  }
+
+  // ============================================================
   // CITY GALLERY — 5–7 Wikipedia article slugs per city covering
   // different visual facets (skyline, landmark, neighbourhood,
   // coast, lifestyle, atmosphere). All slugs are real Wikipedia
@@ -8627,17 +8825,21 @@
     const el = document.getElementById('cityRestaurants');
     if (!el) return;
     const country = cityCountry[city];
-    // Fresh dish pool so each restaurant on the same page gets a unique dish
+    // Fresh dish/restaurant slug pool so each restaurant on the same
+    // page gets a unique image.
     resetDishPool();
     el.innerHTML = restaurants.map((r, i) => {
-      const dishSlug = pickDishWiki(country, i);
+      // Priority chain:
+      //   1) Restaurant has its own Wikipedia article (Disfrutar, Noma...)
+      //   2) Must-order names a known dish → that dish's Wikipedia photo
+      //   3) Cuisine field mentions a dish concept
+      //   4) Vibe / description mentions a dish
+      //   5) Fall back to the country's national dish
+      const wikiSlug = pickRestaurantWiki(r) || pickDishWiki(country, i);
       const emoji = cuisineEmoji(r.cuisine, country);
       const query = encodeURIComponent(r.name + ' ' + city + ' restaurant');
-      // If we have a verified dish slug, the img will load Wikipedia's photo
-      // of that dish (e.g. Pizza_Margherita → real margherita photo).
-      // If not, the typographic placeholder kicks in via has-placeholder.
-      const imgHtml = dishSlug
-        ? `<div class="listing-img has-placeholder" data-label="${r.cuisine || country || 'Local'}" data-wiki="${dishSlug}"><img alt="${r.cuisine || 'Local food'}" loading="lazy" /></div>`
+      const imgHtml = wikiSlug
+        ? `<div class="listing-img has-placeholder" data-label="${r.cuisine || country || 'Local'}" data-wiki="${wikiSlug}"><img alt="${r.name || 'Restaurant'}" loading="lazy" /></div>`
         : `<div class="listing-img has-placeholder">
              <div class="img-placeholder">
                <div class="ip-mark">
