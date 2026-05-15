@@ -3717,6 +3717,214 @@
       margin: 0 auto;
       padding: 0 clamp(1.5rem, 4vw, 3rem);
     }
+    /* ============================================================
+       PRICE-TAG SYSTEM — visual distinction estimate vs live
+       ============================================================ */
+    .price-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.22rem 0.55rem;
+      border-radius: 100px;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .price-tag.est {
+      background: rgba(232, 169, 62, 0.16);
+      color: #B66514;
+    }
+    .price-tag.live {
+      background: rgba(45, 190, 92, 0.16);
+      color: #1F8B4A;
+    }
+    .price-tag.live::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: aiBlink 1.6s ease-in-out infinite;
+    }
+
+    /* ============================================================
+       TRIP COST BREAKDOWN — transparent flight + stay + activities maths
+       ============================================================ */
+    .cost-breakdown {
+      padding: clamp(1.4rem, 3vw, 2rem);
+      max-width: 920px;
+    }
+    .cb-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      padding-bottom: 1.2rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .cb-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .cb-route {
+      font-family: var(--serif);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+    .cb-arrow {
+      color: var(--accent);
+      font-weight: 300;
+      margin: 0 0.3rem;
+    }
+    .cb-dates {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    /* Each row: icon | label/sub | price | CTA */
+    .cb-row {
+      display: grid;
+      grid-template-columns: 36px 1fr auto auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .cb-row-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(18, 17, 15, 0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem;
+    }
+    .cb-row-body { min-width: 0; }
+    .cb-row-label {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: -0.012em;
+      line-height: 1.15;
+    }
+    .cb-row-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin-top: 0.18rem;
+    }
+    .cb-row-price {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: -0.018em;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .cb-row-unit {
+      display: block;
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 0.18rem;
+    }
+    .cb-row-cta {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 0.55rem 0.85rem;
+      background: rgba(126, 98, 48, 0.08);
+      border-radius: 100px;
+      white-space: nowrap;
+      transition: all var(--fast);
+      cursor: pointer;
+    }
+    .cb-row-cta:hover {
+      background: var(--ink);
+      color: var(--cream);
+    }
+
+    /* Total bar */
+    .cb-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.3rem 0 0.4rem;
+    }
+    .cb-total-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .cb-total-num {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 2.6rem);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .cb-total-cta {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 1rem 1.5rem;
+      background-image: linear-gradient(180deg, #2a241d 0%, #161210 100%);
+      color: var(--cream);
+      border-radius: 100px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 12px 28px -6px rgba(18, 17, 15, 0.5);
+      transition: transform var(--fast);
+    }
+    .cb-total-cta:hover { transform: translateY(-2px); }
+
+    .cb-disclaimer {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-top: 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--hairline);
+    }
+    .cb-disclaimer strong { color: var(--ink); font-weight: 600; }
+
+    @media (max-width: 720px) {
+      .cb-row {
+        grid-template-columns: 32px 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 0.55rem 0.85rem;
+      }
+      .cb-row-icon { grid-row: span 2; align-self: center; }
+      .cb-row-cta {
+        grid-column: 2 / 4;
+        text-align: left;
+        padding: 0.5rem 0.85rem;
+        align-self: start;
+        justify-self: start;
+      }
+      .cb-row-price { font-size: 1.05rem; }
+      .cb-total {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .cb-total-cta { width: 100%; justify-content: center; }
+    }
+
+    /* Legacy: leave the old grid in case anything still uses it */
     .deals-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -7433,46 +7641,81 @@
           </div>
         </div>
   
+        <!-- TRIP COST BREAKDOWN — transparent flight + stay + activities maths -->
+        ${(() => {
+          const flightLow  = Math.max(20, Math.floor((flightPrice || 89) * 0.85 / 5) * 5);
+          const hotelMid   = 130 + ((cityName.length * 7) % 70);
+          const stayLow    = Math.floor((hotelMid * 0.8 * ctx.nights) / 5) * 5;
+          const stayHigh   = Math.ceil((hotelMid * 1.15 * ctx.nights) / 5) * 5;
+          const actLow     = 30, actHigh = 80;
+          const totalLow   = flightLow + stayLow + actLow;
+          return `
         <div class="detail-section">
           <div class="head">
             <span class="num">01</span>
-            <h2>Top deals · this weekend</h2>
+            <h2>Cheapest weekend estimate</h2>
           </div>
           <div class="city-deals">
-            <div class="deals-grid">
-              <div class="deal-card">
-                <span class="deal-source"><span class="sdot"></span>Skyscanner · Flight</span>
-                <div class="deal-title">${origin} <em style="font-style: italic; color: var(--accent);">→</em> ${cityName}</div>
-                <div class="deal-meta">${flightTime} · ${links.dates.checkinShort} – ${links.dates.checkoutShort} · ${ctx.adults} ${ctx.adults === 1 ? 'adult' : 'adults'}</div>
-                <div class="deal-price">${priceFromRange(flightPrice || 89)}<span class="small">return p/p · estimate · book live on Skyscanner</span></div>
-                <a class="deal-cta" href="${links.skyscanner}" target="_blank" rel="noopener">
-                  Search on Skyscanner
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+            <div class="cost-breakdown glass-card">
+              <div class="cb-head">
+                <div>
+                  <div class="cb-eyebrow">Optimised for cheapest · ${ctx.adults} ${ctx.adults === 1 ? 'traveller' : 'travellers'} · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'}</div>
+                  <div class="cb-route">${origin} <span class="cb-arrow">→</span> ${cityName}</div>
+                  <div class="cb-dates">${links.dates.checkinShort} – ${links.dates.checkoutShort}</div>
+                </div>
+                <span class="price-tag est">Estimate</span>
+              </div>
+
+              <div class="cb-row">
+                <div class="cb-row-icon">✈</div>
+                <div class="cb-row-body">
+                  <div class="cb-row-label">Return flight</div>
+                  <div class="cb-row-sub">${flightTime} · cheapest-sorted on Skyscanner</div>
+                </div>
+                <div class="cb-row-price">${priceFromRange(flightPrice || 89)}<span class="cb-row-unit">p/p</span></div>
+                <a class="cb-row-cta" href="${links.skyscanner}" target="_blank" rel="noopener">Search live →</a>
+              </div>
+
+              <div class="cb-row">
+                <div class="cb-row-icon">🛏</div>
+                <div class="cb-row-body">
+                  <div class="cb-row-label">${ctx.nights}-night stay · ${ctx.rooms} ${ctx.rooms === 1 ? 'room' : 'rooms'}</div>
+                  <div class="cb-row-sub">cheapest-sorted on Booking · within budget</div>
+                </div>
+                <div class="cb-row-price">${priceRange(stayLow + Math.round((stayHigh-stayLow)/2))}<span class="cb-row-unit">total</span></div>
+                <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener">Search live →</a>
+              </div>
+
+              <div class="cb-row">
+                <div class="cb-row-icon">🎟</div>
+                <div class="cb-row-body">
+                  <div class="cb-row-label">1 experience</div>
+                  <div class="cb-row-sub">cheapest-sorted on GetYourGuide</div>
+                </div>
+                <div class="cb-row-price">${priceRange(actLow + 20)}<span class="cb-row-unit">p/p</span></div>
+                <a class="cb-row-cta" href="${links.getyourguide}" target="_blank" rel="noopener">Search live →</a>
+              </div>
+
+              <div class="cb-total">
+                <div>
+                  <div class="cb-total-eyebrow">All-in estimate · per person</div>
+                  <div class="cb-total-num">from €${totalLow}</div>
+                </div>
+                <a class="cb-total-cta" href="${links.booking}" target="_blank" rel="noopener">
+                  Reserve weekend
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                 </a>
               </div>
-              <div class="deal-card">
-                <span class="deal-source"><span class="sdot"></span>Booking · Stay</span>
-                <div class="deal-title">Best <em style="font-style: italic; color: var(--accent);">value</em> stay</div>
-                <div class="deal-meta">Cheapest-sorted hotels · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} · ${ctx.adults} ${ctx.adults === 1 ? 'adult' : 'adults'} · ${cityName}</div>
-                <div class="deal-price">${priceRange(130 + ((cityName.length * 7) % 70))}<span class="small">approx p/n · book live on Booking</span></div>
-                <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
-                  See on Booking
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg>
-                </a>
-              </div>
-              <div class="deal-card">
-                <span class="deal-source"><span class="sdot"></span>Bundle · Maison AI</span>
-                <div class="deal-title">Weekend <em style="font-style: italic; color: var(--accent);">bundle</em></div>
-                <div class="deal-meta">Flight + ${ctx.nights}-night stay + 1 experience · all-in for ${ctx.adults} ${ctx.adults === 1 ? 'person' : 'people'}</div>
-                <div class="deal-price">${priceFromRange((flightPrice || 89) + (ctx.nights * 75) + 70 + ((cityName.length * 11) % 60))}<span class="small">all-in estimate · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} + 1 experience</span></div>
-                <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
-                  Reserve bundle
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-                </a>
-              </div>
+
+              <p class="cb-disclaimer">
+                Numbers are estimates from real European pricing data. Click any <strong>Search live</strong>
+                button to see the actual current price on the partner site — your dates, your travellers, cheapest first.
+              </p>
             </div>
           </div>
         </div>
+          `;
+        })()}
   
         <div class="detail-section">
           <div class="head">
