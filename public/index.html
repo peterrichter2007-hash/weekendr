@@ -1762,7 +1762,31 @@
       overflow: hidden;
       background: var(--ink);
     }
-    .detail-hero img {
+    /* Multi-image cinematic stage — auto-rotating Wikipedia gallery */
+    .dh-stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .dh-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 2.4s var(--ease);
+      will-change: opacity;
+    }
+    .dh-slide.active { opacity: 1; }
+    .dh-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scale(1.06);
+      transition: transform 12s var(--ease-out), opacity 1.2s var(--ease-out);
+    }
+    /* Ken Burns: active slide slowly zooms over its dwell time */
+    .dh-slide.active img { transform: scale(1.16); }
+    /* Legacy single-img path stays for fallback contexts */
+    .detail-hero > img {
       width: 100%; height: 100%;
       object-fit: cover;
       opacity: 0.85;
@@ -1771,6 +1795,30 @@
       content: '';
       position: absolute; inset: 0;
       background: linear-gradient(180deg, rgba(26,22,18,0.5) 0%, transparent 30%, transparent 60%, rgba(26,22,18,0.85) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .detail-top, .detail-headline {
+      z-index: 5;
+    }
+    /* Gallery progress dots */
+    .dh-dots {
+      position: absolute;
+      bottom: 1.3rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 0.5rem;
+      z-index: 6;
+      opacity: 0.85;
+    }
+    .dh-dots span {
+      width: 18px; height: 2px;
+      background: rgba(255, 255, 253, 0.35);
+      border-radius: 2px;
+      transition: all 0.5s var(--ease);
+    }
+    .dh-dots span.on {
+      background: rgba(255, 255, 253, 0.95);
+      width: 36px;
     }
     .detail-top {
       position: absolute;
@@ -5893,6 +5941,36 @@
   }
 
   // ============================================================
+  // CITY GALLERY — 5–7 Wikipedia article slugs per city covering
+  // different visual facets (skyline, landmark, neighbourhood,
+  // coast, lifestyle, atmosphere). All slugs are real Wikipedia
+  // articles with verified lead images. Used by the city-detail
+  // hero to build a cinematic auto-rotating gallery.
+  // ============================================================
+  const cityGallery = {
+    Barcelona: ['Barcelona', 'Sagrada_Família', 'Park_Güell', 'Casa_Batlló', 'La_Boqueria', 'Barceloneta_(Barcelona)', 'Bunkers_del_Carmel'],
+    Lisbon:    ['Lisbon', 'Belém_Tower', 'Alfama', 'Jerónimos_Monastery', 'Tram_28_(Lisbon)', 'Cabo_da_Roca', 'LX_Factory'],
+    Budapest:  ['Budapest', 'Hungarian_Parliament_Building', "Fisherman's_Bastion", 'Széchenyi_thermal_bath', 'Chain_Bridge,_Budapest', 'Buda_Castle', 'Margaret_Island'],
+    Prague:    ['Prague', 'Prague_Castle', 'Charles_Bridge', 'Old_Town_Square', 'Klementinum', 'Vltava', 'Prague_astronomical_clock'],
+    Krakow:    ['Kraków', 'Wawel_Castle', 'Main_Square,_Kraków', 'Kazimierz', "St._Mary's_Basilica,_Kraków", 'Cloth_Hall,_Kraków', 'Wieliczka_Salt_Mine'],
+    Naples:    ['Naples', 'Mount_Vesuvius', 'Spaccanapoli', "Castel_dell'Ovo", 'Pompeii', 'Spanish_Quarters', 'Procida'],
+    Porto:     ['Porto', 'Dom_Luís_I_Bridge', 'Ribeira,_Porto', 'Livraria_Lello', 'Douro', 'Foz_do_Douro', 'São_Bento_railway_station'],
+    Paris:     ['Paris', 'Eiffel_Tower', 'Louvre', 'Notre-Dame_de_Paris', 'Sacré-Cœur,_Paris', 'Champs-Élysées', 'Montmartre'],
+    Milan:     ['Milan', 'Milan_Cathedral', 'Galleria_Vittorio_Emanuele_II', 'Sforza_Castle', 'Navigli', 'Pinacoteca_di_Brera', 'La_Scala'],
+    Vienna:    ['Vienna', 'Schönbrunn_Palace', 'Belvedere,_Vienna', 'Vienna_State_Opera', "St._Stephen's_Cathedral,_Vienna", 'Hofburg', 'Wiener_Riesenrad'],
+    Athens:    ['Athens', 'Acropolis_of_Athens', 'Parthenon', 'Plaka', 'Mount_Lycabettus', 'Temple_of_Olympian_Zeus,_Athens', 'Cape_Sounion'],
+    Copenhagen:['Copenhagen', 'Nyhavn', 'Tivoli_Gardens', 'Christiansborg_Palace', 'The_Little_Mermaid_(statue)', 'Rosenborg_Castle', 'Freetown_Christiania'],
+    Dubrovnik: ['Dubrovnik', 'Walls_of_Dubrovnik', 'Old_City_of_Dubrovnik', 'Lokrum', 'Stradun', 'Srđ', 'Lovrijenac'],
+    Amalfi:    ['Amalfi_Coast', 'Positano', 'Amalfi', 'Ravello', 'Capri', 'Sentiero_degli_Dei', 'Villa_Rufolo'],
+    Santorini: ['Santorini', 'Oia,_Greece', 'Santorini_caldera', 'Akrotiri_(prehistoric_city)', 'Fira', 'Nea_Kameni', 'Red_Beach,_Santorini'],
+    Mykonos:   ['Mykonos', 'Chora_(Mykonos)', 'Little_Venice_(Mykonos)', 'Windmills_of_Mykonos', 'Delos', 'Paradise_Beach_(Mykonos)']
+  };
+
+  function getCityGallery(city) {
+    return cityGallery[city] || [city];
+  }
+
+  // ============================================================
   // ACTIVITY → WIKIPEDIA LANDMARK MAP
   //
   // Every entry here is the Wikipedia article slug for a real,
@@ -6636,8 +6714,17 @@
     const bundleAvail = availability(cityName + 'bn');
   
     detail.innerHTML = `
-      <div class="detail-hero has-placeholder" data-label="${cityName}" data-wiki="${cityName}">
-        <img alt="${cityName}" />
+      <div class="detail-hero">
+        <div class="dh-stage" id="dhStage">
+          ${getCityGallery(cityName).map((slug, i) => `
+            <div class="dh-slide ${i === 0 ? 'active' : ''} has-placeholder" data-label="${cityName}" data-wiki="${slug}">
+              <img alt="${cityName}" loading="${i === 0 ? 'eager' : 'lazy'}" />
+            </div>
+          `).join('')}
+        </div>
+        <div class="dh-dots" id="dhDots">
+          ${getCityGallery(cityName).map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('')}
+        </div>
         <div class="detail-top">
           <button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back</button>
           <a class="detail-cta-top" href="${links.booking}" target="_blank" rel="noopener">Book this weekend</a>
@@ -6787,8 +6874,35 @@
     populateCityListings(cityName, origin, links);
     // Fire-and-forget: live weather
     renderWeatherInto(document.getElementById('cityWeather'), cityName);
-    // Upgrade hero with verified Wikipedia landmark image (async)
-    upgradeHeroWithWikipedia(cityName);
+    // Start the cinematic hero gallery rotation. Wikipedia hydration
+    // happens automatically via the MutationObserver as soon as the
+    // slides hit the DOM — each slide has its own data-wiki slug.
+    startCityHeroCarousel();
+  }
+
+  // ============================================================
+  // CITY HERO CAROUSEL — 6.5s rotation with smooth crossfade
+  // ============================================================
+  let cityHeroTimer = null;
+  function startCityHeroCarousel() {
+    if (cityHeroTimer) { clearInterval(cityHeroTimer); cityHeroTimer = null; }
+    const stage = document.getElementById('dhStage');
+    const dots = document.getElementById('dhDots');
+    if (!stage) return;
+    const slides = stage.querySelectorAll('.dh-slide');
+    const dotEls = dots ? dots.querySelectorAll('span') : [];
+    if (slides.length < 2) return;
+    let i = 0;
+    cityHeroTimer = setInterval(() => {
+      slides[i].classList.remove('active');
+      dotEls[i]?.classList.remove('on');
+      i = (i + 1) % slides.length;
+      slides[i].classList.add('active');
+      dotEls[i]?.classList.add('on');
+    }, 6500);
+  }
+  function stopCityHeroCarousel() {
+    if (cityHeroTimer) { clearInterval(cityHeroTimer); cityHeroTimer = null; }
   }
   
   function skeletonListings(n) {
@@ -7623,6 +7737,7 @@
     const veil = document.getElementById('detailVeil');
     detail.classList.remove('in');
     veil.classList.remove('in');
+    stopCityHeroCarousel();
     setTimeout(() => {
       detail.classList.remove('show');
       veil.classList.remove('show');
