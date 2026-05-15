@@ -3402,17 +3402,26 @@
       border-radius: 32px;
       overflow: hidden;
       z-index: 1;
-      background: linear-gradient(135deg, rgba(255, 252, 247, 0.85) 0%, rgba(239, 231, 216, 0.7) 100%);
+      background: #0c1a24; /* deep ocean fallback before tiles load */
     }
     .leaflet-container {
       font-family: var(--sans);
-      background: transparent;
+      background: #0c1a24;
     }
-    .leaflet-container.standard-view .leaflet-tile-pane {
-      filter: saturate(0.78) brightness(1.03) contrast(0.95) sepia(0.06);
-    }
+    /* Satellite-only: slight cinematic colour grade + crispness */
     .leaflet-container.satellite-view .leaflet-tile-pane {
-      filter: saturate(1.05) brightness(0.96);
+      filter: saturate(1.12) brightness(0.94) contrast(1.05);
+    }
+    /* Soft vignette over the map for cinematic framing */
+    .leaflet-host::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 50%, transparent 55%, rgba(8, 14, 22, 0.45) 100%);
+      z-index: 400;
+      border-radius: inherit;
     }
     .leaflet-control-attribution {
       background: rgba(251, 247, 239, 0.82) !important;
@@ -3459,22 +3468,33 @@
     .leaflet-popup-tip-container { display: none !important; }
     .leaflet-marker-icon { background: transparent !important; border: 0 !important; }
     
-    /* Custom Leaflet marker — glass price chip */
+    /* ============================================================
+       Custom Leaflet marker — premium glass price chip with glow
+       Satellite map needs brighter contrast: white chip with strong
+       inner highlight, gold glow, smoother pulse.
+       ============================================================ */
     .lf-pin {
       position: relative;
       cursor: pointer;
-      transition: transform 0.35s var(--ease-out);
+      transition: transform 0.45s var(--ease-out);
     }
     .lf-pin .lf-chip {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.35rem 0.7rem 0.35rem 0.45rem;
-      background: rgba(251, 247, 239, 0.95);
-      backdrop-filter: saturate(1.6) blur(20px);
-      -webkit-backdrop-filter: saturate(1.6) blur(20px);
-      border: 1px solid var(--g-border);
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 100%),
+        rgba(255, 255, 253, 0.85);
+      backdrop-filter: saturate(1.8) blur(24px);
+      -webkit-backdrop-filter: saturate(1.8) blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 100px;
-      box-shadow: var(--g-inner-glow), 0 6px 18px -4px rgba(26, 22, 18, 0.32);
-      transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 -1px 0 rgba(18, 17, 15, 0.05),
+        0 0 0 1px rgba(18, 17, 15, 0.10),
+        0 10px 28px -6px rgba(18, 17, 15, 0.45),
+        0 0 24px rgba(255, 214, 138, 0.15);
+      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
       transform: translate(-50%, -50%);
       position: relative;
       white-space: nowrap;
@@ -3483,30 +3503,57 @@
       width: 9px; height: 9px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 0 3px rgba(139, 111, 62, 0.28);
+      box-shadow:
+        0 0 0 3px rgba(255, 255, 255, 0.85),
+        0 0 12px rgba(255, 214, 138, 0.45);
       position: relative;
       flex-shrink: 0;
     }
     .lf-pin .lf-dot::before {
       content: '';
       position: absolute;
-      inset: -5px;
+      inset: -8px;
       border-radius: 50%;
-      background: rgba(139, 111, 62, 0.16);
-      animation: pinPulse 2.4s ease-out infinite;
+      background: rgba(255, 214, 138, 0.35);
+      animation: lfPinPulse 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
     }
-    .lf-pin .lf-price { font-size: 0.78rem; font-weight: 600; color: var(--ink); }
-    .lf-pin .lf-name { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+    @keyframes lfPinPulse {
+      0%   { transform: scale(0.55); opacity: 0.95; }
+      80%  { transform: scale(2.4);  opacity: 0;    }
+      100% { transform: scale(2.4);  opacity: 0;    }
+    }
+    .lf-pin .lf-price { font-size: 0.8rem; font-weight: 600; color: var(--ink); letter-spacing: 0.01em; }
+    .lf-pin .lf-name  { font-size: 0.74rem; color: var(--muted); font-weight: 500; letter-spacing: 0.02em; }
     .lf-pin.best .lf-chip {
-      background: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #2a241d 0%, #161210 100%);
       color: var(--cream);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 10px 22px -4px rgba(26, 22, 18, 0.5);
+      border-color: rgba(255, 214, 138, 0.45);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.20),
+        0 0 0 1px rgba(255, 214, 138, 0.30),
+        0 12px 28px -6px rgba(18, 17, 15, 0.6),
+        0 0 36px rgba(255, 214, 138, 0.35);
     }
     .lf-pin.best .lf-price { color: var(--cream); }
-    .lf-pin.best .lf-name { color: rgba(251, 247, 239, 0.72); }
-    .lf-pin.best .lf-dot { background: #FFD68A; box-shadow: 0 0 0 3px rgba(255, 214, 138, 0.42); }
-    .lf-pin.best .lf-dot::before { background: rgba(255, 214, 138, 0.3); }
-    .lf-pin:hover .lf-chip { transform: translate(-50%, -50%) translateY(-3px) scale(1.05); box-shadow: var(--g-inner-glow), 0 16px 32px -8px rgba(26, 22, 18, 0.45); z-index: 1000; }
+    .lf-pin.best .lf-name  { color: rgba(255, 214, 138, 0.85); }
+    .lf-pin.best .lf-dot {
+      background: #FFD68A;
+      box-shadow:
+        0 0 0 3px rgba(18, 17, 15, 0.9),
+        0 0 16px rgba(255, 214, 138, 0.85);
+    }
+    .lf-pin.best .lf-dot::before { background: rgba(255, 214, 138, 0.55); }
+    .lf-pin:hover .lf-chip {
+      transform: translate(-50%, -50%) translateY(-4px) scale(1.06);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(18, 17, 15, 0.14),
+        0 22px 48px -8px rgba(18, 17, 15, 0.55),
+        0 0 40px rgba(255, 214, 138, 0.32);
+      z-index: 1000;
+    }
     
     /* Leaflet popup (glass preview card) */
     .lf-pop {
@@ -3608,35 +3655,9 @@
     }
     
     /* ============================================================
-       MAP TOGGLE, LIVE PILL, SIDEBAR FOOT
+       MAP LIVE PILL, SIDEBAR FOOT
+       (map-toggle removed — satellite is now the only view)
        ============================================================ */
-    .map-toggle {
-      position: absolute;
-      top: clamp(1rem, 2vw, 1.5rem);
-      right: clamp(1rem, 2vw, 1.5rem);
-      padding: 0.35rem;
-      display: flex;
-      gap: 0.2rem;
-      z-index: 8;
-    }
-    .mt-btn {
-      display: inline-flex; align-items: center; gap: 0.45rem;
-      padding: 0.55rem 0.95rem;
-      border-radius: 100px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--muted);
-      transition: all var(--fast);
-      letter-spacing: 0.01em;
-    }
-    .mt-btn svg { width: 14px; height: 14px; opacity: 0.85; }
-    .mt-btn:hover:not(.on) { color: var(--ink); background: rgba(26, 22, 18, 0.04); }
-    .mt-btn.on {
-      background: var(--ink);
-      color: var(--cream);
-      box-shadow: var(--g-shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    }
-    
     .map-live {
       position: absolute;
       top: clamp(1rem, 2vw, 1.5rem);
@@ -5058,18 +5079,6 @@
         <div class="map-frame" id="mapFrame">
           <!-- Real interactive Leaflet map -->
           <div id="leafletMap" class="leaflet-host" aria-label="Interactive map of Europe"></div>
-
-          <!-- View toggle: standard / satellite -->
-          <div class="map-toggle glass-pill" id="mapToggle">
-            <button class="mt-btn on" data-view="standard">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v16M15 6v16"/></svg>
-              Map
-            </button>
-            <button class="mt-btn" data-view="satellite">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>
-              Satellite
-            </button>
-          </div>
 
           <!-- Live status pill -->
           <div class="map-live glass-pill">
@@ -8360,88 +8369,58 @@
       center: [48.5, 13.5],
       zoom: 4.2,
       minZoom: 3,
-      maxZoom: 12,
+      maxZoom: 14,
       zoomControl: true,
       attributionControl: true,
-      // Smooth wheel-zoom (Leaflet doesn't ship native momentum, but tuning these
-      // gets the closest to that fluid Apple-Maps feel)
+      // Apple-Maps-style fluid wheel + smooth zoom:
+      // no snap, finer steps, longer debounce → silk motion
       scrollWheelZoom: 'center',
-      wheelDebounceTime: 24,
-      wheelPxPerZoomLevel: 96,
-      zoomSnap: 0.25,
+      wheelDebounceTime: 40,
+      wheelPxPerZoomLevel: 110,
+      zoomSnap: 0,
       zoomDelta: 0.5,
       zoomAnimation: true,
+      zoomAnimationThreshold: 8,
       fadeAnimation: true,
       markerZoomAnimation: true,
       inertia: true,
-      inertiaDeceleration: 2200,
+      inertiaDeceleration: 1400,        // softer, longer glide
+      inertiaMaxSpeed: 1200,
+      easeLinearity: 0.18,              // cinematic, not mechanical
       worldCopyJump: false,
       maxBounds: [[34, -25], [71, 45]],
-      maxBoundsViscosity: 0.85
+      maxBoundsViscosity: 0.85,
+      tap: true,                        // mobile touch handling
+      touchZoom: 'center',
+      bounceAtZoomLimits: false
     });
-  
-    // The map handles its own wheel — Leaflet's wheel listener already
-    // calls preventDefault when the cursor is over the map.
-  
-    tileStandard = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> · <a href="https://openstreetmap.org">OpenStreetMap</a>',
-      subdomains: 'abcd',
-      maxZoom: 19,
-      crossOrigin: true,
-      detectRetina: true
-    });
+
+    // Satellite-only: Esri World Imagery + a discreet reference overlay
+    // for labels (otherwise places are unreadable from above).
     tileSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
       maxZoom: 18,
       crossOrigin: true,
       detectRetina: true
     });
-  
-    // Preload labels overlay for satellite (gives names on the satellite view)
     tileSatelliteLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
       attribution: '',
       maxZoom: 18,
-      opacity: 0.85,
-      pane: 'overlayPane'
+      opacity: 0.78,
+      pane: 'overlayPane',
+      crossOrigin: true,
+      detectRetina: true
     });
-  
-    setMapView('standard');
+
+    tileSatellite.addTo(leafletMap);
+    tileSatelliteLabels.addTo(leafletMap);
+    host.classList.add('satellite-view');
     renderLeafletMarkers();
-    // Hover-preload satellite tiles so the toggle feels instant
-    const satBtn = document.querySelector('#mapToggle .mt-btn[data-view="satellite"]');
-    if (satBtn) {
-      satBtn.addEventListener('mouseenter', () => {
-        if (!tileSatellite._preloadCached) {
-          // briefly add satellite layer behind standard so tiles cache
-          tileSatellite.setOpacity(0.001).addTo(leafletMap);
-          setTimeout(() => {
-            if (mapState.view !== 'satellite') leafletMap.removeLayer(tileSatellite);
-            tileSatellite.setOpacity(1);
-            tileSatellite._preloadCached = true;
-          }, 600);
-        }
-      }, { once: true });
-    }
   }
   
-  function setMapView(view) {
-    if (!leafletMap) return;
-    mapState.view = view;
-    const host = document.getElementById('leafletMap');
-    if (view === 'satellite') {
-      if (tileStandard && leafletMap.hasLayer(tileStandard)) leafletMap.removeLayer(tileStandard);
-      if (tileSatellite && !leafletMap.hasLayer(tileSatellite)) tileSatellite.addTo(leafletMap);
-      if (tileSatelliteLabels && !leafletMap.hasLayer(tileSatelliteLabels)) tileSatelliteLabels.addTo(leafletMap);
-      host?.classList.remove('standard-view');
-      host?.classList.add('satellite-view');
-    } else {
-      if (tileSatellite && leafletMap.hasLayer(tileSatellite)) leafletMap.removeLayer(tileSatellite);
-      if (tileSatelliteLabels && leafletMap.hasLayer(tileSatelliteLabels)) leafletMap.removeLayer(tileSatelliteLabels);
-      if (tileStandard && !leafletMap.hasLayer(tileStandard)) tileStandard.addTo(leafletMap);
-      host?.classList.remove('satellite-view');
-      host?.classList.add('standard-view');
-    }
-  }
+  // Legacy stub — the map is satellite-only now, no toggle. Kept so any
+  // legacy callers don't throw.
+  function setMapView() { /* satellite-only — toggle removed */ }
   
   // Smoothly fly the map to a city's location (used when the user changes departure
   // or sort, so the camera glides instead of snapping)
@@ -8455,11 +8434,26 @@
     const home = cityCoords[mapState.from];
     if (home) coords.push(home);
     if (coords.length < 2) return;
-    const bounds = L.latLngBounds(coords).pad(0.18);
+    const bounds = L.latLngBounds(coords).pad(0.22);
+    // Cinematic glide — slower duration + lower easeLinearity for a
+    // longer, more film-like camera move.
     leafletMap.flyToBounds(bounds, {
-      duration: 1.1,
-      easeLinearity: 0.25,
-      padding: [40, 40]
+      duration: 2.0,
+      easeLinearity: 0.10,
+      padding: [60, 60],
+      noMoveStart: false
+    });
+  }
+
+  // Smooth single-city focus — used when a pin is clicked
+  function flyToCity(cityName, opts = {}) {
+    if (!leafletMap) return;
+    const coords = cityCoords[cityName];
+    if (!coords) return;
+    leafletMap.flyTo(coords, opts.zoom || 7, {
+      duration: opts.duration || 1.6,
+      easeLinearity: 0.12,
+      noMoveStart: false
     });
   }
   
@@ -8933,15 +8927,8 @@
     });
   });
   
-  // ====== MAP VIEW TOGGLE ======
-  document.querySelectorAll('#mapToggle .mt-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('#mapToggle .mt-btn').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      setMapView(b.dataset.view);
-    });
-  });
-  
+  // Map toggle removed — satellite-only is the experience now.
+
   // Initialise map
   bindMapControls();
   // Leaflet may still be loading via defer — wait for window load
