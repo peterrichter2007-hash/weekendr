@@ -6560,42 +6560,156 @@
     }
   };
   
-  // Next-Friday → Sunday (ISO yyyy-mm-dd) for weekend trips
-  function weekendDates() {
-    const now = new Date();
-    const friday = new Date(now);
-    const offset = (5 - now.getDay() + 7) % 7 || 7; // next Friday (never today)
-    friday.setDate(now.getDate() + offset);
-    const sunday = new Date(friday);
-    sunday.setDate(friday.getDate() + 2);
-    const iso = d => d.toISOString().slice(0, 10);
-    const compact = d => d.toISOString().slice(2, 10).replace(/-/g, '');
-    return { friday: iso(friday), sunday: iso(sunday), fridayCompact: compact(friday), sundayCompact: compact(sunday) };
+  // ============================================================
+  // SEARCH CONTEXT — every partner link inherits these
+  //
+  // Reads the live concierge form values so user-selected origin,
+  // dates, group size, length and budget flow through to every
+  // Skyscanner / Booking / GetYourGuide deep-link unchanged.
+  // ============================================================
+  function getSearchContext() {
+    const fromInput = document.getElementById('i-from');
+    const whenSel   = document.getElementById('i-when');
+    const groupSel  = document.getElementById('i-group');
+    const lenSel    = document.getElementById('i-length');
+    const slider    = document.getElementById('budgetSlider');
+
+    const origin   = (fromInput?.value || mapState?.from || 'Berlin').trim();
+    const whenStr  = whenSel?.value  || 'Next weekend';
+    const groupStr = groupSel?.value || 'Couple';
+    const lenStr   = lenSel?.value   || '3 nights';
+    const budgetPP = slider ? parseInt(slider.value) : 500;
+
+    // Travellers: parse the dropdown label
+    let adults = 2;
+    if (/solo/i.test(groupStr))        adults = 1;
+    else if (/couple/i.test(groupStr)) adults = 2;
+    else if (/small/i.test(groupStr))  adults = 3;
+    else if (/friends/i.test(groupStr)) adults = 5;
+
+    // Nights: from the length dropdown
+    let nights = 2;
+    if (/^2/.test(lenStr))      nights = 2;
+    else if (/^3/.test(lenStr)) nights = 3;
+    else if (/^4/.test(lenStr)) nights = 4;
+    else if (/week/i.test(lenStr)) nights = 7;
+
+    // Rooms: assume 2 adults per room
+    const rooms = Math.max(1, Math.ceil(adults / 2));
+
+    // Compute the actual checkin / checkout dates
+    const dates = computeDates(whenStr, nights);
+
+    return { origin, adults, rooms, nights, dates, budgetPP, whenStr, groupStr };
   }
-  
-  function partnerLinks(city, origin) {
-    const dest = partnerCodes.skyscannerDest[city] || '';
-    const from = partnerCodes.skyscannerOrigin[origin] || 'BER';
-    const dates = weekendDates();
-    const q = encodeURIComponent(city);
+
+  function computeDates(whenStr, nights) {
+    const today = new Date();
+    const dow = today.getDay();          // 0=Sun, 5=Fri, 6=Sat
+    let offsetToFri = (5 - dow + 7) % 7;
+    if (offsetToFri === 0) offsetToFri = 7; // never today
+
+    const checkin = new Date(today);
+    if (/this weekend/i.test(whenStr))      checkin.setDate(today.getDate() + offsetToFri);
+    else if (/next weekend/i.test(whenStr)) checkin.setDate(today.getDate() + offsetToFri + 7);
+    else if (/two weeks/i.test(whenStr))    checkin.setDate(today.getDate() + offsetToFri + 14);
+    else                                    checkin.setDate(today.getDate() + offsetToFri + 7);
+
+    const checkout = new Date(checkin);
+    checkout.setDate(checkin.getDate() + nights);
+
+    const iso     = d => d.toISOString().slice(0, 10);
+    const compact = d => d.toISOString().slice(2, 10).replace(/-/g, '');
     return {
-      // Skyscanner — flight search
-      skyscanner: dest
-        ? `https://www.skyscanner.net/transport/flights/${from.toLowerCase()}/${dest.toLowerCase()}/${dates.fridayCompact}/${dates.sundayCompact}/`
-        : `https://www.skyscanner.net/transport/flights-to/${q}/`,
-      // Booking — hotel search
-      booking: `https://www.booking.com/searchresults.html?ss=${q}&checkin=${dates.friday}&checkout=${dates.sunday}&group_adults=2&no_rooms=1&aid=304142`,
-      bookingHotel: (hotelName) =>
-        `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotelName + ' ' + city)}&checkin=${dates.friday}&checkout=${dates.sunday}&group_adults=2&no_rooms=1&aid=304142`,
-      // GetYourGuide — activities
-      getyourguide: `https://www.getyourguide.com/s/?q=${q}`,
-      getyourguideAct: (activityName) =>
-        `https://www.getyourguide.com/s/?q=${encodeURIComponent(activityName + ' ' + city)}`,
-      // Google flights as a fallback
-      googleFlights: dest
-        ? `https://www.google.com/travel/flights?q=Flights%20from%20${encodeURIComponent(origin)}%20to%20${q}`
-        : `https://www.google.com/travel/flights?q=${q}`,
-      dates
+      checkin:        iso(checkin),
+      checkout:       iso(checkout),
+      checkinCompact: compact(checkin),
+      checkoutCompact:compact(checkout),
+      // Friendly short display: 'Sat 16 May'
+      checkinShort:   checkin.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+      checkoutShort:  checkout.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+      nights
+    };
+  }
+
+  // Backwards-compat shim — older callers still use weekendDates().
+  function weekendDates() {
+    const d = computeDates('Next weekend', 2);
+    return { friday: d.checkin, sunday: d.checkout, fridayCompact: d.checkinCompact, sundayCompact: d.checkoutCompact };
+  }
+
+  // ============================================================
+  // PARTNER DEEP-LINKS — cheapest-first, parameter-persistent
+  //
+  // Every URL includes the user's exact dates, travellers, rooms
+  // and is sorted ASCENDING by price wherever the partner supports
+  // it. Booking gets a price filter derived from the user's budget.
+  // ============================================================
+  function partnerLinks(city, ctxOverride) {
+    const ctx = ctxOverride || getSearchContext();
+    const dest    = partnerCodes.skyscannerDest[city] || '';
+    const fromIata= partnerCodes.skyscannerOrigin[ctx.origin] || 'BER';
+    const cityQ   = encodeURIComponent(city);
+    const dates   = ctx.dates;
+
+    // --- Skyscanner: direct-flight URL, cheapest sort, adults locked
+    const skySharedQuery =
+      `adultsv2=${ctx.adults}&childrenv2=&cabinclass=economy&sortby=price&currency=EUR&market=DE&locale=en-GB`;
+    const skyscanner = dest
+      ? `https://www.skyscanner.net/transport/flights/${fromIata.toLowerCase()}/${dest.toLowerCase()}/${dates.checkinCompact}/${dates.checkoutCompact}/?${skySharedQuery}`
+      : `https://www.skyscanner.net/transport/flights-to/${cityQ}/?${skySharedQuery}`;
+
+    // --- Booking: full search with cheapest sort + price filter from budget
+    function bookingURL(query) {
+      const p = new URLSearchParams({
+        ss: query,
+        checkin: dates.checkin,
+        checkout: dates.checkout,
+        group_adults: String(ctx.adults),
+        group_children: '0',
+        no_rooms: String(ctx.rooms),
+        order: 'price',                 // <- cheapest first
+        selected_currency: 'EUR',
+        lang: 'en-gb',
+        aid: '304142'                   // <- replace with your affiliate id
+      });
+      // Budget-derived max-per-night filter. ~50% of total budget goes
+      // to accommodation; divided by nights to get a nightly cap.
+      if (ctx.budgetPP && ctx.budgetPP > 100 && ctx.budgetPP < 2000) {
+        const maxPerNight = Math.max(40, Math.min(500,
+          Math.round((ctx.budgetPP * ctx.adults * 0.5) / Math.max(1, dates.nights) / 10) * 10
+        ));
+        p.append('nflt', `price=EUR-0-${maxPerNight}-1`);
+      }
+      return `https://www.booking.com/searchresults.html?${p.toString()}`;
+    }
+    const booking      = bookingURL(city);
+    const bookingHotel = (hotelName) => bookingURL(`${hotelName} ${city}`);
+
+    // --- GetYourGuide: keyword + dates + cheapest sort
+    function gygURL(query) {
+      const p = new URLSearchParams({
+        q: query,
+        date_from: dates.checkin,
+        date_to: dates.checkout,
+        sort: 'lowest_price',
+        currency: 'EUR'
+      });
+      return `https://www.getyourguide.com/s/?${p.toString()}`;
+    }
+    const getyourguide    = gygURL(city);
+    const getyourguideAct = (activityName) => gygURL(`${activityName} ${city}`);
+
+    // --- Google Flights fallback (always specific dates)
+    const googleFlights = dest
+      ? `https://www.google.com/travel/flights?q=Flights%20to%20${cityQ}%20from%20${encodeURIComponent(ctx.origin)}%20on%20${dates.checkin}%20returning%20${dates.checkout}%20${ctx.adults}%20adults`
+      : `https://www.google.com/travel/flights?q=${cityQ}`;
+
+    return {
+      skyscanner, booking, bookingHotel, getyourguide, getyourguideAct, googleFlights,
+      // Legacy aliases — older code expects friday/sunday
+      dates: { ...dates, friday: dates.checkin, sunday: dates.checkout, fridayCompact: dates.checkinCompact, sundayCompact: dates.checkoutCompact },
+      ctx
     };
   }
   
@@ -6722,8 +6836,13 @@
     const detail = document.getElementById('detail');
     const veil = document.getElementById('detailVeil');
     const cityName = trip.place || trip.title || 'Destination';
-    const origin = mapState.from || 'Berlin';
-    const links = partnerLinks(cityName, origin);
+    // Sync mapState.from with the form's current value so cross-city
+    // navigation respects whatever the user just typed in the concierge.
+    const fromInput = document.getElementById('i-from');
+    if (fromInput && fromInput.value.trim()) mapState.from = fromInput.value.trim();
+    const ctx = getSearchContext();
+    const origin = ctx.origin;
+    const links = partnerLinks(cityName, ctx);
     const smartD = smartDestinations.find(x => x.key === cityName);
     const flightPrice = smartD ? smartD.prices[origin] : null;
     const flightTime = smartD ? fmtFlight(smartD.flights[origin]) : '2h flight';
@@ -6762,8 +6881,8 @@
         <div class="city-deals">
           <div class="source-strip">
             <span class="lpulse"></span>
-            <span>Estimates · book live on <strong>Skyscanner</strong> · <strong>Booking</strong> · <strong>GetYourGuide</strong> · weather live via <strong>Open-Meteo</strong></span>
-            <span style="margin-left: auto;">Weekend: <strong>${links.dates.friday}</strong> → <strong>${links.dates.sunday}</strong></span>
+            <span><strong>${ctx.adults}</strong> ${ctx.adults === 1 ? 'traveller' : 'travellers'} · <strong>${ctx.nights}</strong> ${ctx.nights === 1 ? 'night' : 'nights'} · from <strong>${ctx.origin}</strong> · <strong>${links.dates.checkinShort}</strong> → <strong>${links.dates.checkoutShort}</strong></span>
+            <span style="margin-left: auto; opacity: 0.8;">Estimates · book live on Skyscanner · Booking · GetYourGuide</span>
           </div>
   
           <div class="wx-card glass-card" id="cityWeather">
@@ -6784,7 +6903,7 @@
               <div class="deal-card">
                 <span class="deal-source"><span class="sdot"></span>Skyscanner · Flight</span>
                 <div class="deal-title">${origin} <em style="font-style: italic; color: var(--accent);">→</em> ${cityName}</div>
-                <div class="deal-meta">${flightTime} · ${links.dates.friday.slice(5)} – ${links.dates.sunday.slice(5)} · 2 travellers</div>
+                <div class="deal-meta">${flightTime} · ${links.dates.checkinShort} – ${links.dates.checkoutShort} · ${ctx.adults} ${ctx.adults === 1 ? 'adult' : 'adults'}</div>
                 <div class="deal-price">${priceFromRange(flightPrice || 89)}<span class="small">return p/p · estimate · book live on Skyscanner</span></div>
                 <a class="deal-cta" href="${links.skyscanner}" target="_blank" rel="noopener">
                   Search on Skyscanner
@@ -6794,7 +6913,7 @@
               <div class="deal-card">
                 <span class="deal-source"><span class="sdot"></span>Booking · Stay</span>
                 <div class="deal-title">Best <em style="font-style: italic; color: var(--accent);">value</em> stay</div>
-                <div class="deal-meta">Top-rated hotels · 2 nights · ${cityName} centre</div>
+                <div class="deal-meta">Cheapest-sorted hotels · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} · ${ctx.adults} ${ctx.adults === 1 ? 'adult' : 'adults'} · ${cityName}</div>
                 <div class="deal-price">${priceRange(130 + ((cityName.length * 7) % 70))}<span class="small">approx p/n · book live on Booking</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   See on Booking
@@ -6804,8 +6923,8 @@
               <div class="deal-card">
                 <span class="deal-source"><span class="sdot"></span>Bundle · Maison AI</span>
                 <div class="deal-title">Weekend <em style="font-style: italic; color: var(--accent);">bundle</em></div>
-                <div class="deal-meta">Flight + 2-night stay + 1 experience · all-in</div>
-                <div class="deal-price">${priceFromRange((flightPrice || 89) + 260 + ((cityName.length * 11) % 80))}<span class="small">all-in estimate · 2 nights + 1 experience</span></div>
+                <div class="deal-meta">Flight + ${ctx.nights}-night stay + 1 experience · all-in for ${ctx.adults} ${ctx.adults === 1 ? 'person' : 'people'}</div>
+                <div class="deal-price">${priceFromRange((flightPrice || 89) + (ctx.nights * 75) + 70 + ((cityName.length * 11) % 60))}<span class="small">all-in estimate · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} + 1 experience</span></div>
                 <a class="deal-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve bundle
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -6870,7 +6989,7 @@
         <div class="detail-section" style="text-align: center; padding-top: 2rem;">
           <h2 class="h-1" style="margin-bottom: 1.5rem;">A whole weekend in <em class="italic-accent">${cityName}</em>.</h2>
           <p class="lede" style="margin-bottom: 2rem; max-width: 540px; margin-left: auto; margin-right: auto;">
-            Flights, stay and one experience — all-in <strong>${priceFromRange((flightPrice || 89) + 260 + ((cityName.length * 11) % 80))}</strong> per person.
+            Flights, ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} and one experience — all-in <strong>${priceFromRange((flightPrice || 89) + (ctx.nights * 75) + 70 + ((cityName.length * 11) % 60))}</strong> per person.
           </p>
           <a class="btn-primary" style="background: var(--ink); color: var(--cream); display: inline-flex;" href="${links.booking}" target="_blank" rel="noopener">
             Reserve this weekend
