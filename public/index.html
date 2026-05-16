@@ -9533,8 +9533,10 @@
   function availability() { return null; }
   
   // ====== LEAFLET MAP ======
+  // Satellite-only experience. We intentionally do NOT initialise a
+  // standard tile layer — there's no view toggle. Esri World Imagery
+  // + a translucent labels overlay is the only render path.
   let leafletMap = null;
-  let tileStandard = null;
   let tileSatellite = null;
   let tileSatelliteLabels = null;
   const cityMarkers = new Map();
@@ -9642,55 +9644,67 @@
     });
   }
   
-  function renderLeafletMarkers() {
-    if (!leafletMap || typeof L === 'undefined') return;
-    // Clear existing
-    cityMarkers.forEach(m => leafletMap.removeLayer(m));
-    cityMarkers.clear();
-  
-    const from = mapState.from;
-    const sort = mapState.sort;
-    const ranked = rankedDestinations(from, sort);
-    const top3 = new Set(ranked.slice(0, 3).map(d => d.key));
-  
-    ranked.forEach((d, i) => {
-      const coords = cityCoords[d.key];
-      if (!coords) return;
-      const isBest = top3.has(d.key);
-      const isTop = i === 0;
-  
-      const html = `
-        <div class="lf-pin ${isBest ? 'best' : ''}">
-          <div class="lf-chip">
-            <span class="lf-dot"></span>
-            <span class="lf-price">${priceFromRange(d.price)}</span>
-            <span class="lf-name">${d.key}</span>
-          </div>
+  // ============================================================
+  // MARKER FACTORY — generic, lightweight Leaflet pin
+  //
+  // buildMarker(point) takes any object shaped like:
+  //   {
+  //     coords:       [lat, lng]   // required
+  //     label:        'Lisbon'     // city / destination name
+  //     country:      'Portugal'
+  //     vibe:         'Salt-air weekends · €3 espresso'
+  //     priceLabel:   'from €69'   // pre-formatted; the marker does no maths
+  //     flightLabel:  '2h 45m flight'
+  //     isBest:       true         // → dark glowing chip
+  //     isTopOne:     true         // → "Best value" badge in popup
+  //     onSelect:     (point) => …  // marker + popup click callback
+  //   }
+  //
+  // This is the public injection point for future overlay sources
+  // (AI trips, Hotelbeds, Skyscanner). buildMarker is intentionally
+  // shape-agnostic — it never reads cityCoords, smartDestinations,
+  // or any global. The caller does the data shaping.
+  //
+  // Popup HTML is built LAZILY on first hover/click so 16 markers
+  // don't preallocate 16 popup strings into the DOM-string heap.
+  // ============================================================
+  function buildMarker(p) {
+    const html = `
+      <div class="lf-pin ${p.isBest ? 'best' : ''}">
+        <div class="lf-chip">
+          <span class="lf-dot"></span>
+          <span class="lf-price">${p.priceLabel}</span>
+          <span class="lf-name">${p.label}</span>
         </div>
-      `;
-      const icon = L.divIcon({
-        className: 'lf-pin-icon',
-        html: html,
-        iconSize: [120, 28],
-        iconAnchor: [60, 14]
-      });
-      const marker = L.marker(coords, { icon, riseOnHover: true, keyboard: false });
-  
+      </div>
+    `;
+    const icon = L.divIcon({
+      className: 'lf-pin-icon',
+      html,
+      iconSize: [120, 28],
+      iconAnchor: [60, 14]
+    });
+    const marker = L.marker(p.coords, { icon, riseOnHover: true, keyboard: false });
+
+    let popupBound = false;
+    const ensurePopup = () => {
+      if (popupBound) return;
+      popupBound = true;
       const popHtml = `
-        <div class="lf-pop" onclick="openSmartDetail('${d.key}')">
-          <div class="lf-pop-img has-placeholder" data-label="${d.key}" data-wiki-target="1">
-            <img alt="${d.key}" />
-            ${isTop ? '<span class="lf-pop-badge">Best value</span>' : ''}
+        <div class="lf-pop">
+          <div class="lf-pop-img has-placeholder" data-label="${p.label}" data-wiki-target="1">
+            <img alt="${p.label}" />
+            ${p.isTopOne ? '<span class="lf-pop-badge">Best value</span>' : ''}
             <div class="lf-pop-meta">
-              <span>${d.country}</span>
-              <span>${fmtFlight(d.flight)} flight</span>
+              <span>${p.country || ''}</span>
+              <span>${p.flightLabel || ''}</span>
             </div>
           </div>
           <div class="lf-pop-body">
-            <h4>${d.key}</h4>
-            <div class="vibe">${d.vibe}</div>
+            <h4>${p.label}</h4>
+            <div class="vibe">${p.vibe || ''}</div>
             <div class="row">
-              <div class="price">${priceFromRange(d.price)}<span class="per">return · estimate</span></div>
+              <div class="price">${p.priceLabel}<span class="per">return · estimate</span></div>
               <span class="cta">View city <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
             </div>
           </div>
@@ -9704,13 +9718,57 @@
         autoPan: true,
         autoPanPadding: [40, 80]
       });
-      marker.on('mouseover', () => marker.openPopup());
-      marker.on('click', () => openSmartDetail(d.key));
+    };
+
+    marker.on('mouseover', () => { ensurePopup(); marker.openPopup(); });
+    marker.on('click', () => {
+      if (typeof p.onSelect === 'function') p.onSelect(p);
+    });
+    // Wire the popup-card click to onSelect once the popup DOM exists.
+    // dataset guard prevents stacking listeners across re-opens.
+    marker.on('popupopen', (e) => {
+      const root = e.popup.getElement();
+      if (!root) return;
+      const card = root.querySelector('.lf-pop');
+      if (card && !card.dataset.wired && typeof p.onSelect === 'function') {
+        card.dataset.wired = '1';
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => p.onSelect(p));
+      }
+    });
+
+    return marker;
+  }
+
+  function renderLeafletMarkers() {
+    if (!leafletMap || typeof L === 'undefined') return;
+    cityMarkers.forEach(m => leafletMap.removeLayer(m));
+    cityMarkers.clear();
+
+    const from = mapState.from;
+    const sort = mapState.sort;
+    const ranked = rankedDestinations(from, sort);
+    const top3 = new Set(ranked.slice(0, 3).map(d => d.key));
+
+    ranked.forEach((d, i) => {
+      const coords = cityCoords[d.key];
+      if (!coords) return;
+      const marker = buildMarker({
+        coords,
+        label: d.key,
+        country: d.country,
+        vibe: d.vibe,
+        priceLabel: priceFromRange(d.price),
+        flightLabel: fmtFlight(d.flight) + ' flight',
+        isBest: top3.has(d.key),
+        isTopOne: i === 0,
+        onSelect: (pt) => openSmartDetail(pt.label)
+      });
       marker.addTo(leafletMap);
       cityMarkers.set(d.key, marker);
     });
-  
-    // Home-departure marker (subtle)
+
+    // Home-departure marker — separate visual treatment, not a destination
     const home = cityCoords[from];
     if (home) {
       const homeIcon = L.divIcon({
@@ -9853,9 +9911,13 @@
       });
     });
   
-    // Sync map when concierge departure changes
+    // Sync map when concierge departure changes.
+    // input fires per keystroke → debounce to one render per typing burst
+    // so the map doesn't re-render markers 6× while the user types "Berlin".
+    // change fires on commit (blur / Enter / autocomplete pick) → run immediately.
     const fromInput = document.getElementById('i-from');
     if (fromInput) {
+      let syncTimer = null;
       const sync = () => {
         const v = fromInput.value.trim();
         const known = smartDestinations[0].prices;
@@ -9867,8 +9929,12 @@
           renderMap();
         }
       };
+      const debouncedSync = () => {
+        if (syncTimer) clearTimeout(syncTimer);
+        syncTimer = setTimeout(sync, 220);
+      };
       fromInput.addEventListener('change', sync);
-      fromInput.addEventListener('input', sync);
+      fromInput.addEventListener('input', debouncedSync);
     }
   }
   
@@ -10113,11 +10179,31 @@
 
   // Initialise map
   bindMapControls();
-  // Leaflet may still be loading via defer — wait for window load
+
+  // Lazy boot: defer Leaflet's L.map() + 30+ tile requests until the
+  // map section actually enters the viewport. Mobile users who never
+  // scroll past the hero never pay this cost. rootMargin: 200px so
+  // the map is already warm by the time they scroll into it.
+  function scheduleLeafletInit() {
+    const host = document.getElementById('leafletMap');
+    if (!host) return;
+    const boot = () => initLeaflet();
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          io.disconnect();
+          boot();
+        }
+      }, { rootMargin: '200px' });
+      io.observe(host);
+    } else {
+      boot();
+    }
+  }
   if (document.readyState === 'complete') {
-    initLeaflet();
+    scheduleLeafletInit();
   } else {
-    window.addEventListener('load', initLeaflet);
+    window.addEventListener('load', scheduleLeafletInit);
   }
   renderMap();
   // Re-render rails now that smartDestinations is available (proper flight times)
