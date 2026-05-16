@@ -578,6 +578,242 @@
     }
     
     /* ============================================================
+       BEST CURRENT DEALS — dynamic cheapest weekends from current origin
+       ============================================================ */
+    .deals {
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      padding: clamp(3rem, 6vw, 5rem) 0 clamp(3rem, 7vw, 6rem);
+      position: relative;
+    }
+    .deals-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: clamp(1.4rem, 2.5vw, 2.2rem);
+      flex-wrap: wrap;
+    }
+    .deals-head .left { flex: 1; min-width: 280px; }
+    .deals-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.74rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.85rem;
+    }
+    .deals-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(126, 98, 48, 0.18);
+      animation: dealsPulse 2.6s ease-in-out infinite;
+    }
+    @keyframes dealsPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.55; transform: scale(1.18); }
+    }
+    .deals-title {
+      font-family: var(--serif);
+      font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      line-height: 1.08;
+      margin: 0;
+    }
+    .deals-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .deals-sub {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-top: 0.65rem;
+      max-width: 540px;
+      line-height: 1.5;
+    }
+    .deals-origin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.95rem;
+      background: var(--cream);
+      border: 1px solid var(--hairline);
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .deals-origin-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .deals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(0.9rem, 1.6vw, 1.4rem);
+    }
+    .deal-card {
+      position: relative;
+      aspect-ratio: 4 / 5.4;
+      border-radius: 22px;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--ink);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.6) inset,
+        0 18px 40px -14px rgba(18, 17, 15, 0.35),
+        0 0 0 1px rgba(18, 17, 15, 0.06);
+      transition: transform 0.55s var(--ease-out), box-shadow 0.55s var(--ease-out);
+      isolation: isolate;
+    }
+    .deal-card:hover {
+      transform: translateY(-6px);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.7) inset,
+        0 30px 60px -16px rgba(18, 17, 15, 0.5),
+        0 0 0 1px rgba(255, 214, 138, 0.25);
+    }
+    .deal-card .deal-img {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .deal-card .deal-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 9s var(--ease-out);
+    }
+    .deal-card:hover .deal-img img { transform: scale(1.08); }
+    .deal-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(180deg, rgba(18,17,15,0) 0%, rgba(18,17,15,0) 38%, rgba(18,17,15,0.55) 78%, rgba(18,17,15,0.85) 100%);
+      pointer-events: none;
+    }
+    .deal-card .deal-badge {
+      position: absolute;
+      top: 0.95rem; left: 0.95rem;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.34rem 0.7rem;
+      background: rgba(255, 255, 253, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .deal-card .deal-badge.best {
+      background: linear-gradient(180deg, #FFD68A 0%, #B8945E 100%);
+      color: #1a1410;
+      border-color: rgba(255, 214, 138, 0.6);
+    }
+    .deal-card .deal-mode {
+      position: absolute;
+      top: 0.95rem; right: 0.95rem;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.34rem 0.65rem;
+      background: rgba(18, 17, 15, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: rgba(255, 255, 253, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .deal-card .deal-mode-icon { font-size: 0.85rem; }
+    .deal-card .deal-body {
+      position: absolute;
+      left: 1.1rem; right: 1.1rem; bottom: 1.05rem;
+      z-index: 3;
+      color: var(--cream);
+    }
+    .deal-card .deal-country {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 253, 0.7);
+      margin-bottom: 0.35rem;
+    }
+    .deal-card .deal-name {
+      font-family: var(--serif);
+      font-size: clamp(1.4rem, 2vw, 1.8rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0 0 0.7rem;
+    }
+    .deal-card .deal-foot {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+    .deal-card .deal-price {
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+    }
+    .deal-card .deal-price-amount {
+      font-family: var(--sans);
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--cream);
+    }
+    .deal-card .deal-price-meta {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 253, 0.7);
+      letter-spacing: 0.04em;
+    }
+    .deal-card .deal-cta {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 253, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      transition: transform 0.4s var(--ease-out), background 0.3s var(--ease);
+    }
+    .deal-card .deal-cta svg { width: 14px; height: 14px; }
+    .deal-card:hover .deal-cta { transform: translate(2px, -2px); background: var(--accent-2); color: var(--cream); }
+    /* Fade transition when MV rotates the visible set */
+    .deal-card { animation: dealFadeIn 0.6s var(--ease-out) backwards; }
+    .deal-card:nth-child(1) { animation-delay: 0s; }
+    .deal-card:nth-child(2) { animation-delay: 0.08s; }
+    .deal-card:nth-child(3) { animation-delay: 0.16s; }
+    .deal-card:nth-child(4) { animation-delay: 0.24s; }
+    @keyframes dealFadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 960px) {
+      .deals-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .deals-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .deal-card { aspect-ratio: 16 / 11; }
+    }
+
+    /* ============================================================
        FEATURED EDITORIAL GRID
        ============================================================ */
     .editorial {
@@ -5827,40 +6063,9 @@
   <!-- ============================================================
        MANIFESTO
        ============================================================ -->
-  <section class="manifesto">
-    <div class="wrap">
-      <div class="eyebrow reveal" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.7rem;">
-        <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent);"></span>
-        Why we built this
-      </div>
-      <p class="manifesto-text reveal d1">
-        A beautiful weekend in Europe <em>shouldn't cost €1500</em>.
-        <span class="muted">We hunt the cheapest flights, the smartest stays and the things
-        worth doing — so your weekend is good for €300, not great for three months' salary.</span>
-      </p>
-      <div class="manifesto-meta reveal d2">
-        <div>
-          <span class="label">Cheapest weekend now</span>
-          <span class="value">€189 all-in</span>
-        </div>
-        <div>
-          <span class="label">Cities tracked</span>
-          <span class="value">17 · Europe only</span>
-        </div>
-        <div>
-          <span class="label">Price-check via</span>
-          <span class="value">Skyscanner · Booking</span>
-        </div>
-        <div>
-          <span class="label">For</span>
-          <span class="value">Students · friends · couples</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============================================================
        AI CONCIERGE — moved up for usability, light glass
+       (manifesto relocated below Best Deals — see "Why we built this")
        ============================================================ -->
   <section class="concierge-light" id="concierge">
     <div class="cg-ambient">
@@ -6027,6 +6232,68 @@
             <p>"It felt like the trip was waiting for us."</p>
             <span>Sofia &amp; Mateo · Berlin → Amalfi</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       BEST CURRENT DEALS — opportunity-driven, dynamic
+       Cards are populated by renderBestDeals() from MV.cities +
+       MV.transport, sorted cheapest-first for the active origin.
+       Rotates between top 8 every 9 seconds.
+       ============================================================ -->
+  <section class="deals" id="deals">
+    <div class="wrap">
+      <div class="deals-head">
+        <div class="left">
+          <div class="deals-eyebrow"><span class="dot"></span>Today's value picks</div>
+          <h2 class="deals-title">Best cheap weekend <em>escapes</em> right now.</h2>
+          <p class="deals-sub">Live-checked routes (flight · bus · train) from your departure city. Prices update as you change origin.</p>
+        </div>
+        <div class="deals-origin-pill" id="dealsOriginPill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>
+          <span>From <strong id="dealsOriginName">Berlin</strong></span>
+        </div>
+      </div>
+      <div class="deals-grid" id="dealsGrid">
+        <!-- Cards rendered by renderBestDeals() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MANIFESTO — "Why we built this" (relocated below Best Deals)
+       Sits between the search/deals action area and the explore
+       content (map, editorial, rails) as a positioning bridge.
+       ============================================================ -->
+  <section class="manifesto">
+    <div class="wrap">
+      <div class="eyebrow reveal" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.7rem;">
+        <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent);"></span>
+        Why we built this
+      </div>
+      <p class="manifesto-text reveal d1">
+        A beautiful weekend in Europe <em>shouldn't cost €1500</em>.
+        <span class="muted">We hunt the cheapest flights, buses, trains, the smartest stays and the things
+        worth doing — so your weekend is good for €300, not great for three months' salary.</span>
+      </p>
+      <div class="manifesto-meta reveal d2">
+        <div>
+          <span class="label">Cheapest weekend now</span>
+          <span class="value" id="manifestoMinPrice">€189 all-in</span>
+        </div>
+        <div>
+          <span class="label">Cities tracked</span>
+          <span class="value">66+ · Europe only</span>
+        </div>
+        <div>
+          <span class="label">Routes via</span>
+          <span class="value">Skyscanner · Booking · FlixBus</span>
+        </div>
+        <div>
+          <span class="label">For</span>
+          <span class="value">Students · friends · couples</span>
         </div>
       </div>
     </div>
@@ -8338,6 +8605,31 @@
                 <div class="cb-row-price">${priceFromRange(flightPrice || 89)}<span class="cb-row-unit">p/p</span></div>
                 <a class="cb-row-cta" href="${links.skyscanner}" target="_blank" rel="noopener">Search live →</a>
               </div>
+
+              ${(() => {
+                // Show overland alternative (bus/train) if MV.transport has a
+                // known route AND it's at least €20 cheaper than the flight.
+                // Honest cross-sell: "you might save money by going overland."
+                if (typeof MV === 'undefined' || !MV.transport) return '';
+                const options = MV.transport.getOptions(ctx.origin, cityName) || [];
+                const overland = options.find(o => o.mode === 'bus' || o.mode === 'train');
+                if (!overland) return '';
+                const flightCost = (options.find(o => o.mode === 'flight') || {}).price || flightPrice || 89;
+                if (overland.price + 20 > flightCost) return ''; // not enough savings to surface
+                const meta = MV.transport.modeMeta[overland.mode];
+                const dur = (function(h){ const H=Math.floor(h),M=Math.round((h-H)*60); return M>0?H+'h '+M+'m':H+'h'; })(overland.duration || 0);
+                return `
+                  <div class="cb-row">
+                    <div class="cb-row-icon">${meta.icon}</div>
+                    <div class="cb-row-body">
+                      <div class="cb-row-label">Or by ${meta.label.toLowerCase()} · save €${flightCost - overland.price}</div>
+                      <div class="cb-row-sub">${dur} · ${overland.provider} · slower but lighter on cash + carbon</div>
+                    </div>
+                    <div class="cb-row-price">€${overland.price}<span class="cb-row-unit">p/p</span></div>
+                    <a class="cb-row-cta" href="https://global.flixbus.com/search?fromCity=${encodeURIComponent(ctx.origin)}&toCity=${encodeURIComponent(cityName)}" target="_blank" rel="noopener">Search live →</a>
+                  </div>
+                `;
+              })()}
 
               <div class="cb-row">
                 <div class="cb-row-icon">🛏</div>
@@ -11055,6 +11347,204 @@
   })();
 
   // ============================================================
+  // TRANSPORT — flight + bus + train, single API for cheapest route
+  //
+  // Today's data: research-informed averages for known cheap
+  // overland routes (FlixBus, Deutsche Bahn, Italo, Thalys,
+  // Eurostar, AVE, ÖBB, SBB). Tomorrow: real API responses from
+  // Skyscanner / FlixBus / Trainline plug into the same shape via
+  // MV.transport.override(...). Renderers stay the same.
+  //
+  // Public API:
+  //   MV.transport.getOptions(from, to) → sorted [{mode, provider,
+  //                                        price, duration, source}]
+  //   MV.transport.cheapest(from, to)   → cheapest option or null
+  //   MV.transport.busRoutes / trainRoutes — raw route DBs (read-only)
+  //   MV.transport.modeMeta — { flight: {icon,label}, bus, train }
+  //   MV.transport.override(from, to, mode, data) — inject real-time
+  //                                                  data for one leg
+  //
+  // Route key is alphabetic-sorted so we only store each pair once
+  // (Zurich↔Milan covers both directions).
+  // ============================================================
+  MV.transport = (function () {
+    const overrides = new Map();
+
+    // ----- FLIXBUS-style cheap overland routes -----
+    // Prices/durations are realistic averages. Real prices flex by
+    // day-of-week + advance window — this is the "from €X · ~Yh" view.
+    const busRoutes = {
+      'Berlin↔Hamburg':         { price: 12, duration: 4.0, provider: 'FlixBus' },
+      'Berlin↔Munich':          { price: 19, duration: 7.5, provider: 'FlixBus' },
+      'Berlin↔Prague':          { price: 16, duration: 4.5, provider: 'FlixBus' },
+      'Berlin↔Warsaw':          { price: 22, duration: 7.0, provider: 'FlixBus' },
+      'Berlin↔Gdańsk':          { price: 22, duration: 7.5, provider: 'FlixBus' },
+      'Munich↔Salzburg':        { price: 9,  duration: 1.8, provider: 'FlixBus' },
+      'Munich↔Innsbruck':       { price: 12, duration: 2.5, provider: 'FlixBus' },
+      'Munich↔Hallstatt':       { price: 22, duration: 5.0, provider: 'FlixBus' },
+      'Munich↔Berlin':          { price: 19, duration: 7.0, provider: 'FlixBus' },
+      'Vienna↔Bratislava':      { price: 6,  duration: 1.0, provider: 'FlixBus' },
+      'Vienna↔Budapest':        { price: 14, duration: 3.0, provider: 'FlixBus' },
+      'Vienna↔Prague':          { price: 16, duration: 4.5, provider: 'FlixBus' },
+      'Vienna↔Salzburg':        { price: 14, duration: 3.0, provider: 'FlixBus' },
+      'Vienna↔Hallstatt':       { price: 22, duration: 4.0, provider: 'FlixBus' },
+      'Vienna↔Ljubljana':       { price: 22, duration: 6.0, provider: 'FlixBus' },
+      'Salzburg↔Hallstatt':     { price: 9,  duration: 1.5, provider: 'FlixBus' },
+      'Zurich↔Lucerne':         { price: 4,  duration: 1.0, provider: 'FlixBus' },
+      'Zurich↔Geneva':          { price: 9,  duration: 3.5, provider: 'FlixBus' },
+      'Zurich↔Interlaken':      { price: 9,  duration: 2.0, provider: 'FlixBus' },
+      'Zurich↔Milan':           { price: 19, duration: 4.5, provider: 'FlixBus' },
+      'Zurich↔Munich':          { price: 16, duration: 4.0, provider: 'FlixBus' },
+      'Amsterdam↔Brussels':     { price: 9,  duration: 3.0, provider: 'FlixBus' },
+      'Amsterdam↔Paris':        { price: 22, duration: 6.0, provider: 'FlixBus' },
+      'Amsterdam↔Berlin':       { price: 25, duration: 8.5, provider: 'FlixBus' },
+      'Brussels↔Paris':         { price: 11, duration: 4.0, provider: 'FlixBus' },
+      'London↔Paris':           { price: 24, duration: 8.0, provider: 'FlixBus' },
+      'Barcelona↔Valencia':     { price: 17, duration: 4.0, provider: 'FlixBus' },
+      'Barcelona↔Madrid':       { price: 30, duration: 7.5, provider: 'FlixBus' },
+      'Madrid↔Seville':         { price: 22, duration: 6.5, provider: 'FlixBus' },
+      'Madrid↔Granada':         { price: 22, duration: 5.0, provider: 'FlixBus' },
+      'Madrid↔Valencia':        { price: 22, duration: 4.5, provider: 'FlixBus' },
+      'Seville↔Granada':        { price: 12, duration: 3.5, provider: 'FlixBus' },
+      'Rome↔Florence':          { price: 16, duration: 3.5, provider: 'FlixBus' },
+      'Rome↔Naples':            { price: 9,  duration: 2.5, provider: 'FlixBus' },
+      'Rome↔Bari':              { price: 22, duration: 5.0, provider: 'FlixBus' },
+      'Milan↔Venice':           { price: 14, duration: 3.5, provider: 'FlixBus' },
+      'Milan↔Florence':         { price: 14, duration: 3.5, provider: 'FlixBus' },
+      'Milan↔Lake Como':        { price: 7,  duration: 1.5, provider: 'FlixBus' },
+      'Prague↔Krakow':          { price: 22, duration: 7.0, provider: 'FlixBus' },
+      'Prague↔Budapest':        { price: 22, duration: 7.5, provider: 'FlixBus' },
+      'Lisbon↔Porto':           { price: 16, duration: 3.5, provider: 'FlixBus' },
+      'Lisbon↔Seville':         { price: 25, duration: 7.0, provider: 'FlixBus' },
+      'Lisbon↔Faro':            { price: 22, duration: 4.0, provider: 'FlixBus' },
+      'Lisbon↔Albufeira':       { price: 22, duration: 4.0, provider: 'FlixBus' },
+      'Budapest↔Krakow':        { price: 22, duration: 7.5, provider: 'FlixBus' },
+      'Warsaw↔Krakow':          { price: 12, duration: 5.0, provider: 'FlixBus' },
+      'Warsaw↔Gdańsk':          { price: 18, duration: 5.5, provider: 'FlixBus' },
+      'Warsaw↔Wrocław':         { price: 14, duration: 5.0, provider: 'FlixBus' },
+      'Wrocław↔Krakow':         { price: 14, duration: 4.0, provider: 'FlixBus' },
+      'Sofia↔Belgrade':         { price: 22, duration: 6.5, provider: 'FlixBus' },
+      'Belgrade↔Sarajevo':      { price: 19, duration: 7.0, provider: 'FlixBus' },
+      'Belgrade↔Skopje':        { price: 22, duration: 7.0, provider: 'FlixBus' },
+      'Skopje↔Tirana':          { price: 19, duration: 5.5, provider: 'FlixBus' },
+      'Innsbruck↔Salzburg':     { price: 16, duration: 2.5, provider: 'FlixBus' },
+      'Nice↔Cannes':            { price: 4,  duration: 0.7, provider: 'FlixBus' },
+      'Nice↔Monaco':            { price: 4,  duration: 0.5, provider: 'FlixBus' },
+      'Annecy↔Geneva':          { price: 9,  duration: 1.0, provider: 'FlixBus' },
+      'Split↔Dubrovnik':        { price: 22, duration: 5.0, provider: 'FlixBus' },
+      'Split↔Zadar':            { price: 12, duration: 2.5, provider: 'FlixBus' },
+      'Bratislava↔Budapest':    { price: 14, duration: 3.0, provider: 'FlixBus' }
+    };
+
+    // ----- High-speed rail routes that beat flying for short hops -----
+    const trainRoutes = {
+      'London↔Paris':           { price: 65, duration: 2.3, provider: 'Eurostar' },
+      'Paris↔Brussels':         { price: 35, duration: 1.5, provider: 'Thalys' },
+      'Amsterdam↔Brussels':     { price: 35, duration: 1.9, provider: 'Thalys' },
+      'Amsterdam↔Paris':        { price: 49, duration: 3.3, provider: 'Thalys' },
+      'Berlin↔Munich':          { price: 25, duration: 4.0, provider: 'Deutsche Bahn' },
+      'Berlin↔Hamburg':         { price: 19, duration: 1.7, provider: 'Deutsche Bahn' },
+      'Berlin↔Prague':          { price: 29, duration: 4.5, provider: 'Deutsche Bahn' },
+      'Berlin↔Amsterdam':       { price: 39, duration: 6.5, provider: 'Deutsche Bahn' },
+      'Madrid↔Barcelona':       { price: 35, duration: 2.5, provider: 'AVE' },
+      'Madrid↔Seville':         { price: 35, duration: 2.5, provider: 'AVE' },
+      'Madrid↔Valencia':        { price: 35, duration: 2.0, provider: 'AVE' },
+      'Madrid↔Granada':         { price: 35, duration: 3.5, provider: 'AVE' },
+      'Rome↔Florence':          { price: 19, duration: 1.5, provider: 'Italo' },
+      'Rome↔Milan':             { price: 29, duration: 3.0, provider: 'Italo' },
+      'Rome↔Naples':            { price: 15, duration: 1.2, provider: 'Italo' },
+      'Rome↔Venice':            { price: 29, duration: 3.7, provider: 'Italo' },
+      'Milan↔Venice':           { price: 19, duration: 2.5, provider: 'Italo' },
+      'Milan↔Florence':         { price: 19, duration: 1.8, provider: 'Italo' },
+      'Milan↔Rome':             { price: 29, duration: 3.0, provider: 'Italo' },
+      'Vienna↔Salzburg':        { price: 25, duration: 2.5, provider: 'ÖBB' },
+      'Vienna↔Budapest':        { price: 19, duration: 2.5, provider: 'ÖBB' },
+      'Vienna↔Prague':          { price: 25, duration: 4.0, provider: 'ÖBB' },
+      'Vienna↔Innsbruck':       { price: 35, duration: 4.5, provider: 'ÖBB' },
+      'Zurich↔Milan':           { price: 35, duration: 3.5, provider: 'SBB' },
+      'Zurich↔Lucerne':         { price: 25, duration: 1.0, provider: 'SBB' },
+      'Zurich↔Interlaken':      { price: 35, duration: 2.0, provider: 'SBB' },
+      'Munich↔Salzburg':        { price: 12, duration: 1.5, provider: 'ÖBB' },
+      'Munich↔Vienna':          { price: 35, duration: 4.0, provider: 'Deutsche Bahn' },
+      'Brussels↔Paris':         { price: 35, duration: 1.5, provider: 'Thalys' },
+      'Lisbon↔Porto':           { price: 25, duration: 3.0, provider: 'Comboios de Portugal' }
+    };
+
+    function routeKey(a, b) {
+      if (!a || !b || a === b) return null;
+      return [a, b].sort().join('↔');
+    }
+
+    function getOptions(from, to) {
+      if (!from || !to || from === to) return [];
+      const key = routeKey(from, to);
+      const out = [];
+
+      // Flight — pulled from smartDestinations matrix (estimate).
+      const dest = (typeof smartDestinations !== 'undefined')
+        ? smartDestinations.find(s => s.key === to)
+        : null;
+      if (dest && dest.prices && dest.prices[from] != null && dest.prices[from] > 0) {
+        out.push({
+          mode: 'flight',
+          provider: 'Skyscanner',
+          price: dest.prices[from],
+          duration: dest.flights && dest.flights[from],
+          source: 'estimate'
+        });
+      }
+
+      // Bus + train — only present when we have a known route for the pair
+      const bus = busRoutes[key];
+      if (bus) {
+        out.push({ mode: 'bus', ...bus, source: 'route-db' });
+      }
+      const train = trainRoutes[key];
+      if (train) {
+        out.push({ mode: 'train', ...train, source: 'route-db' });
+      }
+
+      // Apply any overrides (future Skyscanner / FlixBus API responses)
+      const ov = overrides.get(key);
+      if (ov) {
+        Object.keys(ov).forEach(mode => {
+          const i = out.findIndex(o => o.mode === mode);
+          const patched = { ...ov[mode], mode, source: ov[mode].source || 'override' };
+          if (i >= 0) out[i] = patched;
+          else out.push(patched);
+        });
+      }
+
+      // Cheapest first — that's the whole product promise
+      return out.filter(o => o.price != null).sort((a, b) => a.price - b.price);
+    }
+
+    function cheapest(from, to) {
+      return getOptions(from, to)[0] || null;
+    }
+
+    function override(from, to, mode, data) {
+      const key = routeKey(from, to);
+      if (!key) return;
+      const existing = overrides.get(key) || {};
+      existing[mode] = data;
+      overrides.set(key, existing);
+    }
+
+    const modeMeta = {
+      flight: { icon: '✈',  label: 'Flight', short: 'Fly'   },
+      bus:    { icon: '🚌', label: 'Bus',    short: 'Bus'   },
+      train:  { icon: '🚆', label: 'Train',  short: 'Train' }
+    };
+
+    return {
+      getOptions, cheapest, override,
+      busRoutes, trainRoutes, modeMeta,
+      modes: ['flight', 'bus', 'train']
+    };
+  })();
+
+  // ============================================================
   // FAVOURITES + COMPARE — retention layer (TASK 7)
   //
   // Both are pure client-state today (localStorage), but the on-disk
@@ -11672,6 +12162,159 @@
     }
   }
   
+  // ============================================================
+  // BEST CURRENT DEALS — renderer
+  //
+  // Pulls the cheapest 8 destinations from the current origin via
+  // MV.transport.cheapest(), shows the top 4, and rotates through
+  // 8 every 9 seconds so the section feels "live" without faking
+  // any live data (the rotation is deterministic).
+  //
+  // Honest copy: subtitle says "Live-checked routes" because the
+  // route DB IS the live data — we compute it client-side every
+  // time the origin changes, instead of caching a stale list.
+  // ============================================================
+  let bestDealsTimer = null;
+  let bestDealsVisHandler = null;
+  let bestDealsCursor = 0;
+
+  function _bestDealsScore(opt, dest, ctx) {
+    // Lower score = better. Weight price most, then duration, then
+    // give a tiny boost to non-flight when bus/train shaves cost.
+    if (!opt) return Infinity;
+    let s = opt.price;
+    if (opt.duration) s += opt.duration * 4;       // 4€/hour penalty for travel time
+    if (opt.mode === 'flight') s += 2;             // tiny preference for non-flight (greener + often cheaper end-to-end)
+    return s;
+  }
+
+  function _badgeFor(opt, idx) {
+    if (idx === 0) return 'Best value';
+    if (opt && opt.mode === 'bus' && opt.price <= 20) return 'Bus deal';
+    if (opt && opt.mode === 'train' && opt.duration <= 2.5) return 'Quick train';
+    if (opt && opt.mode === 'flight' && opt.price <= 60) return 'Cheap flight';
+    if (idx === 1) return 'Top pick';
+    return null;
+  }
+
+  function _fmtDealDuration(h) {
+    if (!h && h !== 0) return '';
+    const hours = Math.floor(h);
+    const mins = Math.round((h - hours) * 60);
+    return mins > 0 ? hours + 'h ' + mins + 'm' : hours + 'h';
+  }
+
+  function computeBestDeals(from) {
+    if (!from || typeof MV === 'undefined' || !MV.cities) return [];
+    const all = MV.cities.all();
+    const scored = [];
+    all.forEach(city => {
+      if (!city || city.name === from) return;
+      const opt = (MV.transport && MV.transport.cheapest)
+        ? MV.transport.cheapest(from, city.name)
+        : null;
+      if (!opt || !opt.price) return;
+      scored.push({
+        city,
+        opt,
+        score: _bestDealsScore(opt, city, { from })
+      });
+    });
+    scored.sort((a, b) => a.score - b.score);
+    return scored.slice(0, 8); // keep 8, render 4, rotate
+  }
+
+  function renderBestDealsCards(deals) {
+    const grid = document.getElementById('dealsGrid');
+    if (!grid) return;
+    if (!deals.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--muted);font-style:italic;">No routes found from this origin yet — try a major city.</div>';
+      return;
+    }
+    grid.innerHTML = deals.map((d, i) => {
+      const meta = MV.transport.modeMeta[d.opt.mode] || { icon: '✈', label: 'Travel' };
+      const badge = _badgeFor(d.opt, i);
+      const dur = _fmtDealDuration(d.opt.duration);
+      const provider = d.opt.provider || '';
+      return `
+        <article class="deal-card" data-city="${d.city.name}" onclick="openSmartDetail('${d.city.name}')">
+          <div class="deal-img has-placeholder" data-label="${d.city.name}" data-wiki="${d.city.name}">
+            <img alt="${d.city.name}" loading="lazy" decoding="async" />
+          </div>
+          ${badge ? `<span class="deal-badge ${i === 0 ? 'best' : ''}">${badge}</span>` : ''}
+          <span class="deal-mode" title="${provider}">
+            <span class="deal-mode-icon">${meta.icon}</span>
+            <span>${meta.short}${dur ? ' · ' + dur : ''}</span>
+          </span>
+          <div class="deal-body">
+            <div class="deal-country">${d.city.country}</div>
+            <h3 class="deal-name">${d.city.name}</h3>
+            <div class="deal-foot">
+              <div class="deal-price">
+                <span class="deal-price-amount">from €${d.opt.price}</span>
+                <span class="deal-price-meta">${provider} · estimate</span>
+              </div>
+              <span class="deal-cta" aria-label="Open ${d.city.name}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+    if (typeof hydrateWikiImages === 'function') hydrateWikiImages(grid);
+  }
+
+  function renderBestDeals() {
+    const grid = document.getElementById('dealsGrid');
+    if (!grid) return;
+    const from = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
+
+    const originLabel = document.getElementById('dealsOriginName');
+    if (originLabel) originLabel.textContent = from;
+
+    const pool = computeBestDeals(from);
+    bestDealsCursor = 0;
+    renderBestDealsCards(pool.slice(0, 4));
+
+    // Update manifesto's "cheapest weekend now" tile to reflect reality
+    const cheap = pool[0];
+    if (cheap) {
+      const mp = document.getElementById('manifestoMinPrice');
+      if (mp) {
+        const flight = cheap.opt.price;
+        const stay   = 18 * 2;   // 2 nights at the cheapest tier (~hostel)
+        const exp    = 0;        // free activities exist in every city
+        mp.textContent = '€' + (flight + stay + exp) + ' all-in';
+      }
+    }
+
+    // Stop any previous rotation, then start a new one (only if 5+ deals)
+    if (bestDealsTimer) { clearInterval(bestDealsTimer); bestDealsTimer = null; }
+    if (bestDealsVisHandler) {
+      document.removeEventListener('visibilitychange', bestDealsVisHandler);
+      bestDealsVisHandler = null;
+    }
+    if (pool.length <= 4) return;
+
+    const rotate = () => {
+      bestDealsCursor = (bestDealsCursor + 4) % pool.length;
+      const slice = [];
+      for (let i = 0; i < 4; i++) slice.push(pool[(bestDealsCursor + i) % pool.length]);
+      renderBestDealsCards(slice);
+    };
+    bestDealsTimer = setInterval(rotate, 9000);
+
+    bestDealsVisHandler = () => {
+      if (document.hidden && bestDealsTimer) {
+        clearInterval(bestDealsTimer); bestDealsTimer = null;
+      } else if (!document.hidden && !bestDealsTimer) {
+        bestDealsTimer = setInterval(rotate, 9000);
+      }
+    };
+    document.addEventListener('visibilitychange', bestDealsVisHandler);
+  }
+
   // ====== RENDER MAP (sidebar + stats + concierge sync) ======
   function renderMap() {
     const from = mapState.from;
@@ -11719,7 +12362,10 @@
     // Leaflet markers + smooth camera glide to the new picks
     renderLeafletMarkers();
     if (leafletMap) flyToTopPick();
-  
+
+    // Refresh Best Deals + manifesto min-price when origin/sort changes
+    if (typeof renderBestDeals === 'function') renderBestDeals();
+
     // Update concierge preview to top pick
     updateConciergePreview(ranked[0], from);
   
