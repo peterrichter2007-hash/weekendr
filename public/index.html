@@ -14,11 +14,15 @@
   <link rel="preconnect" href="https://basemaps.cartocdn.com">
   <link rel="preconnect" href="https://server.arcgisonline.com">
 
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- display=swap: text shows immediately in system fallback while Fraunces+Inter download.
+       Inter 700 dropped — used only 2× in CSS; the 600 weight substitutes cleanly. -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Leaflet (interactive map tiles) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <!-- Leaflet is loaded LAZILY on viewport visibility (see ensureLeafletAssets
+       in the script block). Removing the static <link>+<script> here saves
+       ~155 KB of render-blocking bytes for mobile users who never scroll
+       to the map section. -->
+  <link rel="dns-prefetch" href="https://unpkg.com">
 
   <!-- Maison Voyage design system + application styles -->
   <style>
@@ -5391,19 +5395,19 @@
   <section class="hero">
     <div class="hero-stage" id="heroStage">
       <div class="hero-slide active img-host has-placeholder" data-label="Lisbon" data-wiki="Lisbon">
-        <img alt="Lisbon" loading="eager" />
+        <img alt="Lisbon" loading="eager" fetchpriority="high" decoding="async" />
       </div>
       <div class="hero-slide img-host has-placeholder" data-label="Barcelona" data-wiki="Barcelona">
-        <img alt="Barcelona" loading="eager" />
+        <img alt="Barcelona" loading="lazy" decoding="async" />
       </div>
       <div class="hero-slide img-host has-placeholder" data-label="Budapest" data-wiki="Budapest">
-        <img alt="Budapest" loading="lazy" />
+        <img alt="Budapest" loading="lazy" decoding="async" />
       </div>
       <div class="hero-slide img-host has-placeholder" data-label="Naples" data-wiki="Naples">
-        <img alt="Naples" loading="lazy" />
+        <img alt="Naples" loading="lazy" decoding="async" />
       </div>
       <div class="hero-slide img-host has-placeholder" data-label="Prague" data-wiki="Prague">
-        <img alt="Prague" loading="lazy" />
+        <img alt="Prague" loading="lazy" decoding="async" />
       </div>
     </div>
 
@@ -5640,7 +5644,7 @@
         <div class="cg-preview">
           <div class="cg-preview-frame">
             <div class="cg-preview-img has-placeholder" id="cgPreviewImg" data-label="Lisbon">
-              <img alt="Suggested cheapest weekend" />
+              <img alt="Suggested cheapest weekend" loading="lazy" decoding="async" />
             </div>
             <div class="cg-preview-glass">
               <div class="cg-pg-eyebrow">Suggested for Berlin · Couple · €600–1200</div>
@@ -5764,7 +5768,7 @@
       <div class="editorial-grid">
         <div class="ed-card ed-large reveal d1" data-place="Lisbon">
           <div class="img has-placeholder" data-label="Lisbon" data-wiki="Lisbon">
-            <img alt="Lisbon" />
+            <img alt="Lisbon" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Portugal · from €49</span>
@@ -5776,7 +5780,7 @@
 
         <div class="ed-card ed-tall reveal d2" data-place="Budapest">
           <div class="img has-placeholder" data-label="Budapest" data-wiki="Budapest">
-            <img alt="Budapest" />
+            <img alt="Budapest" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Hungary · from €39</span>
@@ -5788,7 +5792,7 @@
 
         <div class="ed-card ed-medium reveal d1" data-place="Krakow">
           <div class="img has-placeholder" data-label="Krakow" data-wiki="Kraków">
-            <img alt="Krakow" />
+            <img alt="Krakow" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Poland · from €39</span>
@@ -5800,7 +5804,7 @@
 
         <div class="ed-card ed-medium reveal d2" data-place="Naples">
           <div class="img has-placeholder" data-label="Naples" data-wiki="Naples">
-            <img alt="Naples" />
+            <img alt="Naples" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Italy · from €79</span>
@@ -5812,7 +5816,7 @@
 
         <div class="ed-card ed-wide reveal d3" data-place="Porto">
           <div class="img has-placeholder" data-label="Porto" data-wiki="Porto">
-            <img alt="Porto" />
+            <img alt="Porto" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Portugal · from €39</span>
@@ -5824,7 +5828,7 @@
 
         <div class="ed-card ed-wide reveal d4" data-place="Prague">
           <div class="img has-placeholder" data-label="Prague" data-wiki="Prague">
-            <img alt="Prague" />
+            <img alt="Prague" loading="lazy" decoding="async" />
           </div>
           <div class="body">
             <span class="tag">City · Czechia · from €39</span>
@@ -5926,7 +5930,7 @@
       </div>
       <div class="stories-grid">
         <article class="story reveal d1" onclick="openStory('naples')">
-          <div class="story-img has-placeholder" data-label="Naples" data-wiki="Naples"><img alt="Naples weekend" /></div>
+          <div class="story-img has-placeholder" data-label="Naples" data-wiki="Naples"><img alt="Naples weekend" loading="lazy" decoding="async" /></div>
           <div class="story-meta">
             <span class="cat">Field Notes</span>
             <span>5 min read</span>
@@ -5935,7 +5939,7 @@
           <p>Where to stay for €40, the pizza nobody queues for, and the metro stops that matter.</p>
         </article>
         <article class="story reveal d2" onclick="openStory('lisbon')">
-          <div class="story-img has-placeholder" data-label="Lisbon" data-wiki="Lisbon"><img alt="Lisbon weekend" /></div>
+          <div class="story-img has-placeholder" data-label="Lisbon" data-wiki="Lisbon"><img alt="Lisbon weekend" loading="lazy" decoding="async" /></div>
           <div class="story-meta">
             <span class="cat">Guide</span>
             <span>9 min read</span>
@@ -5944,7 +5948,7 @@
           <p>Hostel-with-rooftop sleeping, €5 prego sandwiches and which viewpoint is worth the climb.</p>
         </article>
         <article class="story reveal d3" onclick="openStory('budapest')">
-          <div class="story-img has-placeholder" data-label="Budapest" data-wiki="Budapest"><img alt="Budapest weekend" /></div>
+          <div class="story-img has-placeholder" data-label="Budapest" data-wiki="Budapest"><img alt="Budapest weekend" loading="lazy" decoding="async" /></div>
           <div class="story-meta">
             <span class="cat">Insider</span>
             <span>7 min read</span>
@@ -6342,13 +6346,22 @@
   });
   
   // ============================================================
-  // NAV scroll
+  // NAV scroll — rAF-throttled + passive listener.
+  // The handler only flips one class, but on mobile every scroll
+  // event runs (~60/s during inertia). rAF coalesces to ≤60Hz and
+  // passive: true tells the browser we won't preventDefault.
   // ============================================================
   const nav = document.getElementById('nav');
+  let navScrollTicking = false;
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 30) nav.classList.add('scrolled');
-    else nav.classList.remove('scrolled');
-  });
+    if (navScrollTicking) return;
+    navScrollTicking = true;
+    requestAnimationFrame(() => {
+      if (window.scrollY > 30) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+      navScrollTicking = false;
+    });
+  }, { passive: true });
   
   // Menu
   const menuBtn = document.getElementById('menuBtn');
@@ -6530,13 +6543,21 @@
   - No generic AI fluff. Write like Suitcase Magazine on a backpacker's budget.
   Return ONLY valid JSON array.`;
   
+    // Cancel any in-flight previous request before issuing a new one —
+    // user spam-clicking the concierge button no longer fights itself.
+    if (window.__mvTripsCtrl) {
+      try { window.__mvTripsCtrl.abort(); } catch (e) {}
+    }
+    const ctrl = new AbortController();
+    window.__mvTripsCtrl = ctrl;
     try {
       const res = await fetch('/api/generate-trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey: key })
+        body: JSON.stringify({ prompt, apiKey: key }),
+        signal: ctrl.signal
       });
-  
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Network error' }));
         clearInterval(cycle);
@@ -6552,7 +6573,7 @@
         resetBtn();
         return;
       }
-  
+
       const data = await res.json();
       const text = data.content?.[0]?.text || '';
       let trips = parseTrips(text);
@@ -6566,11 +6587,20 @@
       renderResults(trips, { from, vibes });
       resetBtn();
     } catch (e) {
+      // AbortError = user (or our own re-submit) cancelled — stay silent
+      if (e.name === 'AbortError') {
+        clearInterval(cycle);
+        veil.classList.remove('show');
+        resetBtn();
+        return;
+      }
       console.error(e);
       clearInterval(cycle);
       veil.classList.remove('show');
       alert('Something went wrong. ' + e.message);
       resetBtn();
+    } finally {
+      if (window.__mvTripsCtrl === ctrl) window.__mvTripsCtrl = null;
     }
   }
   
@@ -7250,7 +7280,7 @@
       return `
         <div class="res-card" data-idx="${i}">
           <div class="ri has-placeholder" data-label="${place}" data-wiki="${place}">
-            <img alt="${place}" />
+            <img alt="${place}" loading="lazy" decoding="async" />
             <span class="num">No. ${String(i + 1).padStart(2, '0')}</span>
           </div>
           <div class="rb">
@@ -9160,7 +9190,7 @@
 
     reader.innerHTML = `
       <div class="sr-hero has-placeholder" data-label="${s.city}" data-wiki="${s.city}">
-        <img alt="${s.city}" />
+        <img alt="${s.city}" loading="lazy" decoding="async" />
         <div class="sr-top">
           <button class="sr-back" onclick="closeStory()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -10066,14 +10096,22 @@
       }
     };
   
+    // Autocomplete render is cheap (~25 cities) but rAF-debouncing the
+    // input handler keeps it off the input thread on slow Android.
+    let acFrame = null;
+    const scheduleRender = () => {
+      if (acFrame) return;
+      acFrame = requestAnimationFrame(() => {
+        acFrame = null;
+        render(input.value);
+        drop.classList.add('open');
+      });
+    };
     input.addEventListener('focus', () => {
       render(input.value);
       drop.classList.add('open');
     });
-    input.addEventListener('input', () => {
-      render(input.value);
-      drop.classList.add('open');
-    });
+    input.addEventListener('input', scheduleRender);
     input.addEventListener('blur', () => {
       setTimeout(() => drop.classList.remove('open'), 150);
     });
@@ -10180,14 +10218,45 @@
   // Initialise map
   bindMapControls();
 
-  // Lazy boot: defer Leaflet's L.map() + 30+ tile requests until the
-  // map section actually enters the viewport. Mobile users who never
-  // scroll past the hero never pay this cost. rootMargin: 200px so
-  // the map is already warm by the time they scroll into it.
+  // ============================================================
+  // Lazy boot: defer Leaflet's CSS (~14KB), JS (~144KB), L.map(),
+  // and ~30 tile requests until #leafletMap enters the viewport.
+  // Mobile users who never scroll past the hero never pay this cost.
+  //
+  // ensureLeafletAssets injects the <link> + <script> on demand and
+  // resolves once `L` is global. The IntersectionObserver uses a
+  // 200px rootMargin so the map is warm by the time it's in view.
+  // ============================================================
+  let leafletAssetsPromise = null;
+  function ensureLeafletAssets() {
+    if (typeof L !== 'undefined') return Promise.resolve();
+    if (leafletAssetsPromise) return leafletAssetsPromise;
+    leafletAssetsPromise = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+
+      const js = document.createElement('script');
+      js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      js.crossOrigin = '';
+      js.async = true;
+      js.onload = () => resolve();
+      js.onerror = () => reject(new Error('Leaflet failed to load'));
+      document.head.appendChild(js);
+    });
+    return leafletAssetsPromise;
+  }
+
   function scheduleLeafletInit() {
     const host = document.getElementById('leafletMap');
     if (!host) return;
-    const boot = () => initLeaflet();
+    const boot = () => {
+      ensureLeafletAssets().then(initLeaflet).catch(err => console.error(err));
+    };
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver((entries) => {
         if (entries.some(e => e.isIntersecting)) {
