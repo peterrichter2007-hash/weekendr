@@ -36,44 +36,11 @@ explicitly removed "fake live" language from this project. Do not regress.
 
 ---
 
-## Module architecture (TASK 8)
-
-The frontend is now split across **`public/index.html`** + **`public/js/`**.
-Plain `<script>` tags load the modules in order BEFORE the inline script
-at the end of `<body>` — no bundler, no `type="module"`, no defer. Each
-module attaches to `window.MV.<name>`.
-
-```
-public/
-├── index.html                # All HTML + CSS + the wild-west renderers
-└── js/
-    ├── state.js              # MV namespace setup + state docs
-    ├── utils.js              # MV.utils — pure helpers (price/flight/slug/debounce)
-    ├── api.js                # MV.api  — wikiImage, fetchWeather, generateTrips,
-    │                                     ensureLeafletAssets
-    ├── map.js                # MV.map  — scheduleInit (lazy Leaflet boot)
-    ├── render.js             # MV.render — scaffold + hydrate helper.
-    │                           Migration target for renderRail / renderResults /
-    │                           openTripDetail / populateCityListings / etc.
-    └── app.js                # MV.app.init({ initLeaflet, refresh… }) orchestrator
-```
-
-**No circular deps.** Load order is enforced: state → utils → api → map →
-render → app → inline. Each module only references things loaded earlier.
-
-**No global pollution.** Everything lives under `window.MV`. The inline
-script still declares local `const`s (mapState, cityProfiles…) but those
-are block-scoped to the script tag — they don't pollute window.
-
-**The inline `<script>` is not gone yet.** It still owns the renderers
-that are tightly DOM-bound (rails, results drawer, detail page, compare
-modal, step wizard, stories). Migration target is `render.js`. The inline
-duplicates of `priceRange / priceFromRange / priceNum / fmtFlight` are
-now one-line shims that delegate to `MV.utils.*` — single source of truth.
-
 ## Where Things Live (file map)
 
-Inline CSS is in one `<style>` block, inline JS in one `<script>` block.
+The entire frontend is **`public/index.html`** (~9500 lines). The whole thing
+is organised in clearly-commented sections. Inline CSS is in one `<style>`
+block, inline JS in one `<script>` block.
 
 ### HTML body — top-to-bottom
 - Nav + fullscreen mobile menu

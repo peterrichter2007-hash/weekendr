@@ -18,24 +18,11 @@
        Inter 700 dropped — used only 2× in CSS; the 600 weight substitutes cleanly. -->
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Leaflet is loaded LAZILY on viewport visibility (see MV.api.ensureLeafletAssets
-       in js/api.js). Removing the static <link>+<script> here saves
+  <!-- Leaflet is loaded LAZILY on viewport visibility (see ensureLeafletAssets
+       in the script block). Removing the static <link>+<script> here saves
        ~155 KB of render-blocking bytes for mobile users who never scroll
        to the map section. -->
   <link rel="dns-prefetch" href="https://unpkg.com">
-
-  <!-- ============================================================
-       TASK 8 — module split for maintainability
-       Plain <script> tags load + execute in document order, BEFORE
-       the inline <script> at end of <body>. Each module attaches to
-       window.MV.<name>.  See HANDOVER.md → "Module architecture".
-       ============================================================ -->
-  <script src="js/state.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/map.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/app.js"></script>
 
   <!-- Maison Voyage design system + application styles -->
   <style>
@@ -6631,9 +6618,11 @@
   // ============================================================
   // Render rails
   // ============================================================
-  // Parse numeric price for sorting / value highlighting.
-  // Canonical impl in js/utils.js — this is a thin shim.
-  const priceNum = (s) => MV.utils.priceNum(s);
+  // Parse numeric price for sorting / value highlighting
+  function priceNum(s) {
+    const m = String(s || '').match(/(\d[\d,.]*)/);
+    return m ? parseFloat(m[1].replace(/[,.]/g, '')) : 9999;
+  }
   
   function currentFrom() {
     return (typeof mapState !== 'undefined' && mapState) ? mapState.from : 'Berlin';
@@ -7499,14 +7488,10 @@
     return null; // no Wikipedia article we trust → placeholder
   }
   
-  // wikiSlugFor[place] is a per-place override table used in places
-  // like "Lake Como" → "Lake_Como" where the default replace-whitespace
-  // is correct but we sometimes need a Wikipedia-specific variant.
-  // Falls back to MV.utils.wikiSlug for the default transform.
   function wikiSlug(place) {
     if (!place) return '';
     if (wikiSlugFor[place]) return wikiSlugFor[place];
-    return MV.utils.wikiSlug(place);
+    return place.trim().replace(/\s+/g, '_');
   }
   
   // Tracks in-flight requests so we don't fire the same call twice
@@ -7792,14 +7777,20 @@
   
   // ============================================================
   // LIVE WEATHER — Open-Meteo (free, no API key required)
-  //
-  // City-name → coords lookup stays here (cityCoords is curated in
-  // this file); the actual HTTP call lives in MV.api.fetchWeather.
   // ============================================================
   async function fetchWeather(city) {
     const coords = cityCoords[city];
     if (!coords) return null;
-    return MV.api.fetchWeather(coords[0], coords[1]);
+    const [lat, lng] = coords;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      console.error('Weather fetch failed', e);
+      return null;
+    }
   }
   
   // WMO weather codes → human label + emoji
@@ -10316,12 +10307,32 @@
   // these are approximations, not guaranteed prices. The real number
   // comes from the partner site they're deep-linked to.
   // ============================================================
-  // Price + flight formatters — canonical impl lives in js/utils.js (MV.utils).
-  // These thin shims preserve the inline call sites (23 usages across the
-  // script) so the split has no diff cost outside this block.
-  const priceRange     = (n, opts) => MV.utils.priceRange(n, opts);
-  const priceFromRange = (n, opts) => MV.utils.priceFromRange(n, opts);
-  const fmtFlight      = (h)       => MV.utils.fmtFlight(h);
+  function priceRange(n, opts = {}) {
+    if (n == null || n === 0 || n === '0') return opts.zero || 'Free';
+    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num)) return String(n);
+    // Tighter range for very low prices, wider for higher ones
+    const spread = num < 50 ? 0.22 : num < 200 ? 0.16 : num < 500 ? 0.13 : 0.10;
+    const low = Math.max(1, Math.floor(num * (1 - spread) / 5) * 5);
+    const high = Math.ceil(num * (1 + spread) / 5) * 5;
+    if (low === high) return '€' + low + (opts.suffix ? ' ' + opts.suffix : '');
+    return '€' + low + '–' + high + (opts.suffix ? ' ' + opts.suffix : '');
+  }
+  function priceFromRange(n, opts = {}) {
+    // For "from €X" displays — shows the low end of the range
+    if (n == null || n === 0) return opts.zero || 'Free';
+    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num)) return String(n);
+    const spread = num < 50 ? 0.22 : num < 200 ? 0.16 : num < 500 ? 0.13 : 0.10;
+    const low = Math.max(1, Math.floor(num * (1 - spread) / 5) * 5);
+    return 'from €' + low;
+  }
+
+  function fmtFlight(h) {
+    const hours = Math.floor(h);
+    const mins = Math.round((h - hours) * 60);
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
   
   // ====== AVAILABILITY HEURISTIC ======
   // Deterministic per city + day. In a real production deploy these would be
@@ -10996,27 +11007,64 @@
   bindMapControls();
 
   // ============================================================
-  // Boot orchestrator
+  // Lazy boot: defer Leaflet's CSS (~14KB), JS (~144KB), L.map(),
+  // and ~30 tile requests until #leafletMap enters the viewport.
+  // Mobile users who never scroll past the hero never pay this cost.
   //
-  // Lazy Leaflet loader + map scheduling moved to js/api.js +
-  // js/map.js as part of TASK 8. MV.app.init() is the documented
-  // entry point — it schedules the map and runs the initial UI
-  // refresh from the persisted MV.favorites / MV.compare stores.
-  //
-  // renderMap() still has to run here (not inside MV.app.init)
-  // because it paints the sidebar + stats + concierge preview
-  // synchronously, which the rest of this script's wiring assumes
-  // has already happened.
+  // ensureLeafletAssets injects the <link> + <script> on demand and
+  // resolves once `L` is global. The IntersectionObserver uses a
+  // 200px rootMargin so the map is warm by the time it's in view.
   // ============================================================
-  renderMap();
-  if (typeof renderAllRails === 'function') renderAllRails();
+  let leafletAssetsPromise = null;
+  function ensureLeafletAssets() {
+    if (typeof L !== 'undefined') return Promise.resolve();
+    if (leafletAssetsPromise) return leafletAssetsPromise;
+    leafletAssetsPromise = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
 
-  MV.app.init({
-    mapHostId: 'leafletMap',
-    initLeaflet: initLeaflet,
-    refreshFavouriteUI: refreshFavouriteUI,
-    refreshCompareUI: refreshCompareUI
-  });
+      const js = document.createElement('script');
+      js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      js.crossOrigin = '';
+      js.async = true;
+      js.onload = () => resolve();
+      js.onerror = () => reject(new Error('Leaflet failed to load'));
+      document.head.appendChild(js);
+    });
+    return leafletAssetsPromise;
+  }
+
+  function scheduleLeafletInit() {
+    const host = document.getElementById('leafletMap');
+    if (!host) return;
+    const boot = () => {
+      ensureLeafletAssets().then(initLeaflet).catch(err => console.error(err));
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          io.disconnect();
+          boot();
+        }
+      }, { rootMargin: '200px' });
+      io.observe(host);
+    } else {
+      boot();
+    }
+  }
+  if (document.readyState === 'complete') {
+    scheduleLeafletInit();
+  } else {
+    window.addEventListener('load', scheduleLeafletInit);
+  }
+  renderMap();
+  // Re-render rails now that smartDestinations is available (proper flight times)
+  if (typeof renderAllRails === 'function') renderAllRails();
   
   // ============================================================
   // FLUID MOTION: smooth-scroll easing, parallax, magnetic hover
