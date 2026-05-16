@@ -7801,7 +7801,7 @@
         <div class="dh-stage" id="dhStage">
           ${getCityGallery(cityName).map((slug, i) => `
             <div class="dh-slide ${i === 0 ? 'active' : ''} has-placeholder" data-label="${cityName}" data-wiki="${slug}">
-              <img alt="${cityName}" loading="${i === 0 ? 'eager' : 'lazy'}" />
+              <img alt="${cityName}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${i === 0 ? 'high' : 'low'}" />
             </div>
           `).join('')}
         </div>
@@ -7996,28 +7996,86 @@
   }
 
   // ============================================================
-  // CITY HERO CAROUSEL — 6.5s rotation with smooth crossfade
+  // CITY HERO CAROUSEL — 6.5s rotation, smooth crossfade
+  //
+  // Production-safe design:
+  // - Each slide's <img> src is set asynchronously by hydrateWikiImages
+  //   (cached Wikipedia URLs from localStorage, no refetch).
+  // - tick() only advances to slides whose image actually loaded —
+  //   never fades onto a typographic placeholder or broken image.
+  // - We pre-warm the browser cache for the upcoming slide via
+  //   new Image() so the crossfade reveals a fully decoded picture.
+  // - When the tab is hidden we pause the interval — no CPU/cache
+  //   churn for backgrounded tabs.
+  // - stopCityHeroCarousel tears down both the interval and the
+  //   visibilitychange listener (no memory leak on detail close).
   // ============================================================
+  const CITY_HERO_INTERVAL_MS = 6500;
   let cityHeroTimer = null;
+  let cityHeroVisHandler = null;
+
   function startCityHeroCarousel() {
-    if (cityHeroTimer) { clearInterval(cityHeroTimer); cityHeroTimer = null; }
+    stopCityHeroCarousel();
     const stage = document.getElementById('dhStage');
     const dots = document.getElementById('dhDots');
     if (!stage) return;
     const slides = stage.querySelectorAll('.dh-slide');
     const dotEls = dots ? dots.querySelectorAll('span') : [];
     if (slides.length < 2) return;
+
+    const slideReady = (slide) => {
+      if (!slide || slide.classList.contains('has-placeholder')) return false;
+      const img = slide.querySelector('img');
+      return !!(img && img.src && !img.classList.contains('img-broken'));
+    };
+
+    const warmSlide = (slide) => {
+      if (!slide || slide.dataset.preloaded === '1') return;
+      const img = slide.querySelector('img');
+      if (!img || !img.src) return;
+      slide.dataset.preloaded = '1';
+      const pre = new Image();
+      pre.decoding = 'async';
+      pre.src = img.src;
+    };
+
     let i = 0;
-    cityHeroTimer = setInterval(() => {
+    // Pre-warm the next slide so the first transition isn't a cold fetch.
+    warmSlide(slides[1]);
+
+    const tick = () => {
+      let next = i;
+      for (let step = 0; step < slides.length; step++) {
+        next = (next + 1) % slides.length;
+        if (next !== i && slideReady(slides[next])) break;
+      }
+      if (next === i || !slideReady(slides[next])) return; // nothing else ready; retry next tick
       slides[i].classList.remove('active');
       dotEls[i]?.classList.remove('on');
-      i = (i + 1) % slides.length;
-      slides[i].classList.add('active');
-      dotEls[i]?.classList.add('on');
-    }, 6500);
+      slides[next].classList.add('active');
+      dotEls[next]?.classList.add('on');
+      i = next;
+      warmSlide(slides[(next + 1) % slides.length]);
+    };
+
+    cityHeroTimer = setInterval(tick, CITY_HERO_INTERVAL_MS);
+
+    cityHeroVisHandler = () => {
+      if (document.hidden) {
+        if (cityHeroTimer) { clearInterval(cityHeroTimer); cityHeroTimer = null; }
+      } else if (!cityHeroTimer) {
+        cityHeroTimer = setInterval(tick, CITY_HERO_INTERVAL_MS);
+      }
+    };
+    document.addEventListener('visibilitychange', cityHeroVisHandler);
   }
+
   function stopCityHeroCarousel() {
     if (cityHeroTimer) { clearInterval(cityHeroTimer); cityHeroTimer = null; }
+    if (cityHeroVisHandler) {
+      document.removeEventListener('visibilitychange', cityHeroVisHandler);
+      cityHeroVisHandler = null;
+    }
   }
   
   function skeletonListings(n) {
