@@ -154,6 +154,36 @@ The Booking `nflt` price filter is **derived from the user's budget**:
 - **`pickActivityWiki`** — 130+ landmark→Wikipedia mappings.
 - **`cityProfiles`** — 16 cities × ~25 items each = 400+ curated entries.
 - **`partnerLinks` URL structure** — tested live.
+- **`MV.cities` shape** — published API for AI / affiliate overlays. Field
+  names are a contract; adding fields is fine, renaming is not.
+
+## City Data Model — `MV.cities`
+
+Canonical structured shape for AI + affiliate consumers. Composes the four
+curated sources (`cityGallery`, `smartDestinations`, `cityCoords`,
+`cityProfiles`) into one normalised City object on read. Defined right
+after `cityCoords` in the script block.
+
+```js
+MV.cities.get('Lisbon')
+// → { name, country, vibe, tagline, tags, coords,
+//     images:[{slug,source}], hotels[], activities[], restaurants[],
+//     guides[], prices:{Berlin:79,...}, flights:{Berlin:3.5,...},
+//     estimatedBudget:{flight_min, hotel_per_night_min, weekend_2night_min,
+//                      currency:'EUR'},
+//     source:{hotels:'curated', images:'wikipedia', prices:'estimate', ...} }
+
+MV.cities.all()              // → 16 baseline + any overrides
+MV.cities.override(name, p)  // merge a partial override (e.g. real Hotelbeds
+                             // hotels, real Skyscanner prices). Pass null
+                             // to remove. The renderer never mutates curated
+                             // data — overrides layer cleanly on top.
+```
+
+**Future-API injection point.** When Hotelbeds / Skyscanner / GetYourGuide
+returns real data, call `MV.cities.override(...)` instead of editing the
+baseline. The `source` map on each field lets callers see what's real and
+what's still an estimate.
 
 ---
 

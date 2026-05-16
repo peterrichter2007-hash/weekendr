@@ -9485,6 +9485,143 @@
     Amsterdam: [52.370, 4.895], London: [51.507, -0.128], Stockholm: [59.329, 18.068],
     Madrid: [40.416, -3.703]
   };
+
+  // ============================================================
+  // CITY DATA MODEL — canonical structured shape for AI + affiliates
+  //
+  // Four existing data sources (cityGallery, smartDestinations,
+  // cityCoords, cityProfiles) are deliberately kept separate — each
+  // is the single source of truth for its concern, and each is hand-
+  // curated to enforce the uniqueness rule (no two cities share an
+  // entry). MV.cities composes them into one normalised City object
+  // on read so:
+  //
+  //   1. AI / affiliate / overlay code has ONE shape to consume —
+  //      they don't need to know about four scattered globals.
+  //   2. Curated baseline stays editable in its native shape.
+  //   3. API overrides merge cleanly via MV.cities.override(name, patch)
+  //      without mutating any curated data — the renderer just picks
+  //      up the new values on next .get() call.
+  //
+  // Shape returned by MV.cities.get(name):
+  //   {
+  //     name, country, vibe, tagline, tags,           // identity
+  //     coords: [lat, lng],
+  //     images: [{ slug, source }],                   // wikipedia by default
+  //     hotels: [{ name, neighbourhood, vibe, description, price_per_night, rating }],
+  //     activities: [{ name, category, vibe, description, price_per_person, duration }],
+  //     restaurants: [{ name, cuisine, vibe, price_range, description, must_order }],
+  //     guides: [{ title, category, summary, highlights }],
+  //     prices: { Berlin: 89, Munich: 79, ... },      // origin → €cheapest
+  //     flights: { Berlin: 2.5, ... },                // origin → hours
+  //     estimatedBudget: {
+  //       flight_min,          hotel_per_night_min,
+  //       activity_min,        weekend_2night_min,
+  //       currency: 'EUR'
+  //     },
+  //     source: { hotels:'curated', images:'wikipedia', prices:'estimate', ... }
+  //   }
+  //
+  // Public API:
+  //   MV.cities.get(name)         → City | null
+  //   MV.cities.all()             → City[]   (16 baseline + any overrides)
+  //   MV.cities.override(n,patch) → merge a partial override (e.g. real
+  //                                 hotel inventory from Hotelbeds, or a
+  //                                 fresh price quote from Skyscanner).
+  //                                 Pass null to remove.
+  //
+  // Example future-API usage:
+  //   const hb = await fetch('/api/hotelbeds?city=Lisbon').then(r=>r.json());
+  //   MV.cities.override('Lisbon', {
+  //     hotels: hb.hotels,
+  //     source: { hotels: 'hotelbeds' }
+  //   });
+  //   // Next call to MV.cities.get('Lisbon').hotels returns real inventory.
+  // ============================================================
+  const MV = window.MV || (window.MV = {});
+  MV.cities = (function () {
+    const overrides = new Map();
+
+    function minOf(values) {
+      const nums = values.filter(v => typeof v === 'number' && v > 0);
+      return nums.length ? Math.min(...nums) : null;
+    }
+
+    function compose(name) {
+      const sd = smartDestinations.find(s => s.key === name);
+      if (!sd) return null;
+      const profile = cityProfiles[name] || {};
+      const flightMin = minOf(Object.values(sd.prices || {}));
+      const hotelMin = minOf((profile.hotels || []).map(h => h.price_per_night));
+      const activityMin = minOf((profile.activities || []).map(a => a.price_per_person));
+      const weekendMin = (flightMin != null && hotelMin != null)
+        ? flightMin + (hotelMin * 2) + (activityMin != null ? activityMin : 0)
+        : null;
+      return {
+        name: sd.key,
+        country: sd.country,
+        vibe: sd.vibe,
+        tagline: sd.tagline,
+        tags: sd.vibeTags ? sd.vibeTags.slice() : [],
+        coords: cityCoords[name] || null,
+        images: (cityGallery[name] || [name]).map(slug => ({
+          slug,
+          source: 'wikipedia'
+        })),
+        hotels: profile.hotels || [],
+        activities: profile.activities || [],
+        restaurants: profile.restaurants || [],
+        guides: profile.guides || [],
+        prices: { ...(sd.prices || {}) },
+        flights: { ...(sd.flights || {}) },
+        estimatedBudget: {
+          flight_min: flightMin,
+          hotel_per_night_min: hotelMin,
+          activity_min: activityMin,
+          weekend_2night_min: weekendMin,
+          currency: 'EUR'
+        },
+        source: {
+          prices: 'estimate',
+          flights: 'estimate',
+          hotels: 'curated',
+          activities: 'curated',
+          restaurants: 'curated',
+          guides: 'curated',
+          images: 'wikipedia',
+          coords: 'curated'
+        }
+      };
+    }
+
+    function get(name) {
+      if (!name) return null;
+      const base = compose(name);
+      const ov = overrides.get(name);
+      if (!base) return ov ? { ...ov } : null;
+      if (!ov) return base;
+      return {
+        ...base,
+        ...ov,
+        source: { ...base.source, ...(ov.source || {}) }
+      };
+    }
+
+    function all() {
+      const baseNames = smartDestinations.map(s => s.key);
+      const baseSet = new Set(baseNames);
+      const overrideOnly = [...overrides.keys()].filter(n => !baseSet.has(n));
+      return [...baseNames, ...overrideOnly].map(get).filter(Boolean);
+    }
+
+    function override(name, patch) {
+      if (!name) return;
+      if (patch === null || patch === undefined) overrides.delete(name);
+      else overrides.set(name, patch);
+    }
+
+    return { get, all, override };
+  })();
   
   // Value score: lower is better. We weight price, flight time, and a "vibe" multiplier.
   function valueScore(d, from) {
