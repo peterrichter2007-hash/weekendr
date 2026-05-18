@@ -12617,6 +12617,86 @@
   });
 
   // ============================================================
+  // LEGAL CONTENT — Privacy Policy (step 5/12)
+  //
+  // Plain-language privacy notice. The rule for this page: only
+  // describe data flows that actually exist in the codebase right
+  // now. Anything aspirational ("we may use…", "we might collect…")
+  // gets cut — that's the kind of vagueness that erodes trust.
+  //
+  // Every claim here is verifiable against the source:
+  //   localStorage keys: search for `mv_favs_v1` / `mv_compare_v1` /
+  //     `mv_consent_v1` / `mv_api_key` / `mv_wiki_*` / `city_cache_*`
+  //   third-party endpoints: search for the host in this file
+  //   no analytics today: there is no analytics script tag anywhere
+  //
+  // When a new data flow is added (e.g. real analytics, real
+  // affiliate-pixel), this page gets updated in the SAME commit.
+  // ============================================================
+  MV.legal.register('privacy', {
+    title: 'Privacy Policy',
+    sub: 'What we collect, what we don\'t, what your browser sends where',
+    html: `
+      <p>We collect as little as possible. The site runs entirely in your browser — there is no user account, no login, and nothing about you sits on our servers. Below is the complete list of what your browser stores, what it sends to third parties, and what we ship through our own server.</p>
+
+      <h3>What lives on your device</h3>
+      <p>We use your browser's <strong>localStorage</strong>, not cookies, to remember things between visits. The full list:</p>
+      <ul>
+        <li><strong>mv_favs_v1</strong> — the cities you saved (just the city name + a timestamp).</li>
+        <li><strong>mv_compare_v1</strong> — the cities you added to the comparison tray (same shape).</li>
+        <li><strong>mv_consent_v1</strong> — your choice on the cookie/consent banner.</li>
+        <li><strong>mv_api_key</strong> — only if you paste an Anthropic API key into the AI Concierge modal. It stays on your device and we never see it stored anywhere. (See "Anthropic" below for how it's used during a request.)</li>
+        <li><strong>mv_wiki_*</strong> — cached Wikipedia image URLs and article summaries so the site stays fast on repeat visits.</li>
+        <li><strong>city_cache_*</strong> — the last AI-generated detail page per city (so it appears instantly next time).</li>
+      </ul>
+      <p>You can see and delete any of these at any time. Open your browser's DevTools → <em>Application</em> → <em>Local Storage</em> → click <em>Clear</em>. Or in the console: <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">localStorage.clear()</code>.</p>
+
+      <h3>Third parties your browser talks to</h3>
+      <p>When you use Maison Voyage, your browser makes requests to a small set of public APIs and CDNs. None of these calls include any personal identifier we control. The honest list:</p>
+      <ul>
+        <li><strong>Wikipedia</strong> (<em>en.wikipedia.org</em>, <em>upload.wikimedia.org</em>) — for city images and landmark summaries. We send only the article title.</li>
+        <li><strong>Open-Meteo</strong> (<em>api.open-meteo.com</em>) — for current weather and a 4-day forecast. We send only the destination's coordinates — never yours.</li>
+        <li><strong>Map tiles</strong> (<em>server.arcgisonline.com</em> for satellite imagery, <em>basemaps.cartocdn.com</em> for label overlays) — the tile host sees your IP address through normal HTTP, as with any image on the web.</li>
+        <li><strong>Google Fonts</strong> (<em>fonts.googleapis.com</em>, <em>fonts.gstatic.com</em>) — for the Fraunces and Inter typefaces. Google sees your IP and User-Agent when fonts load.</li>
+        <li><strong>unpkg.com</strong> — the CDN that serves the Leaflet map library, loaded on demand only when you scroll to the map section. The CDN host sees your IP.</li>
+      </ul>
+
+      <h3>What we send through our own server</h3>
+      <p>One endpoint runs on our side: <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">POST /api/generate-trips</code>. This is a thin proxy to <strong>Anthropic</strong> for the AI Concierge and city-detail generation.</p>
+      <p>When you submit a search or open a city, we forward two things to Anthropic: <strong>your prompt</strong> (the search parameters you entered) and <strong>your own API key</strong> from <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">mv_api_key</code>. Anthropic processes the request under their own privacy policy. <strong>We do not log, persist or analyse</strong> the prompt, the response, or the key. The request lives in memory on our serverless function for the duration of the call and is then gone.</p>
+
+      <h3>Affiliate / partner deep-links</h3>
+      <p>When you click a <em>Search live</em> button you leave Maison Voyage and land on a partner site — Skyscanner, Booking.com, FlixBus, GetYourGuide or Google Maps. The link includes your trip parameters (origin, dates, adults) so the partner can pre-fill the search. From that moment on, the partner's privacy policy applies. They may set their own cookies.</p>
+      <p>We do not set any tracking cookies before the redirect. Affiliate-commission attribution, when it becomes active, is handled by the partner reading a referrer parameter on the URL — no shared identifier is stored on our side. See the <a href="#" data-legal="affiliate">Affiliate Disclosure</a> for full detail.</p>
+
+      <h3>Hosting</h3>
+      <p>The site is served by <strong>Vercel</strong> (Vercel Inc., USA) from edge locations close to you. Vercel automatically logs standard HTTP request metadata (IP address, User-Agent, response time, status code) for security and uptime monitoring. We do not enrich these logs with any application data.</p>
+      <p>The source code lives on <strong>GitHub</strong> (GitHub Inc., USA). GitHub does not see your traffic — only ours when we push a new deploy.</p>
+
+      <h3>Analytics</h3>
+      <p>There is <strong>no analytics</strong> active on this site today. If we add any, it will be a privacy-first product such as <strong>Plausible</strong> or <strong>Vercel Analytics</strong> — both cookieless, both without cross-site tracking — and we will only activate it for visitors who have accepted analytics on the <a href="#" data-legal="cookies">consent banner</a>. This page will be updated in the same commit.</p>
+
+      <h3>Your rights (GDPR / Swiss FADP)</h3>
+      <p>You can at any time ask to:</p>
+      <ul>
+        <li>access what we hold about you,</li>
+        <li>correct or delete it,</li>
+        <li>object to a specific processing,</li>
+        <li>export your data.</li>
+      </ul>
+      <p>Because nothing about you lives on our servers, the practical answer for most requests is: clear your browser's <em>localStorage</em> and there is nothing left of your visit. For everything else, write to <span class="placeholder">YOUR_EMAIL</span> — we aim to reply within five working days.</p>
+
+      <h3>Children</h3>
+      <p>Maison Voyage is not directed at children under 16. We do not knowingly collect personal data from anyone in that age group.</p>
+
+      <h3>Changes to this page</h3>
+      <p>We update this page whenever a data flow is added or removed. The version date is at the bottom. If we ever make a change that meaningfully affects what we collect, we'll surface the consent banner again so you can re-decide.</p>
+
+      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
+    `
+  });
+
+  // ============================================================
   // FAVOURITES + COMPARE — UI sync
   //
   // Every interactive button declares its city ID via either
