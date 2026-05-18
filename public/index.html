@@ -12697,6 +12697,78 @@
   });
 
   // ============================================================
+  // LEGAL CONTENT — Affiliate Disclosure (step 6/12)
+  //
+  // The honest version of how affiliate commission works on this
+  // site. Two rules guided the wording:
+  //
+  //   1. Don't claim a commercial relationship we don't yet have.
+  //      Most partner integrations are still placeholders (Booking
+  //      affiliate ID is the example `aid=304142` from HANDOVER —
+  //      not a real ID). The page states this plainly.
+  //
+  //   2. Don't pretend the affiliate model influences the ranking
+  //      when it doesn't. Destinations are sorted by cheapest-from-
+  //      origin via cityEconomy + MV.transport — not by commission.
+  //      The page says that explicitly so a regulator (or a smart
+  //      visitor) doing the math can verify it.
+  //
+  // No "live inventory" claim. No "best price guaranteed" claim.
+  // Just the truth of how the deep-link → partner-checkout flow
+  // works today.
+  // ============================================================
+  MV.legal.register('affiliate', {
+    title: 'Affiliate Disclosure',
+    sub: 'How the partner links work and what we earn',
+    html: `
+      <p>Maison Voyage links out to other companies for the actual booking — flights, hotels, activities, ground transport. If you book through one of our partner links, we <em>may</em> receive a small commission. This page is the honest version of how that works today.</p>
+
+      <h3>Who we link to</h3>
+      <ul>
+        <li><strong>Skyscanner</strong> — for flights</li>
+        <li><strong>Booking.com</strong> — for hotels and apartments</li>
+        <li><strong>FlixBus</strong> — for cheap overland coach routes</li>
+        <li><strong>GetYourGuide</strong> — for activities and tours</li>
+        <li><strong>Google Maps</strong> — for navigation and place info (no commission relationship here)</li>
+      </ul>
+      <p>If we add a new partner, this list is updated in the same deploy.</p>
+
+      <h3>What we earn (the honest part)</h3>
+      <p>We <em>may</em> earn a commission when a booking is completed via one of our partner links. As of today, <strong>most of our integrations are still placeholders</strong> — we deep-link to the partner's search results, but the affiliate IDs in the URLs are not yet wired to real approved accounts. Partner programmes (Booking.com, Skyscanner, GetYourGuide) all require approval before they pay out. Once approvals come through, commission attribution becomes active. This page is updated in the same commit.</p>
+      <p>When commission is active, the rate depends on the partner and the booking type — typically a single-digit percentage of the booking value for hotels and activities, a fixed amount per ticket for flights. It is paid by the partner, not by you.</p>
+
+      <h3>Does this change what you pay?</h3>
+      <p><strong>No.</strong> The price the partner shows you at checkout is the same whether you arrived from Maison Voyage or directly. Our affiliate link does not add anything to your bill.</p>
+
+      <h3>Does this change what we recommend?</h3>
+      <p><strong>No.</strong> Destinations are sorted by cheapest weekend cost from your selected origin, computed from a research-informed economic profile per city plus a known-routes database (flight, bus, train). We do not promote partners that pay higher commissions, and we do not bury cheaper options that pay less. The transport-mode picker selects whichever option is cheapest for the route — even when that points to a partner with a lower commission rate, or no commission at all (Google Maps).</p>
+
+      <h3>What the prices on Maison Voyage actually are</h3>
+      <p>Every price on this site — flight, hotel, activity, bus, train — is an <em>estimate</em>. We compute them from our curated economic profile per city and our route database. They are intended to give a directionally honest answer to "how much does a weekend in Lisbon cost from Berlin?" — not to be a binding quote.</p>
+      <p>The binding price is the one shown to you on the partner's checkout page. By the time you click through, the partner may have raised, lowered, or sold out of the price we displayed. We do not query partner inventory in real time and never claim to.</p>
+
+      <h3>How a click works</h3>
+      <ul>
+        <li>You click a "Search live" button on Maison Voyage.</li>
+        <li>Your browser opens the partner's site in a new tab. Your search parameters (origin, dates, adults) are passed along so the partner's form is pre-filled.</li>
+        <li>From that moment, the partner's terms and privacy policy apply. We do not have visibility into what you book, what you pay or whether you book at all — only into whether the partner attributes a commission to us.</li>
+      </ul>
+
+      <div class="lm-note">
+        <strong>Why we tell you all this.</strong> Affiliate models are often opaque — sites pretend they have active commission deals before they actually do, or quietly re-rank cheaper options below their highest-paying partner. Both are common enough that they erode trust. We'd rather be slow and honest.
+      </div>
+
+      <h3>How to support us</h3>
+      <p>If you find Maison Voyage useful, the simplest support is to use the partner links here when you book a trip you were going to take anyway. There is no other monetisation on this site — no ads, no paid placements, no premium tier.</p>
+
+      <h3>Questions or concerns</h3>
+      <p>Write to <span class="placeholder">YOUR_EMAIL</span>. The operator details are on the <a href="#" data-legal="impressum">Impressum</a> page. For how your data flows, see the <a href="#" data-legal="privacy">Privacy Policy</a>.</p>
+
+      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
+    `
+  });
+
+  // ============================================================
   // FAVOURITES + COMPARE — UI sync
   //
   // Every interactive button declares its city ID via either
