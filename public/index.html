@@ -7036,7 +7036,7 @@
             <li><a href="#" data-legal="impressum">Impressum</a></li>
             <li><a href="#" data-legal="privacy">Privacy Policy</a></li>
             <li><a href="#" data-legal="affiliate">Affiliate Disclosure</a></li>
-            <li><a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();">Cookie Policy</a></li>
+            <li><a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();">Cookie Settings</a></li>
             <li><a href="mailto:hello@maisonvoyage.com">Contact</a></li>
           </ul>
         </div>
@@ -7285,7 +7285,7 @@
     <div class="cb-head"><span class="cb-dot"></span>Cookies &amp; storage</div>
     <p class="cb-text">
       We use <strong>localStorage</strong> to remember your saved trips, comparisons and Wikipedia image cache so the site stays fast on repeat visits. Analytics and affiliate-tracking are <strong>off</strong> until you accept — neither is wired yet, but your choice will apply when we add them.
-      <a id="cbTogglePrefs">Preferences</a>
+      <a id="cbTogglePrefs">Preferences</a> · <a data-legal="privacy" id="cbPrivacyLink">Privacy Policy</a>
     </p>
     <div class="cb-prefs" id="cbPrefs">
       <div class="cb-prefs-row">
@@ -11258,6 +11258,7 @@
       else if (document.getElementById('detail').classList.contains('show')) closeDetail();
       else if (document.getElementById('results').classList.contains('show')) closeResults();
       else if (document.getElementById('keyModal').classList.contains('show')) closeKey();
+      else if (MV.consent && MV.consent.isOpen && MV.consent.isOpen()) MV.consent.close();
       else if (fullmenu.classList.contains('open')) menuBtn.click();
     }
   });
@@ -12318,39 +12319,94 @@
       try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
     }
     let state = read();
+
+    // Reflect saved prefs onto the toggle UI. Lifted to outer scope
+    // so showBanner() can call it on every reopen — that way the
+    // toggles always show the persisted choice, never abandoned
+    // in-progress edits from a previous open.
+    function reflect() {
+      const tA = document.getElementById('cbToggleAnalytics');
+      const tF = document.getElementById('cbToggleAffiliate');
+      if (tA) tA.classList.toggle('on', !!state.prefs.analytics);
+      if (tF) tF.classList.toggle('on', !!state.prefs.affiliate);
+    }
+
+    // Collapse the preferences panel back to its default closed
+    // state when the banner hides — next reopen starts clean.
+    function resetPrefsPanel() {
+      const prefsPanel = document.getElementById('cbPrefs');
+      const btnSave = document.getElementById('cbSavePrefs');
+      if (prefsPanel) prefsPanel.classList.remove('show');
+      if (btnSave) btnSave.style.display = 'none';
+    }
+
+    function hideBanner() {
+      const el = document.getElementById('cookieBanner');
+      if (!el) return;
+      el.classList.remove('show');
+      resetPrefsPanel();
+    }
+
+    // opts.focus=true → move keyboard focus to the primary action
+    // (used when reopened via "Cookie Settings"). First-load auto-
+    // show skips focus so it doesn't interrupt the hero animation.
+    function showBanner(opts) {
+      opts = opts || {};
+      const el = document.getElementById('cookieBanner');
+      if (!el) return;
+      // Refresh from storage so abandoned in-progress toggle clicks
+      // (from a previous open that wasn't saved) don't leak into
+      // the new session.
+      state = read();
+      reflect();
+      el.classList.add('show');
+      if (opts.focus) {
+        setTimeout(() => {
+          const btn = document.getElementById('cbAcceptAll');
+          if (btn) btn.focus();
+        }, 80);
+      }
+    }
+
+    function isOpen() {
+      const el = document.getElementById('cookieBanner');
+      return !!(el && el.classList.contains('show'));
+    }
+
     const api = {
       get: () => ({ ...state, prefs: { ...state.prefs } }),
       has: (k) => !!state.prefs && !!state.prefs[k],
       accept: () => {
         state = { version: 1, decided: true, accepted: true, prefs: { analytics: true, affiliate: true }, decidedAt: Date.now() };
         write(state);
+        reflect();
         hideBanner();
       },
       decline: () => {
         state = { version: 1, decided: true, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: Date.now() };
         write(state);
+        reflect();
         hideBanner();
       },
       setPrefs: (prefs) => {
         const next = { analytics: !!(prefs && prefs.analytics), affiliate: !!(prefs && prefs.affiliate) };
         state = { version: 1, decided: true, accepted: next.analytics && next.affiliate, prefs: next, decidedAt: Date.now() };
         write(state);
+        reflect();
         hideBanner();
       },
-      reopen: () => showBanner()
+      // reopen() = user explicitly asked for settings → move focus.
+      reopen: () => showBanner({ focus: true }),
+      // close() = dismiss WITHOUT persisting (e.g. ESC). Different
+      // from decline() which writes "user said no" to storage.
+      close: () => hideBanner(),
+      isOpen: isOpen
     };
 
-    function hideBanner() {
-      const el = document.getElementById('cookieBanner');
-      if (el) el.classList.remove('show');
-    }
-    function showBanner() {
-      const el = document.getElementById('cookieBanner');
-      if (el) el.classList.add('show');
-    }
-
     // Wire DOM once the banner exists. Inline script runs at end of
-    // body, so the element is already in the document.
+    // body, so the element is already in the document. Listeners
+    // are attached exactly once — reopen() just toggles the .show
+    // class, it never re-binds anything.
     function bind() {
       const banner = document.getElementById('cookieBanner');
       if (!banner) return;
@@ -12362,17 +12418,12 @@
       const btnSave = document.getElementById('cbSavePrefs');
       const btnDecline = document.getElementById('cbDecline');
 
-      const reflect = () => {
-        if (tAnalytics) tAnalytics.classList.toggle('on', state.prefs.analytics);
-        if (tAffiliate) tAffiliate.classList.toggle('on', state.prefs.affiliate);
-      };
       reflect();
 
       if (togglePrefsLink) {
         togglePrefsLink.addEventListener('click', (e) => {
           e.preventDefault();
           prefsPanel.classList.toggle('show');
-          // Once the user opens preferences, swap Accept-all primary for Save
           const open = prefsPanel.classList.contains('show');
           if (btnSave) btnSave.style.display = open ? 'inline-flex' : 'none';
         });
@@ -12395,10 +12446,11 @@
       if (btnSave)    btnSave.addEventListener('click',    () => api.setPrefs(state.prefs));
       if (btnDecline) btnDecline.addEventListener('click', () => api.decline());
 
-      // First visit → slide it in after 700ms so the hero animates first.
-      // Returning visit with consent already decided → don't show again.
+      // First visit → slide it in after 700ms so the hero animates
+      // first. Returning visit with state.decided=true → silent.
+      // Auto-show skips focus stealing on purpose.
       if (!state.decided) {
-        setTimeout(showBanner, 700);
+        setTimeout(() => showBanner({ focus: false }), 700);
       }
     }
 
