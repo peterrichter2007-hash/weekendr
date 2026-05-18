@@ -5941,6 +5941,157 @@
       vertical-align: -2px;
       animation: spin 0.8s linear infinite;
     }
+
+    /* ============================================================
+       COOKIE CONSENT BANNER — first-load, non-intrusive
+       Glass-styled, bottom-center, slides up after 600ms so it
+       doesn't fight the hero on initial paint.
+       ============================================================ */
+    .cookie-banner {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translate(-50%, 130%);
+      z-index: 155;
+      width: min(560px, calc(100vw - 32px));
+      padding: 1.05rem 1.2rem 1.05rem 1.4rem;
+      background: linear-gradient(180deg, rgba(36, 30, 24, 0.94) 0%, rgba(22, 18, 16, 0.96) 100%);
+      backdrop-filter: blur(28px) saturate(1.6);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      border: 1px solid rgba(255, 214, 138, 0.22);
+      border-radius: 22px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 28px 60px -16px rgba(8, 7, 5, 0.7),
+        0 0 36px rgba(255, 214, 138, 0.10);
+      color: rgba(255, 255, 253, 0.92);
+      visibility: hidden;
+      transition: transform 0.6s var(--ease-out), visibility 0.6s;
+      font-family: var(--sans);
+    }
+    .cookie-banner.show { transform: translate(-50%, 0); visibility: visible; }
+    .cb-head {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 214, 138, 0.92);
+      margin-bottom: 0.5rem;
+    }
+    .cb-head .cb-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(255, 214, 138, 0.15);
+    }
+    .cb-text {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: rgba(255, 255, 253, 0.85);
+      margin: 0 0 0.95rem;
+    }
+    .cb-text a {
+      color: rgba(255, 214, 138, 0.95);
+      text-decoration: underline;
+      text-decoration-color: rgba(255, 214, 138, 0.35);
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+    .cb-prefs {
+      display: none;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 0 0 0.95rem;
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 253, 0.04);
+      border: 1px solid rgba(255, 255, 253, 0.08);
+      border-radius: 14px;
+    }
+    .cb-prefs.show { display: flex; }
+    .cb-prefs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .cb-prefs-row .lbl {
+      flex: 1;
+      font-size: 0.82rem;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+    .cb-prefs-row .sub {
+      display: block;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 253, 0.55);
+      margin-top: 0.18rem;
+      line-height: 1.4;
+    }
+    .cb-toggle {
+      width: 38px; height: 22px;
+      background: rgba(255, 255, 253, 0.12);
+      border: 1px solid rgba(255, 255, 253, 0.18);
+      border-radius: 100px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s var(--ease);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .cb-toggle::before {
+      content: '';
+      width: 16px; height: 16px;
+      background: rgba(255, 255, 253, 0.85);
+      border-radius: 50%;
+      position: absolute;
+      top: 2px; left: 2px;
+      transition: transform 0.3s var(--ease-out), background 0.3s var(--ease);
+    }
+    .cb-toggle.on { background: rgba(255, 214, 138, 0.55); border-color: rgba(255, 214, 138, 0.65); }
+    .cb-toggle.on::before { transform: translateX(16px); background: #FFD68A; }
+    .cb-toggle.locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background: rgba(45, 190, 92, 0.30);
+      border-color: rgba(45, 190, 92, 0.45);
+    }
+    .cb-toggle.locked::before { background: #2DBE5C; transform: translateX(16px); }
+    .cb-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .cb-btn {
+      padding: 0.55rem 1.05rem;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s var(--ease), color 0.3s var(--ease), transform 0.3s var(--ease-out);
+      font-family: var(--sans);
+      border: 1px solid rgba(255, 255, 253, 0.16);
+      background: transparent;
+      color: rgba(255, 255, 253, 0.85);
+    }
+    .cb-btn:hover { background: rgba(255, 255, 253, 0.06); color: var(--cream); }
+    .cb-btn.primary {
+      background: linear-gradient(180deg, rgba(255, 214, 138, 0.95) 0%, rgba(184, 148, 94, 0.95) 100%);
+      color: #1a1410;
+      border-color: rgba(255, 214, 138, 0.6);
+      font-weight: 600;
+    }
+    .cb-btn.primary:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, rgba(255, 220, 150, 1) 0%, rgba(194, 158, 104, 1) 100%);
+    }
+    @media (max-width: 520px) {
+      .cookie-banner { bottom: 12px; padding: 0.95rem 1rem; }
+      .cb-text { font-size: 0.85rem; }
+      .cb-btn { padding: 0.5rem 0.9rem; font-size: 0.78rem; flex: 1; min-width: 0; }
+    }
   </style>
 </head>
 <body>
@@ -6852,6 +7003,39 @@
   <!-- Compare modal — 2-4 cities side by side. Rendered on demand by openCompareModal() -->
   <div class="compare-veil" id="compareVeil" onclick="closeCompareModal()"></div>
   <div class="compare-modal" id="compareModal" role="dialog" aria-modal="true" aria-label="Compare trips"></div>
+
+  <!-- ============================================================
+       COOKIE CONSENT BANNER — shown once on first visit
+       Captured consent lives in localStorage['mv_consent_v1'].
+       "Essential" toggle is locked-on because the site can't run
+       without localStorage (saved trips, comparisons, image cache).
+       ============================================================ -->
+  <div class="cookie-banner" id="cookieBanner" role="region" aria-label="Cookie consent">
+    <div class="cb-head"><span class="cb-dot"></span>Cookies &amp; storage</div>
+    <p class="cb-text">
+      We use <strong>localStorage</strong> to remember your saved trips, comparisons and Wikipedia image cache so the site stays fast on repeat visits. Analytics and affiliate-tracking are <strong>off</strong> until you accept — neither is wired yet, but your choice will apply when we add them.
+      <a id="cbTogglePrefs">Preferences</a>
+    </p>
+    <div class="cb-prefs" id="cbPrefs">
+      <div class="cb-prefs-row">
+        <span class="lbl">Essential storage<span class="sub">Saved trips, compare list, image cache. Required for the site to work.</span></span>
+        <span class="cb-toggle locked on" title="Required" aria-disabled="true"></span>
+      </div>
+      <div class="cb-prefs-row">
+        <span class="lbl">Analytics<span class="sub">Anonymous page-view counts (none active yet — will use Plausible or Vercel Analytics).</span></span>
+        <span class="cb-toggle" id="cbToggleAnalytics" role="switch" tabindex="0" aria-label="Analytics"></span>
+      </div>
+      <div class="cb-prefs-row">
+        <span class="lbl">Affiliate tracking<span class="sub">Lets partners know your booking came from Maison Voyage. No personal data shared.</span></span>
+        <span class="cb-toggle" id="cbToggleAffiliate" role="switch" tabindex="0" aria-label="Affiliate tracking"></span>
+      </div>
+    </div>
+    <div class="cb-actions">
+      <button class="cb-btn primary" id="cbAcceptAll">Accept all</button>
+      <button class="cb-btn" id="cbSavePrefs" style="display:none;">Save preferences</button>
+      <button class="cb-btn" id="cbDecline">Decline</button>
+    </div>
+  </div>
 
   <!-- Maison Voyage application logic -->
   <script>
@@ -11821,6 +12005,135 @@
   }
   MV.favorites = _mvStoreFactory('mv_favs_v1', null);
   MV.compare   = _mvStoreFactory('mv_compare_v1', 4);
+
+  // ============================================================
+  // CONSENT — cookie/storage consent state + first-visit banner
+  //
+  // Storage: localStorage['mv_consent_v1'] with the same versioned
+  // shape used by favorites/compare so a future backend can sync it.
+  //   { version, decided, accepted, prefs: {analytics, affiliate},
+  //     decidedAt }
+  //
+  // "Essential" storage (saved trips, image cache, compare list) is
+  // always on — the app can't function without localStorage and we
+  // never share that data externally. Analytics + affiliate-tracking
+  // are off by default and gated behind explicit consent.
+  //
+  // Public API:
+  //   MV.consent.get()              → full state
+  //   MV.consent.has('analytics')   → bool
+  //   MV.consent.accept()           → accept all + close banner
+  //   MV.consent.decline()          → decline all + close banner
+  //   MV.consent.setPrefs({...})    → granular save + close banner
+  //   MV.consent.reopen()           → manually re-show the banner
+  //                                   (for a future "Cookie settings"
+  //                                   footer link)
+  // ============================================================
+  MV.consent = (function () {
+    const KEY = 'mv_consent_v1';
+    function read() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return { version: 1, decided: false, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: null };
+        const parsed = JSON.parse(raw);
+        if (!parsed.prefs) parsed.prefs = { analytics: false, affiliate: false };
+        return parsed;
+      } catch (e) {
+        return { version: 1, decided: false, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: null };
+      }
+    }
+    function write(state) {
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    }
+    let state = read();
+    const api = {
+      get: () => ({ ...state, prefs: { ...state.prefs } }),
+      has: (k) => !!state.prefs && !!state.prefs[k],
+      accept: () => {
+        state = { version: 1, decided: true, accepted: true, prefs: { analytics: true, affiliate: true }, decidedAt: Date.now() };
+        write(state);
+        hideBanner();
+      },
+      decline: () => {
+        state = { version: 1, decided: true, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: Date.now() };
+        write(state);
+        hideBanner();
+      },
+      setPrefs: (prefs) => {
+        const next = { analytics: !!(prefs && prefs.analytics), affiliate: !!(prefs && prefs.affiliate) };
+        state = { version: 1, decided: true, accepted: next.analytics && next.affiliate, prefs: next, decidedAt: Date.now() };
+        write(state);
+        hideBanner();
+      },
+      reopen: () => showBanner()
+    };
+
+    function hideBanner() {
+      const el = document.getElementById('cookieBanner');
+      if (el) el.classList.remove('show');
+    }
+    function showBanner() {
+      const el = document.getElementById('cookieBanner');
+      if (el) el.classList.add('show');
+    }
+
+    // Wire DOM once the banner exists. Inline script runs at end of
+    // body, so the element is already in the document.
+    function bind() {
+      const banner = document.getElementById('cookieBanner');
+      if (!banner) return;
+      const togglePrefsLink = document.getElementById('cbTogglePrefs');
+      const prefsPanel = document.getElementById('cbPrefs');
+      const tAnalytics = document.getElementById('cbToggleAnalytics');
+      const tAffiliate = document.getElementById('cbToggleAffiliate');
+      const btnAccept = document.getElementById('cbAcceptAll');
+      const btnSave = document.getElementById('cbSavePrefs');
+      const btnDecline = document.getElementById('cbDecline');
+
+      const reflect = () => {
+        if (tAnalytics) tAnalytics.classList.toggle('on', state.prefs.analytics);
+        if (tAffiliate) tAffiliate.classList.toggle('on', state.prefs.affiliate);
+      };
+      reflect();
+
+      if (togglePrefsLink) {
+        togglePrefsLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          prefsPanel.classList.toggle('show');
+          // Once the user opens preferences, swap Accept-all primary for Save
+          const open = prefsPanel.classList.contains('show');
+          if (btnSave) btnSave.style.display = open ? 'inline-flex' : 'none';
+        });
+      }
+      const toggleSwitch = (el, key) => {
+        if (!el) return;
+        const flip = () => {
+          state.prefs[key] = !state.prefs[key];
+          reflect();
+        };
+        el.addEventListener('click', flip);
+        el.addEventListener('keydown', (e) => {
+          if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+        });
+      };
+      toggleSwitch(tAnalytics, 'analytics');
+      toggleSwitch(tAffiliate, 'affiliate');
+
+      if (btnAccept)  btnAccept.addEventListener('click',  () => api.accept());
+      if (btnSave)    btnSave.addEventListener('click',    () => api.setPrefs(state.prefs));
+      if (btnDecline) btnDecline.addEventListener('click', () => api.decline());
+
+      // First visit → slide it in after 700ms so the hero animates first.
+      // Returning visit with consent already decided → don't show again.
+      if (!state.decided) {
+        setTimeout(showBanner, 700);
+      }
+    }
+
+    // The inline script runs at end of body, so DOM is ready.
+    bind();
+    return api;
+  })();
 
   // ============================================================
   // FAVOURITES + COMPARE — UI sync
