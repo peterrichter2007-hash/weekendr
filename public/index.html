@@ -6262,6 +6262,69 @@
       color: rgba(255, 255, 253, 0.5);
       font-style: italic;
     }
+    /* Placeholder chip — marks fields the operator must fill in.
+       Visible by design (golden dashed) so it can't be missed. */
+    .lm-content .placeholder {
+      display: inline-block;
+      padding: 0.05rem 0.5rem;
+      background: rgba(255, 214, 138, 0.10);
+      border: 1px dashed rgba(255, 214, 138, 0.45);
+      border-radius: 4px;
+      color: rgba(255, 214, 138, 0.92);
+      font-size: 0.86em;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.02em;
+    }
+    /* Card + key/value rows for the contact block in Impressum,
+       reusable for any other legal page that needs a meta-data card. */
+    .lm-content .lm-card {
+      background: rgba(255, 255, 253, 0.04);
+      border: 1px solid rgba(255, 255, 253, 0.08);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      margin: 1.2rem 0 1.6rem;
+    }
+    .lm-content .lm-meta-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255, 255, 253, 0.07);
+      font-size: 0.9rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .lm-content .lm-meta-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .lm-content .lm-meta-row:first-child { padding-top: 0; }
+    .lm-content .lm-meta-row .k {
+      color: rgba(255, 255, 253, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.7rem;
+      font-weight: 500;
+      min-width: 140px;
+    }
+    .lm-content .lm-meta-row .v {
+      color: rgba(255, 255, 253, 0.92);
+      text-align: right;
+      flex: 1;
+    }
+    .lm-content .lm-note {
+      margin: 1.6rem 0;
+      padding: 0.95rem 1.2rem;
+      border-left: 2px solid rgba(255, 214, 138, 0.4);
+      background: rgba(255, 214, 138, 0.04);
+      color: rgba(255, 255, 253, 0.72);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      border-radius: 0 8px 8px 0;
+    }
+    .lm-content time {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 253, 0.4);
+      letter-spacing: 0.04em;
+    }
     @media (max-width: 720px) {
       .legal-modal { inset: 14px; border-radius: 22px; }
       .lm-head { padding: 1rem 1.1rem; }
@@ -12481,6 +12544,77 @@
 
     return { register, open, close, has };
   })();
+
+  // ============================================================
+  // LEGAL CONTENT — Impressum (step 4/12)
+  //
+  // Swiss operator template. Placeholders are visually marked with
+  // <span class="placeholder">…</span> (golden dashed border) so it
+  // is obvious which fields the operator must fill in before launch.
+  //
+  // Why these fields exist (Swiss + reachability for DE/AT traffic):
+  // - Full name + postal address: required for an identifiable
+  //   responsible party (UWG / OR Art. 956 for sole proprietorships,
+  //   and § 5 TMG for any DE/AT visitors).
+  // - E-mail: required for direct electronic contact.
+  // - V.i.S.d.P.: responsible for editorial content (relevant the
+  //   moment we publish editorial pieces like the Journal).
+  // - VAT / UID: only required once turnover exceeds CHF 100'000.
+  //   Until then, an honest "below threshold" line is correct.
+  // - Liability / external-link / copyright clauses: standard but
+  //   tailored to the affiliate model we actually run.
+  // - "AI-assisted content" disclosure: matches the rest of the
+  //   site's honesty rules.
+  //
+  // No legal advice — this is a template. The operator should have
+  // a lawyer review before launch, especially for cross-border DE/AT
+  // traffic claims and any future GDPR contracts.
+  // ============================================================
+  MV.legal.register('impressum', {
+    title: 'Impressum',
+    sub: 'Operator details & responsibility',
+    html: `
+      <p>This page identifies the natural person operating Maison Voyage and the responsibilities they accept under Swiss and European law. We keep it short and honest — the moment any of these details change, this page is updated.</p>
+
+      <h3>Operator</h3>
+      <div class="lm-card">
+        <div class="lm-meta-row"><span class="k">Full name</span><span class="v"><span class="placeholder">YOUR_FULL_NAME</span></span></div>
+        <div class="lm-meta-row"><span class="k">Postal address</span><span class="v"><span class="placeholder">STREET_AND_NUMBER</span></span></div>
+        <div class="lm-meta-row"><span class="k">Postcode &amp; city</span><span class="v"><span class="placeholder">POSTCODE</span> <span class="placeholder">CITY</span></span></div>
+        <div class="lm-meta-row"><span class="k">Country</span><span class="v">Switzerland</span></div>
+        <div class="lm-meta-row"><span class="k">E-mail</span><span class="v"><span class="placeholder">YOUR_EMAIL</span></span></div>
+        <div class="lm-meta-row"><span class="k">Phone</span><span class="v"><span class="placeholder">OPTIONAL_PHONE</span></span></div>
+      </div>
+
+      <h4>Responsible for content (V.i.S.d.P.)</h4>
+      <p>Same as the operator above, unless otherwise stated on a specific editorial piece.</p>
+
+      <h4>VAT / UID number</h4>
+      <p>Maison Voyage is currently operated by a single natural person and stays below the Swiss VAT registration threshold of <strong>CHF 100'000</strong> annual turnover. A Swiss UID number will be added here once VAT registration becomes mandatory. No invoices with VAT are issued in the meantime.</p>
+
+      <h3>Business model</h3>
+      <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. We do not sell flights, accommodation, activities or ground transport. Every "Search live" button opens an external partner — Skyscanner, Booking.com, FlixBus, GetYourGuide — and the booking happens there, under that partner's terms and conditions. We may receive a commission from partners; see the <a href="#" data-legal="affiliate">Affiliate Disclosure</a> for detail.</p>
+
+      <div class="lm-note">
+        <strong>AI-assisted content.</strong> Some hotel names, activity descriptions and city-detail copy may be partially generated or refined by AI. Prices shown on this site are <em>estimates</em>, never live partner inventory. Always confirm the final price, availability and conditions on the partner site before paying.
+      </div>
+
+      <h3>Liability</h3>
+      <p>We curate the content of this site carefully but accept no liability for the accuracy, completeness or up-to-dateness of the prices and information shown. All prices are estimates intended to help you compare destinations — the binding price is the one the partner shows you at checkout.</p>
+      <p>External links open third-party websites. The moment you click one, you leave the Maison Voyage domain and become subject to that website's privacy policy and terms. We are not responsible for the content of external sites we link to.</p>
+
+      <h3>Copyright</h3>
+      <p>Photography on this site is sourced primarily from <strong>Wikipedia</strong> under CC&nbsp;BY-SA and similar open licences — authors are credited on each Wikipedia article we link to. Editorial text, code and design: © 2026 Maison Voyage. All rights reserved.</p>
+
+      <h3>Applicable law &amp; jurisdiction</h3>
+      <p>Swiss substantive law applies. Place of jurisdiction is the residence of the operator unless mandatory consumer-protection rules of the visitor's country provide otherwise.</p>
+
+      <h4>Contact</h4>
+      <p>Reach the operator directly at <span class="placeholder">YOUR_EMAIL</span>. We aim to reply within five working days.</p>
+
+      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
+    `
+  });
 
   // ============================================================
   // FAVOURITES + COMPARE — UI sync
