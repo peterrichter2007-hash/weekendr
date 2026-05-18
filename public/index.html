@@ -6092,6 +6092,184 @@
       .cb-text { font-size: 0.85rem; }
       .cb-btn { padding: 0.5rem 0.9rem; font-size: 0.78rem; flex: 1; min-width: 0; }
     }
+
+    /* ============================================================
+       LEGAL MODAL SHELL — reusable container for Impressum /
+       Privacy / Affiliate / Cookies. Dark glass to integrate with
+       the rest of the cinematic UI (NO harsh white pages).
+       Content is slotted in per-route by MV.legal.register().
+       ============================================================ */
+    .legal-veil {
+      position: fixed; inset: 0;
+      z-index: 160;
+      background: rgba(12, 11, 9, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s var(--ease), visibility 0.4s;
+    }
+    .legal-veil.show { visibility: visible; }
+    .legal-veil.in { opacity: 1; }
+    .legal-modal {
+      position: fixed;
+      inset: 32px;
+      z-index: 161;
+      background: linear-gradient(180deg, #1a1614 0%, #12100E 100%);
+      color: rgba(255, 255, 253, 0.92);
+      border-radius: 28px;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      transform: translateY(40px);
+      opacity: 0;
+      transition: transform 0.5s var(--ease-out), opacity 0.5s var(--ease);
+      box-shadow:
+        0 0 0 1px rgba(255, 214, 138, 0.08),
+        0 60px 120px -20px rgba(8, 7, 5, 0.6);
+    }
+    .legal-modal.show { display: flex; }
+    .legal-modal.in { transform: translateY(0); opacity: 1; }
+    .lm-head {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.3rem 1.8rem;
+      border-bottom: 1px solid rgba(255, 255, 253, 0.08);
+      background: rgba(255, 255, 253, 0.02);
+    }
+    .lm-close {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 253, 0.18);
+      border-radius: 100px;
+      font-size: 0.84rem;
+      color: rgba(255, 255, 253, 0.85);
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: background 0.25s var(--ease);
+    }
+    .lm-close svg { width: 14px; height: 14px; }
+    .lm-close:hover { background: rgba(255, 255, 253, 0.08); }
+    .lm-title {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .lm-title strong {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.5rem;
+      letter-spacing: -0.01em;
+      color: var(--cream);
+    }
+    .lm-title span {
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      color: rgba(255, 255, 253, 0.5);
+      margin-top: 0.2rem;
+      letter-spacing: 0.04em;
+    }
+    .lm-nav {
+      display: flex;
+      gap: 0.35rem;
+      padding: 0.95rem 1.8rem;
+      border-bottom: 1px solid rgba(255, 255, 253, 0.06);
+      flex-wrap: wrap;
+    }
+    .lm-nav button {
+      padding: 0.45rem 0.9rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 253, 0.14);
+      border-radius: 100px;
+      color: rgba(255, 255, 253, 0.7);
+      font-size: 0.78rem;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease);
+    }
+    .lm-nav button:hover { color: var(--cream); border-color: rgba(255, 214, 138, 0.4); }
+    .lm-nav button.on {
+      background: rgba(255, 214, 138, 0.18);
+      border-color: rgba(255, 214, 138, 0.5);
+      color: rgba(255, 214, 138, 0.95);
+    }
+    .lm-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem clamp(1.5rem, 5vw, 4rem) clamp(2.5rem, 5vw, 4rem);
+      -webkit-overflow-scrolling: touch;
+    }
+    .lm-content {
+      max-width: 720px;
+      margin: 0 auto;
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: rgba(255, 255, 253, 0.78);
+    }
+    .lm-content h3 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.5rem;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+      margin: 2.2rem 0 0.6rem;
+    }
+    .lm-content h3:first-child { margin-top: 0; }
+    .lm-content h4 {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 214, 138, 0.85);
+      margin: 1.8rem 0 0.5rem;
+    }
+    .lm-content p { margin: 0 0 1rem; }
+    .lm-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.6rem 0 1.4rem;
+    }
+    .lm-content ul li {
+      padding: 0.3rem 0 0.3rem 1.4rem;
+      position: relative;
+      color: rgba(255, 255, 253, 0.78);
+    }
+    .lm-content ul li::before {
+      content: '·';
+      position: absolute;
+      left: 0.5rem;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+    .lm-content strong { color: var(--cream); font-weight: 500; }
+    .lm-content em { color: rgba(255, 214, 138, 0.9); font-style: italic; }
+    .lm-content a {
+      color: rgba(255, 214, 138, 0.95);
+      text-decoration: underline;
+      text-decoration-color: rgba(255, 214, 138, 0.3);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.25s var(--ease);
+    }
+    .lm-content a:hover { text-decoration-color: rgba(255, 214, 138, 1); }
+    .lm-empty {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: rgba(255, 255, 253, 0.5);
+      font-style: italic;
+    }
+    @media (max-width: 720px) {
+      .legal-modal { inset: 14px; border-radius: 22px; }
+      .lm-head { padding: 1rem 1.1rem; }
+      .lm-nav { padding: 0.7rem 1.1rem; }
+      .lm-title strong { font-size: 1.15rem; }
+      .lm-body { padding: 1.4rem 1.2rem 2.4rem; }
+      .lm-content { font-size: 0.92rem; line-height: 1.6; }
+    }
   </style>
 </head>
 <body>
@@ -7005,6 +7183,34 @@
   <!-- Compare modal — 2-4 cities side by side. Rendered on demand by openCompareModal() -->
   <div class="compare-veil" id="compareVeil" onclick="closeCompareModal()"></div>
   <div class="compare-modal" id="compareModal" role="dialog" aria-modal="true" aria-label="Compare trips"></div>
+
+  <!-- ============================================================
+       LEGAL MODAL SHELL — Impressum / Privacy / Affiliate / Cookies
+       Content is loaded per-route by MV.legal.open(name). The
+       shell stays empty in this commit; content lands in steps 4-7.
+       ============================================================ -->
+  <div class="legal-veil" id="legalVeil" onclick="MV.legal && MV.legal.close()"></div>
+  <div class="legal-modal" id="legalModal" role="dialog" aria-modal="true" aria-labelledby="lmTitleText">
+    <div class="lm-head">
+      <button class="lm-close" onclick="MV.legal && MV.legal.close()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div class="lm-title">
+        <strong id="lmTitleText">Legal</strong>
+        <span id="lmTitleSub">Maison Voyage</span>
+      </div>
+    </div>
+    <div class="lm-nav" id="lmNav">
+      <button data-legal="impressum">Impressum</button>
+      <button data-legal="privacy">Privacy</button>
+      <button data-legal="affiliate">Affiliate Disclosure</button>
+      <button data-legal="cookies">Cookies</button>
+    </div>
+    <div class="lm-body">
+      <div class="lm-content" id="lmContent"></div>
+    </div>
+  </div>
 
   <!-- ============================================================
        COOKIE CONSENT BANNER — shown once on first visit
@@ -10983,7 +11189,8 @@
   // ============================================================
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (document.getElementById('compareModal')?.classList.contains('show')) closeCompareModal();
+      if (document.getElementById('legalModal')?.classList.contains('show')) { if (MV.legal) MV.legal.close(); }
+      else if (document.getElementById('compareModal')?.classList.contains('show')) closeCompareModal();
       else if (document.getElementById('storyReader')?.classList.contains('show')) closeStory();
       else if (document.getElementById('detail').classList.contains('show')) closeDetail();
       else if (document.getElementById('results').classList.contains('show')) closeResults();
@@ -12135,6 +12342,144 @@
     // The inline script runs at end of body, so DOM is ready.
     bind();
     return api;
+  })();
+
+  // ============================================================
+  // LEGAL MODAL — reusable shell for Impressum / Privacy /
+  //               Affiliate Disclosure / Cookie Policy.
+  //
+  // Content for each route is registered separately (steps 4-7)
+  // via MV.legal.register('impressum', { title, sub, html }). The
+  // shell renders an honest empty-state until a route is registered,
+  // so partial deploys never show fake content.
+  //
+  // Cookies route is special — it links into the existing
+  // MV.consent.reopen() banner since that's where the source of
+  // truth for cookie/storage consent lives.
+  //
+  // Public API:
+  //   MV.legal.register(name, { title, sub, html })
+  //   MV.legal.open(name)
+  //   MV.legal.close()
+  //   MV.legal.has(name)  → bool (is route registered)
+  // ============================================================
+  MV.legal = (function () {
+    const routes = {};
+    let activeRoute = null;
+    let lastFocus = null;
+
+    function register(name, content) {
+      if (!name || !content) return;
+      routes[name] = {
+        title: content.title || 'Legal',
+        sub: content.sub || 'Maison Voyage',
+        html: content.html || ''
+      };
+      // If the modal is currently showing this route, refresh in place
+      if (activeRoute === name && document.getElementById('legalModal')?.classList.contains('show')) {
+        renderRoute(name);
+      }
+    }
+
+    function renderRoute(name) {
+      const titleEl = document.getElementById('lmTitleText');
+      const subEl   = document.getElementById('lmTitleSub');
+      const bodyEl  = document.getElementById('lmContent');
+      const nav     = document.getElementById('lmNav');
+      if (!titleEl || !subEl || !bodyEl) return;
+
+      const r = routes[name];
+      if (r) {
+        titleEl.textContent = r.title;
+        subEl.textContent   = r.sub;
+        bodyEl.innerHTML    = r.html;
+      } else {
+        // Honest empty-state for routes not yet registered
+        titleEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        subEl.textContent   = 'Maison Voyage';
+        bodyEl.innerHTML    = '<div class="lm-empty">This section is being prepared. Come back in a few minutes.</div>';
+      }
+      // Highlight the active nav button
+      if (nav) {
+        nav.querySelectorAll('button').forEach(btn => {
+          btn.classList.toggle('on', btn.dataset.legal === name);
+        });
+      }
+      activeRoute = name;
+    }
+
+    function open(name) {
+      // Cookies route delegates to the consent banner rather than
+      // showing a static page — single source of truth for consent.
+      if (name === 'cookies') {
+        if (window.MV && MV.consent && typeof MV.consent.reopen === 'function') {
+          MV.consent.reopen();
+        }
+        return;
+      }
+      const veil = document.getElementById('legalVeil');
+      const modal = document.getElementById('legalModal');
+      if (!veil || !modal) return;
+      lastFocus = document.activeElement;
+      renderRoute(name);
+      veil.classList.add('show');
+      modal.classList.add('show');
+      requestAnimationFrame(() => { veil.classList.add('in'); modal.classList.add('in'); });
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+      // Focus the close button so keyboard users land somewhere sensible
+      setTimeout(() => {
+        const closeBtn = modal.querySelector('.lm-close');
+        if (closeBtn) closeBtn.focus();
+      }, 50);
+    }
+
+    function close() {
+      const veil = document.getElementById('legalVeil');
+      const modal = document.getElementById('legalModal');
+      if (!modal) return;
+      modal.classList.remove('in');
+      veil.classList.remove('in');
+      setTimeout(() => {
+        modal.classList.remove('show');
+        veil.classList.remove('show');
+        // Don't release scroll-lock if another modal is also open
+        const otherOpen =
+          document.getElementById('detail')?.classList.contains('show') ||
+          document.getElementById('results')?.classList.contains('show') ||
+          document.getElementById('storyReader')?.classList.contains('show') ||
+          document.getElementById('compareModal')?.classList.contains('show');
+        if (!otherOpen) {
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+        }
+        activeRoute = null;
+        // Restore the previously focused element if we have one
+        if (lastFocus && typeof lastFocus.focus === 'function') {
+          try { lastFocus.focus(); } catch (e) {}
+        }
+        lastFocus = null;
+      }, 400);
+    }
+
+    function has(name) { return Object.prototype.hasOwnProperty.call(routes, name); }
+
+    // Delegated click handler — catches every [data-legal] link in
+    // the footer, the modal nav, and anywhere else they appear.
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-legal]');
+      if (!trigger) return;
+      // Allow ctrl/cmd-click to behave normally so devs can inspect
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      open(trigger.dataset.legal);
+    });
+
+    // Expose to window for any inline onclick fallbacks
+    window.openLegal = open;
+    window.closeLegal = close;
+
+    return { register, open, close, has };
   })();
 
   // ============================================================
