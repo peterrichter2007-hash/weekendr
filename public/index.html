@@ -7,6 +7,27 @@
   <title>Maison Voyage — The Cheapest Beautiful Weekends in Europe</title>
   <meta name="description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples. Curated for under €600." />
 
+  <!-- ============================================================
+       Open Graph + Twitter Cards (social sharing previews)
+       Static defaults for the homepage; MV.seo overrides these at
+       runtime when a city detail opens, so each city gets its own
+       unique link preview.
+       ============================================================ -->
+  <meta property="og:site_name" content="Maison Voyage" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Maison Voyage — The Cheapest Beautiful Weekends in Europe" />
+  <meta property="og:description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples." />
+  <meta property="og:url" content="https://weekendr.vercel.app/" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Maison Voyage — The Cheapest Beautiful Weekends in Europe" />
+  <meta name="twitter:description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks." />
+  <!-- og:image / twitter:image are populated at runtime from the
+       active hero image (Wikipedia URL). Crawlers that don't run
+       JS see a text-only preview; TikTok / Pinterest / Twitter /
+       WhatsApp do render JS and pick up the image. -->
+  <link rel="canonical" href="https://weekendr.vercel.app/" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://en.wikipedia.org">
@@ -9128,6 +9149,21 @@
     const detail = document.getElementById('detail');
     const veil = document.getElementById('detailVeil');
     const cityName = trip.place || trip.title || 'Destination';
+    // SEO + share — rewrite <title> / OG / canonical to be city-aware
+    // and push #/city/Name into the URL so shares carry the city.
+    if (MV.seo) {
+      const sd = (typeof smartDestinations !== 'undefined')
+        ? smartDestinations.find(s => s.key === cityName) : null;
+      const fromInputEl = document.getElementById('i-from');
+      const originName = (fromInputEl?.value || (typeof mapState !== 'undefined' && mapState.from) || 'Berlin').trim();
+      const cheapestFromOrigin = sd && sd.prices ? sd.prices[originName] : null;
+      MV.seo.applyCity(cityName, {
+        price: cheapestFromOrigin,
+        country: trip.country || (sd && sd.country) || '',
+        vibe: trip.description || trip.vibe || (sd && sd.tagline) || ''
+      });
+      MV.seo.pushHashForCity(cityName);
+    }
     // Sync mapState.from with the form's current value so cross-city
     // navigation respects whatever the user just typed in the concierge.
     const fromInput = document.getElementById('i-from');
@@ -11095,6 +11131,11 @@
     detail.classList.remove('in');
     veil.classList.remove('in');
     stopCityHeroCarousel();
+    // Restore homepage SEO state + drop the #/city/X from the URL
+    if (MV.seo) {
+      MV.seo.restore();
+      MV.seo.clearHash();
+    }
     setTimeout(() => {
       detail.classList.remove('show');
       veil.classList.remove('show');
@@ -12780,6 +12821,196 @@
   })();
 
   // ============================================================
+  // SEO / SOCIAL SHARING — dynamic <title> + OG/Twitter meta +
+  // URL hash routing for city detail pages.
+  //
+  // Strategy:
+  //  - Static OG/Twitter defaults live in <head> for non-JS crawlers.
+  //  - MV.seo stashes those defaults on init.
+  //  - openTripDetail() calls MV.seo.applyCity(name, opts) which
+  //    rewrites the title, OG meta and canonical to be city-specific.
+  //  - closeDetail() calls MV.seo.restore() to put defaults back.
+  //  - URL hash routing (#/city/Lisbon) keeps the address bar in
+  //    sync so shares carry the city in the URL. Back-button works.
+  //
+  // Title format: "{City} Weekend Trips from €{X} | Maison Voyage"
+  //   capped at ~60 chars per Google guidance.
+  //
+  // Image: pulled synchronously from the existing wikiImage cache
+  //   (mv_wiki_v4_<slug>) so the OG image is set immediately on
+  //   open if the city has been visited before. If not cached, we
+  //   fall back to the homepage hero image so previews never break.
+  // ============================================================
+  MV.seo = (function () {
+    function readMeta(name, attr) {
+      attr = attr || 'name';
+      const el = document.querySelector('meta[' + attr + '="' + name + '"]');
+      return el ? el.getAttribute('content') : '';
+    }
+    function setMeta(name, content, attr) {
+      attr = attr || 'name';
+      let el = document.querySelector('meta[' + attr + '="' + name + '"]');
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content || '');
+    }
+    function setLink(rel, href) {
+      let el = document.querySelector('link[rel="' + rel + '"]');
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('href', href);
+    }
+
+    // Stash original meta values once so restore() works correctly
+    const defaults = {
+      title:         document.title,
+      description:   readMeta('description'),
+      ogTitle:       readMeta('og:title', 'property'),
+      ogDescription: readMeta('og:description', 'property'),
+      ogImage:       readMeta('og:image', 'property') || '',
+      ogUrl:         readMeta('og:url', 'property') || (location.origin + location.pathname),
+      ogType:        readMeta('og:type', 'property') || 'website',
+      twTitle:       readMeta('twitter:title'),
+      twDescription: readMeta('twitter:description'),
+      twImage:       readMeta('twitter:image') || '',
+      canonical:     (document.querySelector('link[rel="canonical"]') || {}).href || (location.origin + location.pathname)
+    };
+
+    // Sync image lookup from the existing wiki cache. No network.
+    function cityImageSync(name) {
+      try {
+        if (!name) return null;
+        const slugs = (typeof cityGallery !== 'undefined' && cityGallery[name])
+          ? cityGallery[name]
+          : [name];
+        for (const slug of slugs) {
+          const cleanSlug = (typeof wikiSlug === 'function')
+            ? wikiSlug(slug)
+            : String(slug).replace(/\s+/g, '_');
+          const v = localStorage.getItem('mv_wiki_v4_' + cleanSlug);
+          if (v && v !== '__NONE__') return v;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function applyCity(name, opts) {
+      opts = opts || {};
+      const price = opts.price;
+      const country = opts.country || '';
+      const vibe = opts.vibe || '';
+      const imageUrl = opts.imageUrl || cityImageSync(name) || defaults.ogImage;
+
+      // Title — capped to ~60 chars per Google SERP guideline.
+      const baseTitle = price
+        ? `${name} Weekend Trips from €${price}`
+        : `${name} — Weekend Trips`;
+      const fullTitle = baseTitle + ' | Maison Voyage';
+      const titleStr = fullTitle.length > 65 ? baseTitle + ' | MV' : fullTitle;
+
+      const descStr = (country ? country + ' · ' : '')
+        + (vibe || ('Cheap weekend trips to ' + name))
+        + ' — flights, hostels, activities and cinematic city guides on Maison Voyage.';
+
+      const url = location.origin + location.pathname + '#/city/' + encodeURIComponent(name);
+
+      document.title = titleStr;
+      setMeta('description', descStr);
+      setMeta('og:title',       titleStr, 'property');
+      setMeta('og:description', descStr,  'property');
+      setMeta('og:url',         url,      'property');
+      setMeta('og:type',        'article','property');
+      if (imageUrl) setMeta('og:image', imageUrl, 'property');
+      setMeta('twitter:title',       titleStr);
+      setMeta('twitter:description', descStr);
+      if (imageUrl) setMeta('twitter:image', imageUrl);
+      setLink('canonical', url);
+    }
+
+    function restore() {
+      document.title = defaults.title;
+      setMeta('description',    defaults.description);
+      setMeta('og:title',       defaults.ogTitle,       'property');
+      setMeta('og:description', defaults.ogDescription, 'property');
+      setMeta('og:url',         defaults.ogUrl,         'property');
+      setMeta('og:type',        defaults.ogType,        'property');
+      if (defaults.ogImage) setMeta('og:image', defaults.ogImage, 'property');
+      setMeta('twitter:title',       defaults.twTitle);
+      setMeta('twitter:description', defaults.twDescription);
+      if (defaults.twImage) setMeta('twitter:image', defaults.twImage);
+      setLink('canonical', defaults.canonical);
+    }
+
+    // ----- URL hash routing -----
+    // Flag prevents the hash watcher from re-firing during programmatic
+    // pushState, which would loop into openTripDetail again.
+    let syncingHash = false;
+
+    function pushHashForCity(name) {
+      if (syncingHash) return;
+      const newHash = '#/city/' + encodeURIComponent(name);
+      if (location.hash !== newHash) {
+        try {
+          history.pushState({ city: name }, '', location.pathname + location.search + newHash);
+        } catch (e) {}
+      }
+    }
+    function clearHash() {
+      if (syncingHash) return;
+      if (location.hash) {
+        try {
+          history.pushState({}, '', location.pathname + location.search);
+        } catch (e) {}
+      }
+    }
+    function parseHashCity(hash) {
+      const h = hash || location.hash || '';
+      const m = h.match(/^#\/city\/(.+?)$/);
+      if (!m) return null;
+      try { return decodeURIComponent(m[1]); } catch (e) { return null; }
+    }
+
+    // Try to upgrade og:image from the first hero image once it loads.
+    // This way non-JS-friendly crawlers still get a text-only preview,
+    // and JS-friendly crawlers (TikTok / Pinterest / Twitter) get the
+    // actual hero photo.
+    function bindDefaultHeroImage() {
+      const img = document.querySelector('.hero-slide.active img');
+      if (!img) return;
+      function apply() {
+        if (img.src && /^https?:/.test(img.src)) {
+          defaults.ogImage = img.src;
+          defaults.twImage = img.src;
+          // Only push the default into <meta> if we're not currently
+          // showing a city-specific override.
+          if (!location.hash || !parseHashCity()) {
+            setMeta('og:image', img.src, 'property');
+            setMeta('twitter:image', img.src);
+          }
+        }
+      }
+      if (img.complete && img.src) apply();
+      else img.addEventListener('load', apply, { once: true });
+    }
+    bindDefaultHeroImage();
+
+    return {
+      applyCity, restore,
+      pushHashForCity, clearHash, parseHashCity,
+      _setSyncing: (v) => { syncingHash = v; },
+      _isSyncing:  () => syncingHash,
+      defaults:    () => ({ ...defaults }),
+      cityImageSync
+    };
+  })();
+
+  // ============================================================
   // LEGAL CONTENT — Impressum (step 4/12)
   //
   // Swiss operator template. Placeholders are visually marked with
@@ -14351,7 +14582,55 @@
   renderMap();
   // Re-render rails now that smartDestinations is available (proper flight times)
   if (typeof renderAllRails === 'function') renderAllRails();
-  
+
+  // ============================================================
+  // SEO — hash routing init + popstate sync
+  //
+  // If the URL came in as https://…/#/city/Lisbon (a shared link),
+  // open that city's detail page automatically after a short delay
+  // so the hero + map have had time to start.
+  //
+  // popstate handles the browser back/forward buttons: if the user
+  // navigates away from the city hash, close the detail panel; if
+  // they navigate back to a city hash, open it again.
+  // ============================================================
+  (function bindCityHashRouting() {
+    if (!window.MV || !MV.seo) return;
+
+    function openCityByName(name) {
+      if (!name) return;
+      const exists = (typeof smartDestinations !== 'undefined')
+        && smartDestinations.find(s => s.key === name);
+      if (!exists) return;
+      if (typeof openSmartDetail === 'function') openSmartDetail(name);
+    }
+
+    // Initial deep-link
+    const initialCity = MV.seo.parseHashCity();
+    if (initialCity) {
+      setTimeout(() => openCityByName(initialCity), 250);
+    }
+
+    // Back / forward button
+    window.addEventListener('popstate', () => {
+      MV.seo._setSyncing(true);
+      try {
+        const hashCity = MV.seo.parseHashCity();
+        const detail = document.getElementById('detail');
+        const detailOpen = detail && detail.classList.contains('show');
+        if (hashCity && !detailOpen) {
+          openCityByName(hashCity);
+        } else if (!hashCity && detailOpen) {
+          if (typeof closeDetail === 'function') closeDetail();
+        }
+      } finally {
+        // Release the flag on the next tick so any pushState calls
+        // queued by openTripDetail/closeDetail finish first.
+        setTimeout(() => MV.seo._setSyncing(false), 0);
+      }
+    });
+  })();
+
   // ============================================================
   // FLUID MOTION: smooth-scroll easing, parallax, magnetic hover
   // ============================================================
