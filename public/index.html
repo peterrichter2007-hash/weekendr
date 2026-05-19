@@ -1768,6 +1768,25 @@
       .trust-list { justify-content: flex-start; }
       .trust-eyebrow { width: 100%; }
     }
+
+    /* External link affordance — small ↗ on text-only external
+       links. Links that already carry an inline SVG or arrow
+       character keep their existing visual (no double arrow).
+       JS marks via data-external; CSS only renders the icon when
+       data-ext-mark="1" (set by JS when no other arrow exists). */
+    a[data-external][data-ext-mark="1"]::after {
+      content: '↗';
+      display: inline-block;
+      font-size: 0.82em;
+      margin-left: 0.22em;
+      opacity: 0.55;
+      vertical-align: 1px;
+      transition: opacity 0.25s var(--ease), transform 0.25s var(--ease-out);
+    }
+    a[data-external][data-ext-mark="1"]:hover::after {
+      opacity: 1;
+      transform: translate(1px, -1px);
+    }
     
     /* ============================================================
        MODAL — API KEY
@@ -12915,6 +12934,85 @@
       <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
     `
   });
+
+  // ============================================================
+  // EXTERNAL LINK AFFORDANCE — step 10/12
+  //
+  // Marks every <a target="_blank"> that points to a partner site
+  // with three things:
+  //   1. data-external="1"   — CSS hook for the ↗ icon
+  //   2. data-ext-mark="1"   — only when the link doesn't already
+  //                            contain an SVG arrow or → / ↗ char
+  //                            in its text (avoids double arrows)
+  //   3. rel="noopener noreferrer"  — security hardening
+  //   4. title="Opens on the partner site in a new tab"  — desktop
+  //                            hover tooltip; mobile sees ↗ instead
+  //
+  // The function runs once at end-of-script for the initial DOM,
+  // then a MutationObserver picks up links added later by render
+  // functions (results drawer, detail page, compare modal, best
+  // deals rotation). Already-marked links are skipped.
+  //
+  // Opt-out: add class="no-ext-mark" to any link that should stay
+  // un-decorated (e.g. for an icon-only link).
+  // ============================================================
+  function markExternalLinks(root) {
+    const scope = root || document;
+    if (!scope || !scope.querySelectorAll) return;
+    scope.querySelectorAll('a[target="_blank"]').forEach(a => {
+      if (a.dataset.external === '1') return;
+      const href = a.getAttribute('href') || '';
+      if (!href) return;
+      if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      if (a.classList.contains('no-ext-mark')) return;
+
+      a.dataset.external = '1';
+
+      // Security: every external link gets noopener + noreferrer.
+      // noopener blocks window.opener back-channel; noreferrer also
+      // strips the Referer header so the partner can't see where
+      // the user came from (we don't need to leak that — affiliate
+      // attribution rides on the URL parameter, not the referer).
+      const rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
+      let relChanged = false;
+      if (!rel.includes('noopener'))    { rel.push('noopener');    relChanged = true; }
+      if (!rel.includes('noreferrer'))  { rel.push('noreferrer');  relChanged = true; }
+      if (relChanged) a.setAttribute('rel', rel.join(' '));
+
+      // Desktop hover tooltip — skipped if the link already has one.
+      if (!a.title) a.title = 'Opens on the partner site in a new tab';
+
+      // Decide whether to render the ↗ visual marker. Skip when an
+      // SVG icon or an arrow character is already present in the link
+      // so we never stack two arrows.
+      const hasSvg = !!a.querySelector('svg');
+      const text = (a.textContent || '').trim();
+      const hasArrowChar = /[→↗→↗]/.test(text);
+      if (!hasSvg && !hasArrowChar) a.dataset.extMark = '1';
+    });
+  }
+
+  // Initial pass — catches the static markup (footer, cookie banner,
+  // anything that's in the document right now).
+  markExternalLinks(document);
+
+  // Picks up links added by render functions (openTripDetail,
+  // renderResults, renderRail, renderBestDealsCards, etc.). We
+  // observe childList + subtree on body, which is exactly where
+  // those renders inject markup. Attribute changes don't trigger
+  // the callback so we won't loop on our own writes.
+  (function () {
+    if (typeof MutationObserver === 'undefined') return;
+    const obs = new MutationObserver(muts => {
+      muts.forEach(m => {
+        m.addedNodes.forEach(n => {
+          if (n.nodeType !== 1) return;
+          markExternalLinks(n);
+        });
+      });
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  })();
 
   // ============================================================
   // FAVOURITES + COMPARE — UI sync
