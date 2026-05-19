@@ -4134,12 +4134,39 @@
     .cb-disclaimer {
       font-size: 0.78rem;
       color: var(--muted);
-      line-height: 1.55;
+      line-height: 1.6;
       margin-top: 1.2rem;
       padding-top: 1.2rem;
       border-top: 1px solid var(--hairline);
     }
     .cb-disclaimer strong { color: var(--ink); font-weight: 600; }
+    /* AI-assisted pill at the head of the disclaimer — small, calm,
+       premium feel. Sits inline with the first sentence. */
+    .cb-disclaimer .ai-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      background: rgba(184, 148, 94, 0.12);
+      border: 1px solid rgba(184, 148, 94, 0.32);
+      border-radius: 100px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-right: 0.55rem;
+      vertical-align: 2px;
+      font-family: var(--sans);
+    }
+    .cb-disclaimer a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-color: rgba(126, 98, 48, 0.3);
+      text-underline-offset: 3px;
+      cursor: pointer;
+      transition: text-decoration-color 0.25s var(--ease);
+    }
+    .cb-disclaimer a:hover { text-decoration-color: rgba(126, 98, 48, 1); }
 
     @media (max-width: 720px) {
       .cb-row {
@@ -9125,8 +9152,8 @@
               </div>
 
               <p class="cb-disclaimer">
-                Numbers are estimates from real European pricing data. Click any <strong>Search live</strong>
-                button to see the actual current price on the partner site — your dates, your travellers, cheapest first.
+                <span class="ai-pill">AI-assisted · estimates</span>
+                Prices, hotel names and activity copy on this page are <strong>estimates</strong> — assembled from a research-informed city-economy database and refined by AI. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="affiliate">How we earn</a> · <a href="#" data-legal="privacy">Privacy</a>
               </p>
             </div>
           </div>
