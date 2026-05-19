@@ -5264,7 +5264,8 @@
       letter-spacing: 0;
       pointer-events: none;
     }
-    /* Source pill — tiny chip at the bottom corner of verified images */
+    /* Legacy per-image source pill — kept for any stray markup that
+       still includes it. New code uses .section-attribution instead. */
     .img-source {
       position: absolute;
       bottom: 0.55rem; right: 0.55rem;
@@ -5281,6 +5282,50 @@
       z-index: 3;
       pointer-events: none;
       opacity: 0.85;
+    }
+    /* Section-level Wikipedia attribution — ONE per major rotating
+       hero (homepage hero, .detail-hero, .sr-hero) instead of one
+       chip per image. Stays put while the slideshow rotates, so
+       there is no flicker / no card clutter. Subtle, glass, low
+       opacity — premium cinematic feel. */
+    .section-attribution {
+      position: absolute;
+      bottom: 1.2rem;
+      right: 1.4rem;
+      z-index: 8;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.32rem 0.7rem 0.32rem 0.6rem;
+      background: rgba(18, 17, 15, 0.36);
+      backdrop-filter: blur(14px) saturate(1.4);
+      -webkit-backdrop-filter: blur(14px) saturate(1.4);
+      border: 1px solid rgba(255, 255, 253, 0.10);
+      border-radius: 100px;
+      color: rgba(255, 255, 253, 0.62);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-family: var(--sans);
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.85;
+    }
+    .section-attribution .sa-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255, 214, 138, 0.7);
+      flex-shrink: 0;
+    }
+    @media (max-width: 720px) {
+      .section-attribution {
+        bottom: 0.85rem;
+        right: 0.9rem;
+        padding: 0.25rem 0.6rem 0.25rem 0.5rem;
+        font-size: 0.56rem;
+      }
     }
     /* ============================================================
        MOBILE HERO & STEP-WIZARD & STICKY CTA
@@ -6502,6 +6547,13 @@
       <div class="hero-slide img-host has-placeholder" data-label="Prague" data-wiki="Prague">
         <img alt="Prague" loading="lazy" decoding="async" />
       </div>
+    </div>
+
+    <!-- Section-level Wikipedia attribution — covers all rotating
+         hero slides without per-image chip flicker (TASK 11). -->
+    <div class="section-attribution" aria-label="Imagery source: Wikipedia">
+      <span class="sa-dot"></span>
+      Imagery · Wikipedia
     </div>
 
     <div class="hero-inner">
@@ -8460,13 +8512,14 @@
       img.dataset.source = 'wikipedia';
       if (parent) {
         parent.classList.remove('has-placeholder');
-        // Add Wikipedia attribution chip (one time)
-        if (!parent.querySelector('.img-source')) {
-          const src = document.createElement('span');
-          src.className = 'img-source';
-          src.textContent = 'Wikipedia';
-          parent.appendChild(src);
-        }
+        // Per-image attribution chips intentionally REMOVED (TASK 11).
+        // Attribution now lives at two cleaner layers:
+        //   1. The global Trust Strip in the footer ("Imagery: Wikipedia")
+        //   2. Section-level .section-attribution labels on the three
+        //      rotating heroes (hero, .detail-hero, .sr-hero).
+        // Per-image chips on rotating containers flickered with the
+        // image rotation and felt cluttered on card grids; the user
+        // explicitly asked for section-level instead.
       }
     } else {
       markPlaceholder(img, place, opts);
@@ -9099,6 +9152,10 @@
         </div>
         <div class="dh-dots" id="dhDots">
           ${getCityGallery(cityName).map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('')}
+        </div>
+        <div class="section-attribution" aria-label="Imagery source: Wikipedia">
+          <span class="sa-dot"></span>
+          Imagery · Wikipedia
         </div>
         <div class="detail-top">
           <button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back</button>
@@ -11269,6 +11326,10 @@
     reader.innerHTML = `
       <div class="sr-hero has-placeholder" data-label="${s.city}" data-wiki="${s.city}">
         <img alt="${s.city}" loading="lazy" decoding="async" />
+        <div class="section-attribution" aria-label="Imagery source: Wikipedia">
+          <span class="sa-dot"></span>
+          Imagery · Wikipedia
+        </div>
         <div class="sr-top">
           <button class="sr-back" onclick="closeStory()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
