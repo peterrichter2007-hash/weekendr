@@ -156,6 +156,90 @@ The Booking `nflt` price filter is **derived from the user's budget**:
 - **`partnerLinks` URL structure** — tested live.
 - **`MV.cities` shape** — published API for AI / affiliate overlays. Field
   names are a contract; adding fields is fine, renaming is not.
+- **`MV.legal` route names** — `impressum` / `privacy` / `affiliate` / `cookies`
+  are referenced from footer + many `[data-legal]` cross-links. Renaming a
+  route name breaks every footer/banner/modal link silently.
+- **`MV.consent` storage shape** — `mv_consent_v1` key, `{decided, accepted,
+  prefs:{analytics,affiliate}, decidedAt}` shape. Future tracking pixels
+  will gate on `MV.consent.has('analytics')` / `.has('affiliate')`.
+- **Per-image attribution chips** are deliberately OFF (`applyWikiImage`
+  no longer appends `.img-source`). Attribution lives at three places:
+  Trust Strip in footer (global), `.section-attribution` on rotating
+  heroes (homepage / detail / story), and Privacy/Impressum modals
+  (long-form). Don't re-introduce per-image chips.
+
+## Legal & Trust System
+
+Three coordinated layers shipped in 12 small commits (Cookie Banner →
+Legal Modal Shell → Impressum/Privacy/Affiliate Content → Cookie
+Settings wiring → AI Disclosure → Trust Strip → External Link Icons →
+Wikipedia Attribution Consistency → Cleanup).
+
+### `MV.consent` — cookie/storage consent
+
+```js
+MV.consent.get()           // → {decided, accepted, prefs, decidedAt}
+MV.consent.has('analytics')
+MV.consent.has('affiliate')
+MV.consent.accept()        // accept all + close banner
+MV.consent.decline()       // decline all + close banner
+MV.consent.setPrefs({ analytics: bool, affiliate: bool })
+MV.consent.reopen()        // re-show banner (footer "Cookie Settings")
+MV.consent.close()         // dismiss without persisting (ESC)
+MV.consent.isOpen()        // bool
+```
+
+Storage: `localStorage['mv_consent_v1']`. Banner auto-shows once on
+first visit (700ms after hero paint). "Essential storage" toggle is
+locked-on because the app can't run without localStorage. Analytics +
+affiliate-tracking toggles are off by default; nothing is wired to
+them yet but future tracking pixels MUST gate on `.has('...')`.
+
+### `MV.legal` — reusable legal modal shell
+
+```js
+MV.legal.register(name, { title, sub, html })
+MV.legal.open(name)        // 'impressum' | 'privacy' | 'affiliate' | 'cookies'
+MV.legal.close()
+MV.legal.has(name)         // bool — is route registered
+```
+
+Single dark-glass modal with four routes. `cookies` route is special:
+it bypasses the modal and calls `MV.consent.reopen()` so the banner
+stays the single source of truth for cookie/storage preferences.
+
+Delegated click handler picks up every `[data-legal]` anchor/button
+in the document (footer links, in-modal nav, body cross-links). The
+content for each route is registered in separate blocks at the end
+of the inline script — search for `MV.legal.register('impressum'` etc.
+
+**Placeholders** are visually marked with `<span class="placeholder">…</span>`
+(golden dashed chip) so the operator sees what they must fill in
+before public launch. Currently ~10 placeholders across Impressum,
+Privacy and Affiliate Disclosure (full name, address, email, dates).
+
+### `.section-attribution` — Wikipedia credit on rotating heroes
+
+Subtle glass label on the three rotating-image heroes (homepage
+`.hero`, `.detail-hero`, `.sr-hero`). Persistent across slide
+rotation — no flicker, no card clutter. Per-image chips on grids
+and rails are OFF (see "Things to NEVER touch" above).
+
+### `.trust-strip` — global "Data & Sources" row in footer
+
+Lists every external service the site uses, by category:
+IMAGERY (Wikipedia) · WEATHER (Open-Meteo) · MAP (Esri · Carto) ·
+DEEP LINKS (Skyscanner · Booking.com · FlixBus · GetYourGuide) ·
+AI (Anthropic Claude). Every host listed here is grep-able in the
+codebase — a sceptical reviewer can verify each.
+
+### External link affordance
+
+`a[target="_blank"]` to partner sites gets `data-external="1"` +
+`rel="noopener noreferrer"` + a title tooltip via `markExternalLinks()`.
+A small `↗` glyph appears via `::after` when no inline SVG/arrow is
+already present. A MutationObserver picks up links injected by render
+functions (results drawer, detail page, compare modal, etc.).
 
 ## City Data Model — `MV.cities`
 

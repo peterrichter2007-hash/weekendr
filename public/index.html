@@ -7163,7 +7163,7 @@
         <div class="foot-brand">
           <div class="foot-logo"><span class="dot"></span>Maison<em style="font-style: italic; color: var(--accent-2); margin-left: 2px;">Voyage</em></div>
           <p>A private travel concierge. Curated escapes, hidden villas and weekend journeys across Europe.</p>
-          <p style="font-size: 0.78rem; opacity: 0.5;">Made with care in Lisbon.</p>
+          <p style="font-size: 0.78rem; opacity: 0.5;">An independent weekend-curation project · Switzerland-operated.</p>
         </div>
         <div>
           <h4>Discover</h4>
@@ -7197,8 +7197,9 @@
         </div>
         <div>
           <h4>Newsletter</h4>
-          <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 1rem;">A short letter, once a month. New places, quietly.</p>
-          <input type="email" placeholder="your@email.com" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.06); border: 1px solid rgba(251,247,239,0.15); border-radius: 100px; color: var(--cream); font-size: 0.9rem;" />
+          <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.7rem;">A short letter, once a month. New places, quietly.</p>
+          <input type="email" placeholder="Sign-up coming soon" disabled aria-label="Newsletter email — currently disabled" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.04); border: 1px solid rgba(251,247,239,0.10); border-radius: 100px; color: rgba(255,255,253,0.45); font-size: 0.88rem; cursor: not-allowed;" />
+          <p style="font-size: 0.66rem; opacity: 0.55; margin-top: 0.55rem; font-style: italic; line-height: 1.5;">We'll wire this up when there's a backend that respects your <a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();" style="color: rgba(255, 214, 138, 0.85); text-decoration: underline; text-decoration-color: rgba(255, 214, 138, 0.25); text-underline-offset: 2px;">consent choice</a>.</p>
         </div>
       </div>
       <!-- Trust Strip — honest "Data & Sources" line above the copyright.
@@ -11426,17 +11427,22 @@
   // ============================================================
   // ESC key
   // ============================================================
+  // Single document-level ESC chain. Priority is high-to-low:
+  // full-screen modals close first, then non-blocking banners, then
+  // the hamburger menu. The autocomplete dropdown has its own ESC
+  // handler scoped to that input (intentionally, so it doesn't
+  // close a modal sitting above it).
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      if (document.getElementById('legalModal')?.classList.contains('show')) { if (MV.legal) MV.legal.close(); }
-      else if (document.getElementById('compareModal')?.classList.contains('show')) closeCompareModal();
-      else if (document.getElementById('storyReader')?.classList.contains('show')) closeStory();
-      else if (document.getElementById('detail').classList.contains('show')) closeDetail();
-      else if (document.getElementById('results').classList.contains('show')) closeResults();
-      else if (document.getElementById('keyModal').classList.contains('show')) closeKey();
-      else if (MV.consent && MV.consent.isOpen && MV.consent.isOpen()) MV.consent.close();
-      else if (fullmenu.classList.contains('open')) menuBtn.click();
-    }
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('legalModal')?.classList.contains('show')) { if (MV.legal) MV.legal.close(); }
+    else if (document.getElementById('compareModal')?.classList.contains('show')) closeCompareModal();
+    else if (document.getElementById('storyReader')?.classList.contains('show')) closeStory();
+    else if (document.getElementById('detail').classList.contains('show')) closeDetail();
+    else if (document.getElementById('results').classList.contains('show')) closeResults();
+    else if (document.getElementById('keyModal').classList.contains('show')) closeKey();
+    else if (document.getElementById('stepWizard')?.classList.contains('show')) closeStepWizard();
+    else if (MV.consent && MV.consent.isOpen && MV.consent.isOpen()) MV.consent.close();
+    else if (fullmenu.classList.contains('open')) menuBtn.click();
   });
   
   // ============================================================
@@ -14760,12 +14766,9 @@
       if (el) swModalObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
     });
 
-  // ESC closes the wizard if open
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && document.getElementById('stepWizard')?.classList.contains('show')) {
-      closeStepWizard();
-    }
-  });
+  // ESC handling moved into the central keydown chain (step 12
+  // cleanup). One document-level listener handles every modal so
+  // closeStepWizard() now fires from there with the right priority.
   </script>
 </body>
 </html>
