@@ -1711,6 +1711,63 @@
     }
     .foot-bottom .links { display: flex; gap: 2rem; flex-wrap: wrap; }
     .foot-bottom .links a:hover { color: var(--cream); }
+    /* Trust Strip — "Data & Sources" row above the copyright line.
+       Subtle, glass-compatible, lists only sources we actually use. */
+    .trust-strip {
+      margin-top: 2.4rem;
+      padding: 1.3rem 0;
+      border-top: 1px solid rgba(251, 247, 239, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 1.4rem 1.8rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .trust-eyebrow {
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(251, 247, 239, 0.42);
+      flex-shrink: 0;
+    }
+    .trust-list {
+      display: flex;
+      gap: 0.6rem 1.4rem;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: rgba(251, 247, 239, 0.66);
+      line-height: 1.6;
+      flex: 1;
+      justify-content: flex-end;
+    }
+    .trust-list .trust-item {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .trust-list .trust-cat {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      padding: 0.12rem 0.5rem;
+      background: rgba(184, 148, 94, 0.10);
+      border: 1px solid rgba(184, 148, 94, 0.25);
+      border-radius: 100px;
+      font-family: var(--sans);
+      white-space: nowrap;
+    }
+    .trust-list strong {
+      color: rgba(251, 247, 239, 0.88);
+      font-weight: 500;
+    }
+    @media (max-width: 720px) {
+      .trust-strip { gap: 0.9rem; }
+      .trust-list { justify-content: flex-start; }
+      .trust-eyebrow { width: 100%; }
+    }
     
     /* ============================================================
        MODAL — API KEY
@@ -7071,6 +7128,18 @@
           <h4>Newsletter</h4>
           <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 1rem;">A short letter, once a month. New places, quietly.</p>
           <input type="email" placeholder="your@email.com" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.06); border: 1px solid rgba(251,247,239,0.15); border-radius: 100px; color: var(--cream); font-size: 0.9rem;" />
+        </div>
+      </div>
+      <!-- Trust Strip — honest "Data & Sources" line above the copyright.
+           Lists only sources the site actually uses. -->
+      <div class="trust-strip" aria-label="Data sources">
+        <div class="trust-eyebrow">Data &amp; Sources</div>
+        <div class="trust-list">
+          <span class="trust-item"><span class="trust-cat">Imagery</span><strong>Wikipedia</strong></span>
+          <span class="trust-item"><span class="trust-cat">Weather</span><strong>Open-Meteo</strong></span>
+          <span class="trust-item"><span class="trust-cat">Map</span><strong>Esri · Carto</strong></span>
+          <span class="trust-item"><span class="trust-cat">Deep links</span><strong>Skyscanner · Booking.com · FlixBus · GetYourGuide</strong></span>
+          <span class="trust-item"><span class="trust-cat">AI</span><strong>Anthropic Claude</strong></span>
         </div>
       </div>
       <div class="foot-bottom">
