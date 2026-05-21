@@ -12821,6 +12821,55 @@
   })();
 
   // ============================================================
+  // I18N — language scaffolding (single-language today)
+  //
+  // The site ships in English only. This module exists so the
+  // future multilingual layer can plug in without rewriting the
+  // touch-points. Today:
+  //   - <html lang> stays "en" by default
+  //   - localStorage['mv_lang_v1'] can override (e.g. 'de' later)
+  //   - MV.i18n.setLang('en') updates <html lang> + og:locale
+  //
+  // When real translations land, add a string table per lang and
+  // wire renderers to read MV.i18n.t(key) instead of hard-coded
+  // English. Until then, this is a 12-line stub.
+  // ============================================================
+  MV.i18n = (function () {
+    const KEY = 'mv_lang_v1';
+    const SUPPORTED = ['en', 'de'];   // 'de' is reserved, not yet localised
+    const FALLBACK = 'en';
+    const LOCALE_MAP = { en: 'en_US', de: 'de_DE' };
+
+    function read() {
+      try {
+        const v = localStorage.getItem(KEY);
+        return SUPPORTED.indexOf(v) >= 0 ? v : null;
+      } catch (e) { return null; }
+    }
+    function apply(code) {
+      const html = document.documentElement;
+      if (html) html.setAttribute('lang', code);
+      const ogLocale = document.querySelector('meta[property="og:locale"]');
+      if (ogLocale) ogLocale.setAttribute('content', LOCALE_MAP[code] || 'en_US');
+    }
+    function setLang(code) {
+      if (SUPPORTED.indexOf(code) < 0) code = FALLBACK;
+      try { localStorage.setItem(KEY, code); } catch (e) {}
+      apply(code);
+    }
+    function lang() {
+      return read() || FALLBACK;
+    }
+
+    // Init: respect a previously saved choice; otherwise leave the
+    // <html lang="en"> attribute as the HTML author wrote it.
+    const saved = read();
+    if (saved) apply(saved);
+
+    return { lang, setLang, supported: () => SUPPORTED.slice() };
+  })();
+
+  // ============================================================
   // SEO / SOCIAL SHARING — dynamic <title> + OG/Twitter meta +
   // URL hash routing for city detail pages.
   //
