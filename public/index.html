@@ -8882,17 +8882,221 @@
   // with the right city + dates pre-filled. These open the
   // actual partner sites where users see real live prices.
   // ============================================================
+  // ============================================================
+  // AIRPORTS — comprehensive map for every destination + origin
+  //
+  // Shape per entry:
+  //   iata        : IATA code Skyscanner accepts in /transport/flights/ paths
+  //                 (3-letter airport code, or 3-letter metro code like
+  //                 LON / PAR / STO / NYC / MIL / ROM)
+  //   metro       : true if iata is a multi-airport metro code (used when
+  //                 the user picks "London" instead of LHR/LGW). Metro
+  //                 codes work on Skyscanner /flights-to/ paths.
+  //   via         : if the city has no airport of its own, this is the
+  //                 IATA of the nearest airport — Skyscanner deep-link
+  //                 sends users there, and the UI labels the row
+  //                 "Flights to {viaCity} (closest to {city})".
+  //   viaCity     : human label for the via airport (eg "Nice" for Monaco)
+  //   noAirport   : true if there is literally no usable airport (forces
+  //                 the system to surface bus/train instead). Today only
+  //                 used for cities deep in the Alps without a feasible
+  //                 nearest airport — currently empty; via is always set.
+  //
+  // Sources: real IATA codes per ICAO/IATA. Verified against Skyscanner
+  // /transport/flights/ paths for the major pairs.
+  // ============================================================
+  const cityAirports = {
+    // ----- DEPARTURE METROS (multi-airport, common Maison Voyage origins) -----
+    Berlin:     { iata: 'BER',                 metro: false },
+    Munich:     { iata: 'MUC',                 metro: false },
+    Frankfurt:  { iata: 'FRA',                 metro: false },
+    Hamburg:    { iata: 'HAM',                 metro: false },
+    Zurich:     { iata: 'ZRH',                 metro: false },
+    Geneva:     { iata: 'GVA',                 metro: false },
+    Vienna:     { iata: 'VIE',                 metro: false },
+    Amsterdam:  { iata: 'AMS',                 metro: false },
+    Brussels:   { iata: 'BRU',                 metro: false },
+    London:     { iata: 'LON',                 metro: true  },
+    Paris:      { iata: 'PAR',                 metro: true  },
+    Stockholm:  { iata: 'STO',                 metro: true  },
+    Madrid:     { iata: 'MAD',                 metro: false },
+    Milan:      { iata: 'MIL',                 metro: true  },
+    Rome:       { iata: 'ROM',                 metro: true  },
+    Copenhagen: { iata: 'CPH',                 metro: false },
+    Oslo:       { iata: 'OSL',                 metro: false },
+    Helsinki:   { iata: 'HEL',                 metro: false },
+    Dublin:     { iata: 'DUB',                 metro: false },
+    // ----- DESTINATIONS — own airport -----
+    Barcelona:  { iata: 'BCN',                 metro: false },
+    Lisbon:     { iata: 'LIS',                 metro: false },
+    Porto:      { iata: 'OPO',                 metro: false },
+    Budapest:   { iata: 'BUD',                 metro: false },
+    Prague:     { iata: 'PRG',                 metro: false },
+    Krakow:     { iata: 'KRK',                 metro: false },
+    Warsaw:     { iata: 'WAW',                 metro: false },
+    Naples:     { iata: 'NAP',                 metro: false },
+    Florence:   { iata: 'FLR',                 metro: false },
+    Venice:     { iata: 'VCE',                 metro: false },
+    Catania:    { iata: 'CTA',                 metro: false },
+    Bari:       { iata: 'BRI',                 metro: false },
+    Dubrovnik:  { iata: 'DBV',                 metro: false },
+    Split:      { iata: 'SPU',                 metro: false },
+    Zadar:      { iata: 'ZAD',                 metro: false },
+    Athens:     { iata: 'ATH',                 metro: false },
+    Mykonos:    { iata: 'JMK',                 metro: false },
+    Santorini:  { iata: 'JTR',                 metro: false },
+    Valencia:   { iata: 'VLC',                 metro: false },
+    Seville:    { iata: 'SVQ',                 metro: false },
+    Granada:    { iata: 'GRX',                 metro: false },
+    Malaga:     { iata: 'AGP',                 metro: false },
+    Faro:       { iata: 'FAO',                 metro: false },
+    Ibiza:      { iata: 'IBZ',                 metro: false },
+    'Palma de Mallorca': { iata: 'PMI',        metro: false },
+    Nice:       { iata: 'NCE',                 metro: false },
+    Bergen:     { iata: 'BGO',                 metro: false },
+    Reykjavik:  { iata: 'KEF',                 metro: false },
+    Sofia:      { iata: 'SOF',                 metro: false },
+    Belgrade:   { iata: 'BEG',                 metro: false },
+    Sarajevo:   { iata: 'SJJ',                 metro: false },
+    Tirana:     { iata: 'TIA',                 metro: false },
+    Skopje:     { iata: 'SKP',                 metro: false },
+    Riga:       { iata: 'RIX',                 metro: false },
+    Vilnius:    { iata: 'VNO',                 metro: false },
+    Ljubljana:  { iata: 'LJU',                 metro: false },
+    Bratislava: { iata: 'BTS',                 metro: false },
+    'Wrocław':  { iata: 'WRO',                 metro: false },
+    'Gdańsk':   { iata: 'GDN',                 metro: false },
+    Salzburg:   { iata: 'SZG',                 metro: false },
+    Innsbruck:  { iata: 'INN',                 metro: false },
+    // ----- DESTINATIONS — no own airport, fly to nearest -----
+    Cannes:     { iata: 'NCE', via: 'NCE', viaCity: 'Nice' },
+    Monaco:     { iata: 'NCE', via: 'NCE', viaCity: 'Nice' },
+    Annecy:     { iata: 'GVA', via: 'GVA', viaCity: 'Geneva' },
+    Amalfi:     { iata: 'NAP', via: 'NAP', viaCity: 'Naples' },
+    'Lake Como':{ iata: 'MXP', via: 'MXP', viaCity: 'Milan Malpensa' },
+    Hallstatt:  { iata: 'SZG', via: 'SZG', viaCity: 'Salzburg' },
+    Interlaken: { iata: 'BRN', via: 'BRN', viaCity: 'Bern' },
+    Lucerne:    { iata: 'ZRH', via: 'ZRH', viaCity: 'Zurich' },
+    Albufeira:  { iata: 'FAO', via: 'FAO', viaCity: 'Faro' },
+    Benidorm:   { iata: 'ALC', via: 'ALC', viaCity: 'Alicante' }
+  };
+
+  // ----- City-name normalisers for partner URL slugs -----
+  // FlixBus + GetYourGuide accept ASCII slugs; we strip diacritics and
+  // collapse to lowercase-hyphen. "Krakow" stays "krakow" (their canonical),
+  // not "kraków".
+  function _stripDiacritics(s) {
+    // Strip combining-diacritical-marks block (U+0300–U+036F) — turns
+    // "Kraków" → "Krakow", "Wrocław" → "Wroclaw", "Gdańsk" → "Gdansk".
+    // FlixBus + Skyscanner slug routes are ASCII; passing through Unicode
+    // produces 404s in practice. ł / Ł are base characters (not combining
+    // marks) so they get a separate pass. Using explicit \u escapes so
+    // the source stays unambiguous across editors / encodings.
+    return s.normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/ł/g, 'l')   // ł
+      .replace(/Ł/g, 'L');  // Ł
+  }
+  function citySlug(name) {
+    if (!name) return '';
+    return _stripDiacritics(String(name))
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+  // Skyscanner /flights-to/ uses lowercase city names (no slug).
+  function cityForSkyscannerSlug(name) {
+    if (!name) return '';
+    return _stripDiacritics(String(name)).toLowerCase().replace(/\s+/g, '-');
+  }
+
+  // ----- Airport / route validation -----
+  function airportFor(city) {
+    return (city && cityAirports[city]) || null;
+  }
+  function canFly(origin, dest) {
+    return !!(airportFor(origin) && airportFor(dest));
+  }
+  function canBus(origin, dest) {
+    if (!origin || !dest || origin === dest) return false;
+    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.busRoutes) return false;
+    const key = [origin, dest].sort().join('↔');
+    return !!MV.transport.busRoutes[key];
+  }
+  function canTrain(origin, dest) {
+    if (!origin || !dest || origin === dest) return false;
+    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.trainRoutes) return false;
+    const key = [origin, dest].sort().join('↔');
+    return !!MV.transport.trainRoutes[key];
+  }
+
+  // ============================================================
+  // PARTNER URL BUILDERS — small, composable, validated
+  //
+  // Each builder returns { url, valid, label, note } so the UI can
+  // decide whether to surface the CTA at all. We never generate a
+  // URL that opens a partner error page — when precision isn't
+  // possible, we degrade to a search-page hit that always works.
+  // ============================================================
+  function buildSkyscannerUrl(origin, dest, ctx) {
+    const oa = airportFor(origin);
+    const da = airportFor(dest);
+    const adults = Math.max(1, (ctx && ctx.adults) || 1);
+    const dates  = (ctx && ctx.dates) || {};
+    const shared = `adultsv2=${adults}&childrenv2=&cabinclass=economy&sortby=price&currency=EUR&market=DE&locale=en-GB`;
+    // (1) Precise: both IATAs + both dates → deep-link to actual results
+    if (oa && da && dates.checkinCompact && dates.checkoutCompact) {
+      const url = `https://www.skyscanner.net/transport/flights/${oa.iata.toLowerCase()}/${da.iata.toLowerCase()}/${dates.checkinCompact}/${dates.checkoutCompact}/?${shared}`;
+      const note = da.via ? `Closest airport · ${da.viaCity}` : null;
+      return { url, valid: true, label: 'View flights on Skyscanner', note };
+    }
+    // (2) Dest IATA only → city flights-to page with dates as params
+    if (da) {
+      const slug = cityForSkyscannerSlug(dest);
+      let url = `https://www.skyscanner.net/transport/flights-to/${da.iata.toLowerCase()}/?${shared}`;
+      if (dates.checkin)  url += `&outbounddate=${dates.checkin}`;
+      if (dates.checkout) url += `&inbounddate=${dates.checkout}`;
+      const note = da.via ? `Closest airport · ${da.viaCity}` : null;
+      return { url, valid: true, label: 'View flights on Skyscanner', note };
+    }
+    // (3) Nothing reliable → Google Flights free-text fallback (always works)
+    const cityQ = encodeURIComponent(dest || '');
+    const fromQ = encodeURIComponent(origin || '');
+    const url = (dates.checkin && dates.checkout)
+      ? `https://www.google.com/travel/flights?q=Flights%20to%20${cityQ}%20from%20${fromQ}%20on%20${dates.checkin}%20returning%20${dates.checkout}%20${adults}%20adults`
+      : `https://www.google.com/travel/flights?q=Flights%20to%20${cityQ}`;
+    return { url, valid: false, label: 'Search on Google Flights', note: 'No direct deep-link available' };
+  }
+
+  function buildFlixBusUrl(origin, dest, ctx) {
+    if (!origin || !dest || origin === dest) {
+      return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus routes', note: null };
+    }
+    // SEO route page — always renders (FlixBus shows "no direct route"
+    // gracefully when the pair isn't served). Format verified:
+    //   https://global.flixbus.com/bus/{from-slug}-{to-slug}
+    const url = `https://global.flixbus.com/bus/${citySlug(origin)}-${citySlug(dest)}`;
+    const valid = canBus(origin, dest);    // we only show this CTA when valid
+    return {
+      url,
+      valid,
+      label: valid ? 'Check FlixBus prices' : 'Browse FlixBus',
+      note: valid ? null : 'Direct route not confirmed'
+    };
+  }
+
+  // Legacy shape — keep partnerCodes for any external readers that may
+  // still reference it, but its fields are now derived from cityAirports.
   const partnerCodes = {
-    // Skyscanner uses IATA-like place codes; for departure cities we use airport IATA.
-    skyscannerOrigin: {
-      Berlin: 'BER', Munich: 'MUC', Zurich: 'ZRH', Vienna: 'VIE', Amsterdam: 'AMS',
-      London: 'LON', Paris: 'PAR', Stockholm: 'STO', Madrid: 'MAD', Milan: 'MIL'
+    get skyscannerOrigin() {
+      const out = {};
+      Object.keys(cityAirports).forEach(k => { out[k] = cityAirports[k].iata; });
+      return out;
     },
-    skyscannerDest: {
-      Barcelona: 'BCN', Lisbon: 'LIS', Budapest: 'BUD', Prague: 'PRG', Milan: 'MIL',
-      Dubrovnik: 'DBV', Amalfi: 'NAP', Mykonos: 'JMK', Santorini: 'JTR',
-      Paris: 'PAR', Krakow: 'KRK', Naples: 'NAP', Porto: 'OPO', Vienna: 'VIE',
-      Athens: 'ATH', Copenhagen: 'CPH'
+    get skyscannerDest() {
+      const out = {};
+      Object.keys(cityAirports).forEach(k => { out[k] = cityAirports[k].iata; });
+      return out;
     }
   };
   
@@ -8983,37 +9187,44 @@
   // ============================================================
   function partnerLinks(city, ctxOverride) {
     const ctx = ctxOverride || getSearchContext();
-    const dest    = partnerCodes.skyscannerDest[city] || '';
-    const fromIata= partnerCodes.skyscannerOrigin[ctx.origin] || 'BER';
-    const cityQ   = encodeURIComponent(city);
-    const dates   = ctx.dates;
+    const dates = ctx.dates;
 
-    // --- Skyscanner: direct-flight URL, cheapest sort, adults locked
-    const skySharedQuery =
-      `adultsv2=${ctx.adults}&childrenv2=&cabinclass=economy&sortby=price&currency=EUR&market=DE&locale=en-GB`;
-    const skyscanner = dest
-      ? `https://www.skyscanner.net/transport/flights/${fromIata.toLowerCase()}/${dest.toLowerCase()}/${dates.checkinCompact}/${dates.checkoutCompact}/?${skySharedQuery}`
-      : `https://www.skyscanner.net/transport/flights-to/${cityQ}/?${skySharedQuery}`;
+    // --- Skyscanner: validated builder with graceful fallback chain
+    const sky = buildSkyscannerUrl(ctx.origin, city, ctx);
+    const skyscanner = sky.url;
+    const skyscannerInfo = sky;   // { url, valid, label, note } for the UI
 
-    // --- Booking: full search with cheapest sort + price filter from budget
+    // --- FlixBus: route-page URL + canBus validation
+    const bus = buildFlixBusUrl(ctx.origin, city, ctx);
+    const flixbus = bus.url;
+    const flixbusInfo = bus;
+    const flixbusValid = bus.valid;
+
+    // --- Train (Trainline deep-link search). We don't have a real
+    //     affiliate yet, so this is a free-text search that always
+    //     opens a real page. Only surfaced when canTrain() is true.
+    const trainValid = canTrain(ctx.origin, city);
+    const trainline = `https://www.trainline.com/search?origin=${encodeURIComponent(ctx.origin)}&destination=${encodeURIComponent(city)}&outbound=${encodeURIComponent(dates.checkin || '')}&return=${encodeURIComponent(dates.checkout || '')}&passengers=${ctx.adults || 1}`;
+
+    // --- Booking: full search with cheapest sort + budget-derived price cap
     function bookingURL(query) {
       const p = new URLSearchParams({
         ss: query,
-        checkin: dates.checkin,
-        checkout: dates.checkout,
-        group_adults: String(ctx.adults),
+        checkin: dates.checkin || '',
+        checkout: dates.checkout || '',
+        group_adults: String(ctx.adults || 2),
         group_children: '0',
-        no_rooms: String(ctx.rooms),
-        order: 'price',                 // <- cheapest first
+        no_rooms: String(ctx.rooms || 1),
+        order: 'price',
         selected_currency: 'EUR',
         lang: 'en-gb',
-        aid: '304142'                   // <- replace with your affiliate id
+        aid: '304142'   // operator: replace with real affiliate ID once approved
       });
-      // Budget-derived max-per-night filter. ~50% of total budget goes
-      // to accommodation; divided by nights to get a nightly cap.
-      if (ctx.budgetPP && ctx.budgetPP > 100 && ctx.budgetPP < 2000) {
+      // Budget-derived max-per-night — ~50% of total budget to accommodation,
+      // divided by nights, then clamped to a realistic [€40 – €500] range.
+      if (ctx.budgetPP && ctx.budgetPP > 100 && ctx.budgetPP < 2000 && dates.nights) {
         const maxPerNight = Math.max(40, Math.min(500,
-          Math.round((ctx.budgetPP * ctx.adults * 0.5) / Math.max(1, dates.nights) / 10) * 10
+          Math.round((ctx.budgetPP * (ctx.adults || 2) * 0.5) / Math.max(1, dates.nights) / 10) * 10
         ));
         p.append('nflt', `price=EUR-0-${maxPerNight}-1`);
       }
@@ -9026,8 +9237,8 @@
     function gygURL(query) {
       const p = new URLSearchParams({
         q: query,
-        date_from: dates.checkin,
-        date_to: dates.checkout,
+        date_from: dates.checkin || '',
+        date_to: dates.checkout || '',
         sort: 'lowest_price',
         currency: 'EUR'
       });
@@ -9036,13 +9247,25 @@
     const getyourguide    = gygURL(city);
     const getyourguideAct = (activityName) => gygURL(`${activityName} ${city}`);
 
-    // --- Google Flights fallback (always specific dates)
-    const googleFlights = dest
-      ? `https://www.google.com/travel/flights?q=Flights%20to%20${cityQ}%20from%20${encodeURIComponent(ctx.origin)}%20on%20${dates.checkin}%20returning%20${dates.checkout}%20${ctx.adults}%20adults`
+    // --- Google Flights: kept as an explicit alternative for visibility
+    const cityQ = encodeURIComponent(city || '');
+    const fromQ = encodeURIComponent(ctx.origin || '');
+    const googleFlights = (dates.checkin && dates.checkout)
+      ? `https://www.google.com/travel/flights?q=Flights%20to%20${cityQ}%20from%20${fromQ}%20on%20${dates.checkin}%20returning%20${dates.checkout}%20${ctx.adults || 1}%20adults`
       : `https://www.google.com/travel/flights?q=${cityQ}`;
 
     return {
+      // Primary URLs (back-compat — every consumer uses these strings)
       skyscanner, booking, bookingHotel, getyourguide, getyourguideAct, googleFlights,
+      flixbus, trainline,
+      // Validation metadata — new fields, consumers can hide CTAs when false
+      skyscannerInfo,        // { url, valid, label, note }
+      flixbusInfo,
+      flixbusValid,
+      trainValid,
+      canFly:   canFly(ctx.origin, city),
+      canBus:   canBus(ctx.origin, city),
+      canTrain: canTrain(ctx.origin, city),
       // Legacy aliases — older code expects friday/sunday
       dates: { ...dates, friday: dates.checkin, sunday: dates.checkout, fridayCompact: dates.checkinCompact, sundayCompact: dates.checkoutCompact },
       ctx
@@ -9288,37 +9511,62 @@
                 <span class="price-tag est">Estimate</span>
               </div>
 
-              <div class="cb-row">
-                <div class="cb-row-icon">✈</div>
-                <div class="cb-row-body">
-                  <div class="cb-row-label">Return flight</div>
-                  <div class="cb-row-sub">${flightTime} · cheapest-sorted on Skyscanner</div>
-                </div>
-                <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
-                <a class="cb-row-cta" href="${links.skyscanner}" target="_blank" rel="noopener">Search live →</a>
-              </div>
+              ${(() => {
+                // FLIGHT ROW — only show when we actually have a flight option.
+                // For cities without an airport AND no cheaper-than-flight
+                // alternative, we skip the flight row entirely and let the
+                // bus/train row carry the trip.
+                const flightInfo = links.skyscannerInfo || { url: links.skyscanner, valid: false, note: null };
+                const showFlight = links.canFly !== false;        // default true when unknown
+                if (!showFlight) return '';
+                const subBits = [flightTime, 'cheapest-sorted on Skyscanner'];
+                if (flightInfo.note) subBits.unshift(flightInfo.note); // "Closest airport · Nice"
+                return `
+                  <div class="cb-row">
+                    <div class="cb-row-icon">✈</div>
+                    <div class="cb-row-body">
+                      <div class="cb-row-label">Return flight</div>
+                      <div class="cb-row-sub">${subBits.join(' · ')}</div>
+                    </div>
+                    <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
+                    <a class="cb-row-cta" href="${flightInfo.url}" target="_blank" rel="noopener" title="Search opens on Skyscanner">${flightInfo.valid ? 'Search live →' : 'Search Google Flights →'}</a>
+                  </div>
+                `;
+              })()}
 
               ${(() => {
-                // Show overland alternative (bus/train) if MV.transport has a
-                // known route AND it's at least €20 cheaper than the flight.
-                // Honest cross-sell: "you might save money by going overland."
+                // OVERLAND ROW — surface bus/train when MV.transport has a
+                // confirmed route AND it's meaningfully cheaper than the
+                // flight, OR when there's no flight at all (then any
+                // overland option is the headline).
                 if (typeof MV === 'undefined' || !MV.transport) return '';
                 const options = MV.transport.getOptions(ctx.origin, cityName) || [];
                 const overland = options.find(o => o.mode === 'bus' || o.mode === 'train');
                 if (!overland) return '';
                 const flightCost = (options.find(o => o.mode === 'flight') || {}).price || flightPP;
-                if (overland.price + 20 > flightCost) return ''; // not enough savings to surface
+                const flightAvailable = links.canFly !== false;
+                // Show overland if (a) no flight at all, or (b) ≥€20 cheaper
+                if (flightAvailable && overland.price + 20 > flightCost) return '';
                 const meta = MV.transport.modeMeta[overland.mode];
                 const dur = (function(h){ const H=Math.floor(h),M=Math.round((h-H)*60); return M>0?H+'h '+M+'m':H+'h'; })(overland.duration || 0);
+                // Use validated builder for the CTA URL — never inline a raw
+                // flixbus search URL again.
+                const partnerUrl = overland.mode === 'bus'
+                  ? (links.flixbus || 'https://global.flixbus.com/')
+                  : (links.trainline || 'https://www.trainline.com/');
+                const partnerLabel = overland.mode === 'bus' ? 'Check FlixBus →' : 'Check Trainline →';
+                const lede = flightAvailable
+                  ? `Or by ${meta.label.toLowerCase()} · save €${Math.max(0, flightCost - overland.price)}`
+                  : `By ${meta.label.toLowerCase()} · no direct flight`;
                 return `
                   <div class="cb-row">
                     <div class="cb-row-icon">${meta.icon}</div>
                     <div class="cb-row-body">
-                      <div class="cb-row-label">Or by ${meta.label.toLowerCase()} · save €${flightCost - overland.price}</div>
+                      <div class="cb-row-label">${lede}</div>
                       <div class="cb-row-sub">${dur} · ${overland.provider} · slower but lighter on cash + carbon</div>
                     </div>
                     <div class="cb-row-price">€${overland.price}<span class="cb-row-unit">p/p</span></div>
-                    <a class="cb-row-cta" href="https://global.flixbus.com/search?fromCity=${encodeURIComponent(ctx.origin)}&toCity=${encodeURIComponent(cityName)}" target="_blank" rel="noopener">Search live →</a>
+                    <a class="cb-row-cta" href="${partnerUrl}" target="_blank" rel="noopener" title="Search opens on ${overland.provider}">${partnerLabel}</a>
                   </div>
                 `;
               })()}
@@ -9330,7 +9578,7 @@
                   <div class="cb-row-sub">cheapest-sorted on Booking · within budget</div>
                 </div>
                 <div class="cb-row-price">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p</span></div>
-                <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener">Search live →</a>
+                <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener" title="Search opens on Booking.com">Search live →</a>
               </div>
 
               <div class="cb-row">
@@ -9340,7 +9588,7 @@
                   <div class="cb-row-sub">cheapest-sorted on GetYourGuide</div>
                 </div>
                 <div class="cb-row-price">€${est.activity.pp}<span class="cb-row-unit">p/p</span></div>
-                <a class="cb-row-cta" href="${links.getyourguide}" target="_blank" rel="noopener">Search live →</a>
+                <a class="cb-row-cta" href="${links.getyourguide}" target="_blank" rel="noopener" title="Search opens on GetYourGuide">Search live →</a>
               </div>
 
               <div class="cb-total">
