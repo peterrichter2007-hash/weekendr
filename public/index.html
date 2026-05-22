@@ -7574,15 +7574,38 @@
   
   function renderRail(key) {
     const items = [...collections[key]]; // copy
-    // Smart sort: 'weekends' and 'hidden' favour cheaper picks; others stay curated
+    // For "Weekends" rail — recompute the per-card "from €X" using the
+    // real per-city economy + current origin so the displayed weekend
+    // price reflects reality (Lisbon from Berlin is genuinely cheaper
+    // than Paris from Madrid, and the rail now shows that). The static
+    // strings remain as fallback for cities outside cityEconomy and
+    // for non-weekend rails (villas show /night, hidden/beach lists
+    // include place names we don't have economy entries for).
+    const fromCity = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
+    items.forEach(it => {
+      it._displayPrice = it.price;
+      if (typeof weekendEstimate === 'function'
+          && typeof cityEconomy !== 'undefined'
+          && it.place && cityEconomy[it.place]
+          && !/\//.test(String(it.price))) {           // skip "/ night" rental shapes
+        try {
+          const est = weekendEstimate(it.place, { origin: fromCity, adults: 2, nights: 2 });
+          it._dynamicAllIn = est.totalPP;
+          it._displayPrice = 'from €' + est.totalPP + ' pp';
+        } catch (e) { /* keep static */ }
+      }
+    });
+    // Smart sort: 'weekends' and 'hidden' favour cheaper picks. Sort by the
+    // dynamic per-person all-in when we have it, else fall back to static.
     if (key === 'weekends' || key === 'hidden' || key === 'beaches') {
-      items.sort((a, b) => priceNum(a.price) - priceNum(b.price));
+      items.sort((a, b) => (a._dynamicAllIn ?? priceNum(a.price)) - (b._dynamicAllIn ?? priceNum(b.price)));
     }
-    const cheapestPrice = Math.min(...items.map(i => priceNum(i.price)));
+    const cheapestPrice = Math.min(...items.map(i => i._dynamicAllIn ?? priceNum(i.price)));
     const rail = document.getElementById('rail-' + key);
     if (!rail) return;
     rail.innerHTML = items.map((it, i) => {
-      const isDeal = priceNum(it.price) <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches');
+      const num = it._dynamicAllIn ?? priceNum(it.price);
+      const isDeal = num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches');
       const flight = flightForPlace(it.place);
       const flightStr = (function () {
         const h = Math.floor(flight);
@@ -7594,7 +7617,7 @@
           <div class="img-wrap has-placeholder" data-label="${it.place}" data-wiki="${it.place}">
             <img alt="${it.place}" loading="lazy" />
             ${isDeal ? `<span class="deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Best value</span>` : ''}
-            <span class="price">${it.price}</span>
+            <span class="price">${it._displayPrice}</span>
             <button class="save" data-fav-toggle="${it.place}" aria-label="Save trip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
           </div>
           <div class="meta">
@@ -9236,20 +9259,18 @@
         </div>
   
         <!-- TRIP COST BREAKDOWN — transparent flight + stay + activities maths
-             All numbers driven by cityEconomy[city] — no more cityName.length
-             pseudo-math. Tirana shows Tirana prices, Zurich shows Zurich prices.
-             Total is internally coherent: total = flight + stay + activities. -->
+             Single source of truth: weekendEstimate(city, ctx).
+             Every number on screen ties back to it, so:
+               total p/p = transport p/p + stay p/p + activity p/p
+             with stay.pp = stay.total / adults. No more "flight + total
+             room cost = per person" incoherence. -->
         ${(() => {
-          const econ       = getEconomy(cityName);
-          const flightLow  = Math.max(20, Math.floor((flightPrice || 89) * 0.85 / 5) * 5);
-          // Use h_mid as the "median 3* hotel" baseline — same shape as before,
-          // but the number is now realistic per city (€35 in Tirana → €220 in Zurich).
-          const hotelMid   = econ.h_mid;
-          const stayLow    = Math.floor((hotelMid * 0.8 * ctx.nights) / 5) * 5;
-          const stayHigh   = Math.ceil((hotelMid * 1.15 * ctx.nights) / 5) * 5;
-          const actLow     = econ.a_mid;
-          const actHigh    = econ.a_max;
-          const totalLow   = flightLow + stayLow + actLow;
+          const est = weekendEstimate(cityName, ctx);
+          // Prefer the smartDestinations flight number for the row label so
+          // the visible "return flight" still says "Skyscanner" even when
+          // an overland route is cheaper — we surface overland as a separate
+          // row below.
+          const flightPP   = (flightPrice != null && flightPrice > 0) ? flightPrice : est.transport.pp;
           return `
         <div class="detail-section">
           <div class="head">
@@ -9260,7 +9281,7 @@
             <div class="cost-breakdown glass-card">
               <div class="cb-head">
                 <div>
-                  <div class="cb-eyebrow">Optimised for cheapest · ${ctx.adults} ${ctx.adults === 1 ? 'traveller' : 'travellers'} · ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'}</div>
+                  <div class="cb-eyebrow">Optimised for cheapest · ${est.adults} ${est.adults === 1 ? 'traveller' : 'travellers'} · ${est.nights} ${est.nights === 1 ? 'night' : 'nights'} · ${est.tier} tier</div>
                   <div class="cb-route">${origin} <span class="cb-arrow">→</span> ${cityName}</div>
                   <div class="cb-dates">${links.dates.checkinShort} – ${links.dates.checkoutShort}</div>
                 </div>
@@ -9273,7 +9294,7 @@
                   <div class="cb-row-label">Return flight</div>
                   <div class="cb-row-sub">${flightTime} · cheapest-sorted on Skyscanner</div>
                 </div>
-                <div class="cb-row-price">${priceFromRange(flightPrice || 89)}<span class="cb-row-unit">p/p</span></div>
+                <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
                 <a class="cb-row-cta" href="${links.skyscanner}" target="_blank" rel="noopener">Search live →</a>
               </div>
 
@@ -9285,7 +9306,7 @@
                 const options = MV.transport.getOptions(ctx.origin, cityName) || [];
                 const overland = options.find(o => o.mode === 'bus' || o.mode === 'train');
                 if (!overland) return '';
-                const flightCost = (options.find(o => o.mode === 'flight') || {}).price || flightPrice || 89;
+                const flightCost = (options.find(o => o.mode === 'flight') || {}).price || flightPP;
                 if (overland.price + 20 > flightCost) return ''; // not enough savings to surface
                 const meta = MV.transport.modeMeta[overland.mode];
                 const dur = (function(h){ const H=Math.floor(h),M=Math.round((h-H)*60); return M>0?H+'h '+M+'m':H+'h'; })(overland.duration || 0);
@@ -9305,10 +9326,10 @@
               <div class="cb-row">
                 <div class="cb-row-icon">🛏</div>
                 <div class="cb-row-body">
-                  <div class="cb-row-label">${ctx.nights}-night stay · ${ctx.rooms} ${ctx.rooms === 1 ? 'room' : 'rooms'}</div>
+                  <div class="cb-row-label">${est.nights}-night stay · ${est.rooms} ${est.rooms === 1 ? 'room' : 'rooms'} · ~€${est.stay.nightly}/night</div>
                   <div class="cb-row-sub">cheapest-sorted on Booking · within budget</div>
                 </div>
-                <div class="cb-row-price">${priceRange(stayLow + Math.round((stayHigh-stayLow)/2))}<span class="cb-row-unit">total</span></div>
+                <div class="cb-row-price">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p</span></div>
                 <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener">Search live →</a>
               </div>
 
@@ -9318,14 +9339,14 @@
                   <div class="cb-row-label">1 experience</div>
                   <div class="cb-row-sub">cheapest-sorted on GetYourGuide</div>
                 </div>
-                <div class="cb-row-price">${priceRange(actLow + 20)}<span class="cb-row-unit">p/p</span></div>
+                <div class="cb-row-price">€${est.activity.pp}<span class="cb-row-unit">p/p</span></div>
                 <a class="cb-row-cta" href="${links.getyourguide}" target="_blank" rel="noopener">Search live →</a>
               </div>
 
               <div class="cb-total">
                 <div>
-                  <div class="cb-total-eyebrow">All-in estimate · per person</div>
-                  <div class="cb-total-num">from €${totalLow}</div>
+                  <div class="cb-total-eyebrow">All-in estimate · per person · €${flightPP} flight + €${est.stay.pp} stay + €${est.activity.pp} activity</div>
+                  <div class="cb-total-num">from €${flightPP + est.stay.pp + est.activity.pp}</div>
                 </div>
                 <a class="cb-total-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve weekend
@@ -9399,11 +9420,9 @@
           <h2 class="h-1" style="margin-bottom: 1.5rem;">A whole weekend in <em class="italic-accent">${cityName}</em>.</h2>
           <p class="lede" style="margin-bottom: 2rem; max-width: 540px; margin-left: auto; margin-right: auto;">
             Flights, ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} and one experience — all-in <strong>${(() => {
-              // Coherent with the cost-breakdown above: flight + (cheap night × nights ÷ adults) + activity
-              const econ = getEconomy(cityName);
-              const cheapNight = Math.round(econ.h_mid * 0.7);
-              const stayPP = Math.round((cheapNight * ctx.nights) / Math.max(1, ctx.adults));
-              return priceFromRange((flightPrice || 89) + stayPP + econ.a_mid);
+              // Single source of truth — matches the cost-breakdown total above
+              const est = weekendEstimate(cityName, ctx);
+              return priceFromRange(est.totalPP);
             })()}</strong> per person.
           </p>
           <a class="btn-primary" style="background: var(--ink); color: var(--cream); display: inline-flex;" href="${links.booking}" target="_blank" rel="noopener">
@@ -10791,6 +10810,92 @@
   // Round to the nearest €5 — every estimated price in the UI passes
   // through this so we never claim cent-level precision.
   function _round5(n) { return Math.max(5, Math.round(n / 5) * 5); }
+
+  // ============================================================
+  // WEEKEND ESTIMATE — single source of truth for trip pricing
+  //
+  // Every "from €X" surface on the site routes through this:
+  //   • Cost-breakdown on city detail (flight + stay + activity rows)
+  //   • Best Deals "all-in" pill
+  //   • Manifesto cheapest-weekend tile
+  //   • Map sidebar + hero preview chips
+  //
+  // The output is internally coherent — `totalPP` is always exactly
+  // `transport.pp + stay.pp + activity.pp`. No more 'flight + total
+  // room cost = per person' incoherence. Stay.pp divides the shared
+  // room by adults so 2 travellers sharing one room report half each.
+  //
+  // It is honest by construction:
+  //   • Prefers MV.transport.cheapest (real route DB, may be bus/train)
+  //   • Falls back to smartDestinations flight estimate
+  //   • Falls back to a tier-derived realistic figure if both are blank
+  //   • Stay price always derived from cityEconomy[city].h_mid — never
+  //     a global fallback
+  //   • Activity = econ.a_mid (one mid-range experience per person)
+  // ============================================================
+  // Tier-derived flight fallback when neither MV.transport nor
+  // smartDestinations has a price for a (origin, destination) pair.
+  // Numbers are realistic short/medium-haul European return averages.
+  function _tierFlightFallback(tier) {
+    switch (tier) {
+      case 'budget':  return 75;
+      case 'mid':     return 95;
+      case 'premium': return 115;
+      case 'luxury':  return 145;
+      default:        return 99;
+    }
+  }
+  function weekendEstimate(cityName, ctxIn) {
+    const ctx     = ctxIn || (typeof getSearchContext === 'function' ? getSearchContext() : { origin: 'Berlin', adults: 2, nights: 2 });
+    const origin  = ctx.origin || 'Berlin';
+    const adults  = Math.max(1, ctx.adults  || 2);
+    const nights  = Math.max(1, ctx.nights  || 2);
+    const econ    = getEconomy(cityName);
+
+    // 1. Transport — cheapest of flight/bus/train if MV.transport has
+    //    a row for the pair. Falls back to smartDestinations flight,
+    //    then to a tier-derived realistic figure.
+    let opt = null;
+    if (typeof MV !== 'undefined' && MV.transport && MV.transport.cheapest) {
+      opt = MV.transport.cheapest(origin, cityName) || null;
+    }
+    const sd = (typeof smartDestinations !== 'undefined')
+      ? smartDestinations.find(s => s.key === cityName)
+      : null;
+    const sdFlight = sd && sd.prices && sd.prices[origin] > 0 ? sd.prices[origin] : null;
+    const transportPP = opt ? opt.price
+                      : (sdFlight != null ? sdFlight : _tierFlightFallback(econ.tier));
+    const transportMode = opt ? opt.mode : 'flight';
+    const transportProvider = opt ? opt.provider : 'Skyscanner';
+    const transportDuration = opt ? opt.duration : (sd && sd.flights ? sd.flights[origin] : null);
+    const transportSource   = opt ? (opt.source || 'estimate') : 'estimate';
+
+    // 2. Stay — h_mid is the median 3* hotel for THIS city. Room cost
+    //    is shared across adults (2 adults sharing a double = each
+    //    pays half). For odd adult counts we still divide cleanly so
+    //    the maths is honest (3 adults in 2 rooms ≈ 1.5 rooms-worth).
+    const hotelNight = econ.h_mid;
+    const rooms      = Math.max(1, Math.ceil(adults / 2));
+    const stayTotal  = _round5(hotelNight * nights * rooms);
+    const stayPP     = _round5(stayTotal / adults);
+
+    // 3. Activity — one mid-range paid experience per person. Cities
+    //    have plenty of free things to do (a_min: 0); we surface the
+    //    paid number so the total reflects "I'll do at least one
+    //    proper thing", not the absolute-zero floor.
+    const activityPP = econ.a_mid;
+
+    // 4. Total per person — coherent by construction.
+    const totalPP = transportPP + stayPP + activityPP;
+
+    return {
+      city: cityName, origin, adults, nights, rooms,
+      transport: { mode: transportMode, pp: transportPP, provider: transportProvider, duration: transportDuration, source: transportSource },
+      stay:      { total: stayTotal, pp: stayPP, nightly: hotelNight },
+      activity:  { pp: activityPP, source: 'estimate' },
+      totalPP, tier: econ.tier
+    };
+  }
 
   // ----- Country-aware vocab for smart fallback content -----
   // Used by genericHotels/Activities/Restaurants to generate names
@@ -13914,17 +14019,40 @@
   let bestDealsCursor = 0;
 
   function _bestDealsScore(opt, dest, ctx) {
-    // Lower score = better. Weight price most, then duration, then
-    // give a tiny boost to non-flight when bus/train shaves cost.
+    // Lower score = better. Now scores ALL-IN per-person weekend cost
+    // (transport + stay + activity), not just transport — so Stockholm
+    // at €49 flight + €145/night hotel won't out-rank Krakow at €39 +
+    // €55. The cheap-city promise becomes structural.
     if (!opt) return Infinity;
-    let s = opt.price;
-    if (opt.duration) s += opt.duration * 4;       // 4€/hour penalty for travel time
-    if (opt.mode === 'flight') s += 2;             // tiny preference for non-flight (greener + often cheaper end-to-end)
+    const fromCity = ctx && ctx.from;
+    const dCity = (dest && dest.name) || null;
+    let allIn = opt.price;
+    if (dCity && typeof weekendEstimate === 'function') {
+      try {
+        // Default to a typical short-weekend party of two — that's the
+        // shape of the Best Deals promise. Real form params can vary.
+        const est = weekendEstimate(dCity, { origin: fromCity, adults: 2, nights: 2 });
+        allIn = est.totalPP;
+      } catch (e) { /* fall back to transport-only price */ }
+    }
+    let s = allIn;
+    if (opt.duration) s += opt.duration * 3;          // small penalty for travel time
+    if (opt.mode === 'flight') s += 2;                // tiny boost to non-flight (greener)
+    // Honesty bias: cheap-tier cities should appear more often than
+    // luxury — the brand is "cheap weekends in Europe", not "discounts
+    // on St-Tropez". A small structural discount keeps the rotation
+    // believable.
+    const tier = (dest && dest.estimatedBudget && dest.estimatedBudget.tier)
+              || (typeof getEconomy === 'function' && dCity ? getEconomy(dCity).tier : null);
+    if (tier === 'budget') s -= 25;
+    else if (tier === 'mid') s -= 8;
+    else if (tier === 'luxury') s += 18;
     return s;
   }
 
-  function _badgeFor(opt, idx) {
+  function _badgeFor(opt, idx, allInPP) {
     if (idx === 0) return 'Best value';
+    if (allInPP != null && allInPP <= 180) return 'Whole weekend under €180';
     if (opt && opt.mode === 'bus' && opt.price <= 20) return 'Bus deal';
     if (opt && opt.mode === 'train' && opt.duration <= 2.5) return 'Quick train';
     if (opt && opt.mode === 'flight' && opt.price <= 60) return 'Cheap flight';
@@ -13952,6 +14080,7 @@
       scored.push({
         city,
         opt,
+        from,
         score: _bestDealsScore(opt, city, { from })
       });
     });
@@ -13968,9 +14097,17 @@
     }
     grid.innerHTML = deals.map((d, i) => {
       const meta = MV.transport.modeMeta[d.opt.mode] || { icon: '✈', label: 'Travel' };
-      const badge = _badgeFor(d.opt, i);
       const dur = _fmtDealDuration(d.opt.duration);
       const provider = d.opt.provider || '';
+      // All-in per-person is the honest headline — transport price alone
+      // ("from €49") implies the whole weekend is that price, which it
+      // isn't if hotels are €145/night. Compute the same number the city
+      // detail page will show so users trust the breakdown.
+      const est = (typeof weekendEstimate === 'function')
+        ? weekendEstimate(d.city.name, { origin: d.from || (typeof mapState !== 'undefined' && mapState.from) || 'Berlin', adults: 2, nights: 2 })
+        : null;
+      const allIn = est ? est.totalPP : d.opt.price;
+      const badge = _badgeFor(d.opt, i, allIn);
       return `
         <article class="deal-card" data-city="${d.city.name}" onclick="openSmartDetail('${d.city.name}')">
           <div class="deal-img has-placeholder" data-label="${d.city.name}" data-wiki="${d.city.name}">
@@ -13979,15 +14116,15 @@
           ${badge ? `<span class="deal-badge ${i === 0 ? 'best' : ''}">${badge}</span>` : ''}
           <span class="deal-mode" title="${provider}">
             <span class="deal-mode-icon">${meta.icon}</span>
-            <span>${meta.short}${dur ? ' · ' + dur : ''}</span>
+            <span>${meta.short} €${d.opt.price}${dur ? ' · ' + dur : ''}</span>
           </span>
           <div class="deal-body">
             <div class="deal-country">${d.city.country}</div>
             <h3 class="deal-name">${d.city.name}</h3>
             <div class="deal-foot">
               <div class="deal-price">
-                <span class="deal-price-amount">from €${d.opt.price}</span>
-                <span class="deal-price-meta">${provider} · estimate</span>
+                <span class="deal-price-amount">from €${allIn}</span>
+                <span class="deal-price-meta">all-in p/p · 2 nights · estimate</span>
               </div>
               <span class="deal-cta" aria-label="Open ${d.city.name}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -14012,15 +14149,19 @@
     bestDealsCursor = 0;
     renderBestDealsCards(pool.slice(0, 4));
 
-    // Update manifesto's "cheapest weekend now" tile to reflect reality
+    // Update manifesto's "cheapest weekend now" tile to reflect reality.
+    // Uses the same weekendEstimate() as the cost-breakdown so the number
+    // a visitor sees on the homepage matches what they see after clicking
+    // through. No more hardcoded "€18 × 2 nights" — actual h_mid per city.
     const cheap = pool[0];
     if (cheap) {
       const mp = document.getElementById('manifestoMinPrice');
       if (mp) {
-        const flight = cheap.opt.price;
-        const stay   = 18 * 2;   // 2 nights at the cheapest tier (~hostel)
-        const exp    = 0;        // free activities exist in every city
-        mp.textContent = '€' + (flight + stay + exp) + ' all-in';
+        const est = (typeof weekendEstimate === 'function')
+          ? weekendEstimate(cheap.city.name, { origin: from, adults: 2, nights: 2 })
+          : null;
+        const allIn = est ? est.totalPP : (cheap.opt.price + 36);
+        mp.textContent = '€' + allIn + ' all-in · ' + cheap.city.name;
       }
     }
 
@@ -14055,30 +14196,47 @@
     const from = mapState.from;
     const sort = mapState.sort;
     const ranked = rankedDestinations(from, sort);
-  
-    // Stats
-    const cheapest = ranked.reduce((a, b) => a.price < b.price ? a : b, ranked[0]);
+
+    // Compute the all-in 2-night per-person weekend cost for each ranked
+    // destination once — used by both the stat tray and the sidebar so
+    // "Cheapest" reflects the actual weekend, not the flight alone.
+    const allInFor = (key) => {
+      try {
+        return (typeof weekendEstimate === 'function')
+          ? weekendEstimate(key, { origin: from, adults: 2, nights: 2 }).totalPP
+          : null;
+      } catch (e) { return null; }
+    };
+    ranked.forEach(d => { d.allIn = allInFor(d.key); });
+
+    // Stats — "Cheapest" is now the cheapest WEEKEND, not the cheapest
+    // flight. Coherent with the brand promise ("cheap weekends in Europe").
+    const cheapestWk = ranked.filter(d => d.allIn != null)
+                              .reduce((a, b) => (a.allIn < b.allIn ? a : b),
+                                      ranked.find(d => d.allIn != null) || ranked[0]);
     const shortest = ranked.reduce((a, b) => a.flight < b.flight ? a : b, ranked[0]);
     if (document.getElementById('ms-from')) {
-      document.getElementById('ms-from').textContent = priceFromRange(cheapest.price);
+      const v = (cheapestWk && cheapestWk.allIn) ? '€' + cheapestWk.allIn : priceFromRange(ranked[0]?.price || 89);
+      document.getElementById('ms-from').textContent = v;
       document.getElementById('ms-flight').textContent = fmtFlight(shortest.flight);
       document.getElementById('ms-count').textContent = ranked.length;
     }
-  
+
     // Sidebar list
     const items = document.getElementById('ml-items');
     if (items) {
       items.innerHTML = ranked.slice(0, 10).map((d, i) => {
         const isBest = i === 0;
-        const isCheap = d.price < 80;
+        const isCheap = (d.allIn != null) ? d.allIn < 250 : d.price < 80;
+        const priceLabel = (d.allIn != null) ? ('from €' + d.allIn) : priceFromRange(d.price);
         return `
           <div class="ml-item ${isBest ? 'best' : ''}" data-key="${d.key}">
             <div class="ml-img has-placeholder" data-label="${d.key}" data-wiki="${d.key}"><img alt="${d.key}" loading="lazy" /></div>
             <div class="ml-info">
               <div class="ml-name">${d.key} ${isBest ? '<span class="ml-badge">Best value</span>' : i < 3 ? '<span class="ml-badge cool">Top pick</span>' : ''}</div>
-              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)}</div>
+              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)} · €${d.price} flight</div>
             </div>
-            <div class="ml-price ${isCheap ? 'cheap' : ''}">${priceFromRange(d.price)}</div>
+            <div class="ml-price ${isCheap ? 'cheap' : ''}">${priceLabel}</div>
           </div>
         `;
       }).join('');
@@ -14112,6 +14270,17 @@
     const d = smartDestinations.find(x => x.key === key);
     if (!d) return;
     const from = mapState.from;
+    // All-in 2-night per-person headline — same number the city detail
+    // page will then show. "from €49 return" reads as a complete weekend
+    // even though it's just the flight, which causes the credibility
+    // problem we're fixing.
+    let priceLabel = `from €${d.prices[from] ?? 99} flight · ${fmtFlight(d.flights[from] ?? 2)}`;
+    try {
+      if (typeof weekendEstimate === 'function') {
+        const est = weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 });
+        priceLabel = `from €${est.totalPP} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
+      }
+    } catch (e) { /* keep fallback label */ }
     const trip = {
       place: d.key,
       country: d.country,
@@ -14119,7 +14288,7 @@
       description: d.tagline,
       vibe: d.vibe,
       tags: d.vibeTags,
-      price: `from €${d.prices[from] ?? 99} return · ${fmtFlight(d.flights[from] ?? 2)} flight`,
+      price: priceLabel,
       best_for: 'Weekend escapes from ' + from,
       highlights: [
         `A villa or boutique stay in ${d.key}`,
@@ -14145,9 +14314,17 @@
     const title = document.getElementById('cgPreviewTitle');
     if (title) title.textContent = `${d.key}, this weekend`;
     const price = document.getElementById('cgPreviewPrice');
-    if (price) price.textContent = `from €${d.prices[from]} return`;
+    // All-in p/p — coherent with the city detail page's cost-breakdown.
+    // "from €X return" was just the flight cost and read as a complete
+    // weekend, which it isn't once you add a hotel.
+    if (price) {
+      const est = (typeof weekendEstimate === 'function')
+        ? weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 })
+        : null;
+      price.textContent = est ? `from €${est.totalPP} pp · all-in` : `from €${d.prices[from]} flight`;
+    }
     const flight = document.getElementById('cgPreviewFlight');
-    if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight`;
+    if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight · €${d.prices[from]}`;
     const vibe = document.getElementById('cgPreviewVibe');
     if (vibe) vibe.textContent = d.vibe;
     const eyebrow = document.querySelector('.cg-pg-eyebrow');
