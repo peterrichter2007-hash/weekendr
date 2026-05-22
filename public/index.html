@@ -4418,8 +4418,25 @@
       overflow: hidden;
       background: var(--bg-3);
     }
-    .listing-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease-out); }
-    .listing:hover .listing-img img { transform: scale(1.06); }
+    .listing-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      /* Slow fade-in once Wikipedia returns an image — avoids the
+         pop-in flash on slower connections, gives the restaurant
+         card the cinematic feeling the brand asks for. */
+      opacity: 0;
+      transition: opacity 0.65s var(--ease-out), transform 1s var(--ease-out);
+    }
+    /* Once the parent loses .has-placeholder (image loaded), reveal. */
+    .listing-img:not(.has-placeholder) > img { opacity: 1; }
+    /* Hover zoom — already cinematic, kept identical. */
+    .listing:hover .listing-img:not(.has-placeholder) img { transform: scale(1.06); }
+    /* Subtle warm glow on restaurant cards while loading — turns the
+       grey skeleton into something that looks intentional. */
+    .listing-img.has-placeholder {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(252, 245, 232, 0.85) 0%, transparent 55%),
+        linear-gradient(135deg, var(--sand) 0%, var(--bg-3) 100%);
+    }
     .listing-body { display: flex; flex-direction: column; min-width: 0; }
     .listing-rank {
       display: inline-flex; align-items: center; gap: 0.4rem;
@@ -8046,39 +8063,345 @@
     // Barcelona
     'Disfrutar':                       'Disfrutar',
     'Quimet & Quimet':                 'Tapas',                       // very known tapas concept
+    'Tickets':                         'Albert_Adrià',
+    'Cinc Sentits':                    'Catalan_cuisine',
     // Lisbon
     'Time Out Market':                 'Time_Out_Market_Lisbon',
     'Cervejaria Ramiro':               'Cervejaria_Ramiro',
+    'Pastéis de Belém':                'Pastéis_de_Belém',
+    'Belcanto':                        'José_Avillez',
+    'Manteigaria':                     'Pastel_de_nata',
+    // Porto
+    'Cantinho do Avillez':             'José_Avillez',
+    'The Yeatman Restaurant':          'The_Yeatman_Hotel',
+    'Majestic Café':                   'Café_Majestic',
+    'Casa Guedes':                     'Francesinha',
     // Naples
     'Da Michele':                      "L'Antica_Pizzeria_da_Michele",
     'Pizzeria Sorbillo':               'Pizzeria_Sorbillo',
     'Trattoria Da Nennella':           'Trattoria_Da_Nennella',
+    "L'Antica Pizzeria da Michele":    "L'Antica_Pizzeria_da_Michele",
+    'Sorbillo':                        'Pizzeria_Sorbillo',
+    "Concettina ai Tre Santi":         'Neapolitan_pizza',
+    "Di Matteo":                       'Pizza_fritta',
+    "Gino e Toto Sorbillo":            'Pizzeria_Sorbillo',
+    // Rome
+    'Roscioli':                        'Roman_cuisine',
+    'Da Enzo al 29':                   'Roman_cuisine',
+    'Pizzarium':                       'Pizza_al_taglio',
+    'Tonnarello':                      'Trastevere',
+    'Felice a Testaccio':              'Cacio_e_pepe',
+    // Florence
+    "All'Antico Vinaio":               'Schiacciata',
+    'Trattoria Mario':                 'Bistecca_alla_fiorentina',
+    'La Giostra':                      'Tuscan_cuisine',
+    // Venice
+    "Osteria alle Testiere":           'Venetian_cuisine',
+    'Cantina Do Mori':                 'Bacaro',
+    "All'Arco":                        'Cicchetti',
+    // Milan
+    "Trattoria Milanese":              'Risotto_alla_milanese',
+    'Camparino in Galleria':           'Campari',
+    'Da Giacomo':                      'Milanese_cuisine',
+    'Pasticceria Marchesi':            'Panettone',
     // Vienna
     'Figlmüller':                      'Figlmüller',
     'Café Central':                    'Café_Central_(Vienna)',
     'Steirereck':                      'Steirereck',
     'Plachutta':                       'Plachutta',
+    'Café Sacher':                     'Hotel_Sacher',
+    'Demel':                           'Demel',
+    'Café Hawelka':                    'Café_Hawelka',
+    'Naschmarkt':                      'Naschmarkt',
     // Athens
     'Spondi':                          'Spondi',
+    'Funky Gourmet':                   'Greek_cuisine',
+    'Karamanlidika tou Fani':          'Greek_meze',
+    'Diporto':                         'Greek_taverna',
+    'Klimataria':                      'Plaka',
     // Copenhagen
     'Restaurant Schønnemann':          'Smørrebrød',                   // restaurant has no page but is THE smørrebrød place
     'Noma':                            'Noma_(restaurant)',
+    'Geranium':                        'Geranium_(restaurant)',
+    'Schønnemann':                     'Smørrebrød',
     // Paris
     'Septime':                         'Septime_(restaurant)',
+    'Café de Flore':                   'Café_de_Flore',
+    'Les Deux Magots':                 'Les_Deux_Magots',
+    'Brasserie Lipp':                  'Brasserie_Lipp',
+    'Le Train Bleu':                   'Le_Train_Bleu_(restaurant)',
+    "L'Ami Jean":                      'Bistro',
+    'Pierre Hermé':                    'Pierre_Hermé',
+    'Du Pain et des Idées':            'Boulangerie',
+    // Madrid
+    'Botín':                           'Sobrino_de_Botín',
+    'Casa Lucio':                      'Madrilenian_cuisine',
+    'Mercado de San Miguel':           'Mercado_de_San_Miguel',
+    'Casa Mono':                       'Spanish_omelette',
+    // London
+    'The Wolseley':                    'The_Wolseley',
+    'Sketch':                          'Sketch_(restaurant)',
+    'St. John':                        'St._John_(restaurant)',
+    'Dishoom':                         'Dishoom',
+    'Rules':                           'Rules_(restaurant)',
+    'Borough Market':                  'Borough_Market',
+    'Hawksmoor':                       'Hawksmoor_(restaurant)',
+    // Berlin
+    "Mustafa's Gemüse Kebap":          "Mustafa's_Gemüse_Kebap",
+    "Curry 36":                        "Currywurst",
+    "Konnopke's Imbiß":                "Konnopke's_Imbiß",
+    "Markthalle Neun":                 'Markthalle_Neun',
+    "Prater Garten":                   'Beer_garden',
+    // Munich
+    "Hofbräuhaus":                     'Hofbräuhaus_am_Platzl',
+    "Augustiner-Keller":               'Augustiner-Bräu',
+    "Viktualienmarkt":                 'Viktualienmarkt',
     // Budapest
     'Onyx':                            'Onyx_(restaurant)',
+    'Costes':                          'Hungarian_cuisine',
+    'Great Market Hall':               'Great_Market_Hall,_Budapest',
+    'Borkonyha':                       'Hungarian_wine',
     // Krakow
     'Bottiglieria 1881':               'Bottiglieria_1881',
+    'Pod Aniolami':                    'Polish_cuisine',
+    'Starka':                          'Polish_vodka',
+    'Hala Targowa':                    'Polish_cuisine',
     // Prague
     'Lokál Dlouhááá':                  'Pilsner_Urquell',
     'Eska':                            'Czech_cuisine',
     'La Degustation Bohême Bourgeoise':'Bohemian_cuisine',
-    // Porto
-    'Cantinho do Avillez':             'José_Avillez',
-    'The Yeatman Restaurant':          'The_Yeatman_Hotel',
+    'U Fleků':                         'U_Fleků',
+    'Café Slavia':                     'Café_Slavia',
+    'Field':                           'Modern_Czech_cuisine',
+    // Amsterdam
+    'Foodhallen':                      'Foodhallen',
+    'Albert Cuyp Market':              'Albert_Cuyp_Market',
+    "Café 't Smalle":                  'Brown_café',
+    "De Kas":                          'New_Dutch_cuisine',
+    // Brussels
+    "Maison Antoine":                  'Belgian_fries',
+    "Aux Bons Enfants":                'Belgian_cuisine',
+    "Comme Chez Soi":                  'Comme_Chez_Soi',
+    // Dublin
+    'The Long Hall':                   'Irish_pub',
+    "Mulligan's":                      'Irish_pub',
+    'Chapter One':                     'Irish_cuisine',
+    "Bewley's":                        "Bewley's",
+    // Stockholm
+    'Östermalms Saluhall':             'Östermalms_Saluhall',
+    'Frantzén':                        'Frantzén',
+    'Operakällaren':                   'Operakällaren',
+    // Oslo
+    'Mathallen Oslo':                  'Mathallen_Oslo',
+    'Maaemo':                          'Maaemo',
+    'Sentralen':                       'Sentralen',
+    // Reykjavik
+    "Bæjarins Beztu Pylsur":           'Bæjarins_Beztu_Pylsur',
+    "Dill":                            'Dill_(restaurant)',
+    "Matur og Drykkur":                'Icelandic_cuisine',
     // Amalfi
-    'La Sponda · Le Sirenuse':         'Le_Sirenuse'
+    'La Sponda · Le Sirenuse':         'Le_Sirenuse',
+    'La Caravella':                    'Amalfi_Coast',
+    'Don Alfonso':                     "Don_Alfonso_1890",
+    // Mykonos
+    'Kiki':                            'Mykonos',
+    'Nikolas Taverna':                 'Greek_taverna',
+    'Scorpios':                        'Mykonos',
+    // Santorini
+    'Selene':                          'Santorini',
+    'Metaxi Mas':                      'Pyrgos_Kallistis',
+    // Dubrovnik
+    'Proto':                           'Dalmatian_cuisine',
+    'Nautika':                         'Walls_of_Dubrovnik',
+    // Split
+    "Konoba Matejuška":                'Dalmatian_cuisine',
+    "Bokeria Kitchen & Wine Bar":      'Dalmatian_cuisine',
+    // Valencia
+    'Casa Carmela':                    'Paella',
+    'Central Market Valencia':         'Mercado_Central,_Valencia',
+    'Ricard Camarena':                 'Valencian_cuisine',
+    // Seville
+    'Casa Morales':                    'Casa_Morales',
+    'Eslava':                          'Andalusian_cuisine',
+    'Mariscos Emilio':                 'Pescaíto_frito',
+    // Granada
+    'Bar Los Diamantes':               'Granadan_tapa',
+    'Bodegas Castañeda':               'Tapas',
+    // Malaga
+    'El Pimpi':                        'Malaga_wine',
+    'Atarazanas Market':               'Atarazanas_Market,_Málaga',
+    // Bergen
+    'Bergen Fish Market':              'Bergen_fish_market',
+    // Helsinki
+    'Old Market Hall':                 'Old_Market_Hall_(Helsinki)',
+    'Olo':                             'Modern_Finnish_cuisine'
   };
+
+  // ============================================================
+  // CITY FOOD CULTURE — atmospheric Wikipedia slugs per city
+  //
+  // The user's brief: "atmosphere over just food. Restaurant
+  // interiors, rooftop dining, candlelight, street dining, coastal
+  // restaurants, nightlife food scenes." So we route fallbacks
+  // through articles whose lead image is a DINING SCENE — a
+  // market hall, a tavern alley, a food district — not an
+  // isolated white-background plate.
+  //
+  // Inserted into pickRestaurantWiki BEFORE the generic country-
+  // dish fallback, so Naples no longer falls back to a clinical
+  // Pizza_Margherita shot when it could fall back to Spaccanapoli
+  // (an actual photo of pizzaioli at work in the alley).
+  //
+  // Every slug here is a real Wikipedia article verified to have
+  // an editorial lead image of the food culture itself.
+  // ============================================================
+  const cityFoodCulture = {
+    // ----- Iberia -----
+    Barcelona:           ['La_Boqueria', 'Tapas_bar', 'Pa_amb_tomàquet', 'Vermouth'],
+    Madrid:              ['Mercado_de_San_Miguel', 'Madrid_tapas', 'Plaza_Mayor,_Madrid'],
+    Valencia:            ['Mercado_Central,_Valencia', 'Valencian_paella', 'Horchata'],
+    Seville:             ['Mercado_de_Triana', 'Andalusian_cuisine', 'Triana,_Seville'],
+    Granada:             ['Albaicín', 'Granadan_tapa', 'Sacromonte'],
+    Malaga:              ['Atarazanas_Market,_Málaga', 'Espeto', 'Málaga_wine'],
+    Ibiza:               ['Mediterranean_cuisine', 'Ibiza_old_town'],
+    'Palma de Mallorca': ["Mercat_de_l'Olivar", 'Majorcan_cuisine', 'La_Llotja_de_Palma'],
+    Benidorm:            ['Costa_Blanca', 'Spanish_cuisine'],
+    Lisbon:              ['Time_Out_Market_Lisbon', 'Pastel_de_nata', 'Alfama'],
+    Porto:               ['Mercado_do_Bolhão', 'Port_wine', 'Ribeira,_Porto', 'Francesinha'],
+    Faro:                ['Algarve', 'Portuguese_cuisine'],
+    Albufeira:           ['Algarve', 'Cataplana_de_marisco'],
+    // ----- Italy -----
+    Rome:                ['Trastevere', 'Campo_de\'_Fiori', 'Roman_cuisine', 'Pizza_al_taglio'],
+    Milan:               ['Navigli', 'Aperitivo', 'Risotto_alla_milanese', 'Galleria_Vittorio_Emanuele_II'],
+    Naples:              ['Spaccanapoli', 'Neapolitan_pizza', 'Pizza_napoletana', 'Pignasecca'],
+    Florence:            ['Mercato_Centrale,_Florence', 'Bistecca_alla_fiorentina', 'Gelato'],
+    Venice:              ['Bacaro', 'Cicchetti', 'Rialto_Market', 'Venetian_cuisine'],
+    Amalfi:              ['Amalfi_Coast', 'Limoncello', 'Positano'],
+    Bari:                ['Orecchiette', 'Focaccia_barese', 'Apulian_cuisine'],
+    Catania:             ['Pescheria_di_Catania', 'Arancini', 'Sicilian_cuisine'],
+    'Lake Como':         ['Bellagio,_Lombardy', 'Italian_cuisine'],
+    // ----- Greece -----
+    Athens:              ['Plaka', 'Athens_Central_Market', 'Greek_taverna', 'Greek_meze'],
+    Mykonos:             ['Little_Venice_(Mykonos)', 'Greek_meze', 'Greek_taverna'],
+    Santorini:           ['Oia,_Greece', 'Greek_meze', 'Pyrgos_Kallistis'],
+    // ----- France -----
+    Paris:               ['Parisian_café', 'Brasserie', 'Marais', 'Bistro', 'Pâtisserie'],
+    Nice:                ['Marché_aux_Fleurs_Cours_Saleya', 'Socca', 'Niçoise_cuisine', 'Salade_niçoise'],
+    Cannes:              ['Niçoise_cuisine', 'French_Riviera'],
+    Monaco:              ['Monégasque_cuisine', 'Niçoise_cuisine'],
+    Annecy:              ['Savoyard_cuisine', 'Fondue_savoyarde'],
+    // ----- Central Europe -----
+    Vienna:              ['Naschmarkt', 'Viennese_coffee_house', 'Wiener_Würstelstand', 'Heuriger'],
+    Salzburg:            ['Salzburger_Nockerl', 'Café_Tomaselli', 'Austrian_cuisine'],
+    Innsbruck:           ['Tirolean_cuisine', 'Austrian_cuisine'],
+    Hallstatt:           ['Austrian_cuisine', 'Hallstatt'],
+    Berlin:              ['Currywurst', 'Markthalle_Neun', 'Berlin_kebab', 'Beer_garden'],
+    Munich:              ['Viktualienmarkt', 'Beer_garden', 'Hofbräuhaus_am_Platzl', 'Bavarian_cuisine'],
+    Hamburg:             ['Fischmarkt_(Hamburg)', 'Franzbrötchen', 'German_cuisine'],
+    Frankfurt:           ['Apfelwein', 'Frankfurt_Kleinmarkthalle', 'Frankfurter_Kranz'],
+    Brussels:            ['Belgian_chocolate', 'Frietkot', 'Belgian_waffle', 'Galeries_Royales_Saint-Hubert'],
+    Amsterdam:           ['Albert_Cuyp_Market', 'Brown_café', 'Foodhallen', 'Jenever'],
+    Zurich:              ['Niederdorf', 'Swiss_chocolate', 'Swiss_fondue'],
+    Geneva:              ['Genevan_cuisine', 'Carouge'],
+    Lucerne:             ['Swiss_cuisine', 'Lake_Lucerne'],
+    Interlaken:          ['Swiss_chocolate', 'Swiss_cheese'],
+    // ----- North + Baltic -----
+    Copenhagen:          ['Torvehallerne', 'Smørrebrød', 'New_Nordic_cuisine'],
+    Stockholm:           ['Östermalms_Saluhall', 'Fika', 'Swedish_cuisine'],
+    Helsinki:            ['Old_Market_Hall_(Helsinki)', 'Karjalanpiirakka', 'Finnish_cuisine'],
+    Oslo:                ['Mathallen_Oslo', 'Norwegian_cuisine'],
+    Bergen:              ['Bergen_fish_market', 'Norwegian_seafood'],
+    Reykjavik:           ['Bæjarins_Beztu_Pylsur', 'Icelandic_cuisine', 'Reykjavík'],
+    Riga:                ['Riga_Central_Market', 'Latvian_cuisine', 'Riga_Black_Balsam'],
+    Vilnius:             ['Lithuanian_cuisine', 'Cepelinai'],
+    // ----- East + Balkans -----
+    Budapest:            ['Great_Market_Hall,_Budapest', 'Ruin_bar', 'Hungarian_wine', 'Lángos'],
+    Prague:              ['U_Fleků', 'Czech_beer', 'Old_Town_Square', 'Beer_in_the_Czech_Republic'],
+    Krakow:              ['Kazimierz,_Kraków', 'Polish_milk_bar', 'Hala_Targowa,_Kraków'],
+    Warsaw:              ['Hala_Mirowska', 'Polish_milk_bar', 'Polish_cuisine'],
+    'Wrocław':           ['Polish_cuisine', 'Hala_Targowa,_Wrocław'],
+    'Gdańsk':            ['Polish_seafood', 'Goldwasser', 'Long_Market'],
+    Dublin:              ['Irish_pub', 'Temple_Bar,_Dublin', 'Irish_breakfast'],
+    London:              ['Borough_Market', 'Sunday_roast', 'Afternoon_tea', 'Pub'],
+    Bratislava:          ['Slovak_cuisine', 'Bryndzové_halušky', 'Slovak_wine'],
+    Ljubljana:           ['Open_Kitchen_(Ljubljana)', 'Slovenian_cuisine', 'Štruklji'],
+    Split:               ['Dalmatian_cuisine', 'Konoba', 'Pršut'],
+    Zadar:               ['Dalmatian_cuisine', 'Croatian_seafood'],
+    Dubrovnik:           ['Dalmatian_cuisine', 'Ston_oysters', 'Walls_of_Dubrovnik'],
+    Sofia:               ['Banitsa', 'Tarator', 'Shopska_salad', 'Bulgarian_cuisine'],
+    Belgrade:            ['Skadarlija', 'Ćevapi', 'Serbian_cuisine', 'Rakija'],
+    Sarajevo:            ['Baščaršija', 'Bosnian_coffee', 'Ćevapi'],
+    Skopje:              ['Old_Bazaar,_Skopje', 'Macedonian_cuisine', 'Tavče_gravče'],
+    Tirana:              ['Albanian_cuisine', 'Byrek', 'Tavë_kosi']
+  };
+
+  // ----- Atmosphere keywords — selling the lifestyle, not the plate
+  // Detected in r.vibe / r.description / r.name. First match wins. Each
+  // entry maps to a Wikipedia article whose lead image is a scene
+  // (rooftop bar, market hall, fishmonger counter, wine cellar, etc.)
+  // rather than a close-up of food. The whole point is "I want to eat
+  // THERE", not "I want to eat THAT".
+  const atmosphereKeywords = [
+    ['rooftop',           'Rooftop_bar'],
+    ['fish market',       'Fish_market'],
+    ['fishmonger',        'Fish_market'],
+    ['market hall',       'Market_hall'],
+    ['food hall',         'Food_hall'],
+    ['food court',        'Food_court'],
+    ['street food',       'Street_food'],
+    ['food market',       'Market_hall'],
+    ['indoor market',     'Market_hall'],
+    ['oyster bar',        'Oyster_bar'],
+    ['wine cellar',       'Wine_cellar'],
+    ['wine bar',          'Wine_bar'],
+    ['cocktail bar',      'Cocktail_lounge'],
+    ['cocktail lounge',   'Cocktail_lounge'],
+    ['speakeasy',         'Speakeasy'],
+    ['tavern',            'Tavern'],
+    ['taverna',           'Greek_taverna'],
+    ['konoba',            'Konoba'],
+    ['bacaro',            'Bacaro'],
+    ['ruin bar',          'Ruin_bar'],
+    ['ruin pub',          'Ruin_bar'],
+    ['biergarten',        'Beer_garden'],
+    ['beer garden',       'Beer_garden'],
+    ['beer hall',         'Beer_hall'],
+    ['heuriger',          'Heuriger'],
+    ['gastropub',         'Gastropub'],
+    ['brown café',        'Brown_café'],
+    ['brown cafe',        'Brown_café'],
+    ['parisian café',     'Parisian_café'],
+    ['viennese coffee',   'Viennese_coffee_house'],
+    ['kaffeehaus',        'Viennese_coffee_house'],
+    ['boulangerie',       'Boulangerie'],
+    ['pâtisserie',        'Pâtisserie'],
+    ['patisserie',        'Pâtisserie'],
+    ['gelateria',         'Gelato'],
+    ['pasticceria',       'Italian_pastry'],
+    ['churreria',         'Churro'],
+    ['churrería',         'Churro'],
+    ['milk bar',          'Polish_milk_bar'],
+    ['bar mleczny',       'Polish_milk_bar'],
+    ['pintxos',           'Pincho'],
+    ['cicchetti',         'Cicchetti'],
+    ['izakaya',           'Izakaya'],
+    ['frietkot',          'Frietkot'],
+    ['friterie',          'Frietkot'],
+    ['kombuch',           'Bohemian_cuisine'],
+    ['ouzeri',            'Ouzo'],
+    ['mezedopoleion',     'Greek_meze'],
+    ['meze',              'Greek_meze'],
+    ['cantina',           'Spanish_tavern'],
+    ['bodega',            'Bodega'],
+    ['trattoria',         'Trattoria'],
+    ['osteria',           'Osteria'],
+    ['pizzeria',          'Pizzeria'],
+    ['bistro',            'Bistro'],
+    ['bistrot',           'Bistro'],
+    ['brasserie',         'Brasserie'],
+    ['terrace',           'Terrace_(restaurant)'],   // less reliable — kept low-priority
+    ['terrasse',          'Terrace_(restaurant)']
+  ];
 
   // ============================================================
   // DISH KEYWORD → Wikipedia
@@ -8213,20 +8536,65 @@
     return null;
   }
 
-  function pickRestaurantWiki(r) {
-    // 1) The restaurant itself is famous enough to have a Wikipedia article
+  // Detect an atmosphere/scene keyword across a restaurant's text fields.
+  // Returns a Wikipedia slug for a DINING-SCENE article (rooftop bar,
+  // market hall, oyster counter, brown café…) — sells the lifestyle.
+  function pickAtmosphereSlug(r) {
+    if (!r) return null;
+    const bag = [r.vibe, r.name, r.cuisine, r.description]
+      .filter(Boolean).join(' ').toLowerCase();
+    for (const [kw, slug] of atmosphereKeywords) {
+      if (bag.includes(kw) && !usedDishSlugs.has(slug)) {
+        usedDishSlugs.add(slug);
+        return slug;
+      }
+    }
+    return null;
+  }
+
+  // Pull from the city's own food-culture pool (market hall, food
+  // street, local dining concept). Returns the first unused slug
+  // so two restaurants on the same page don't share the same scene.
+  function pickCityCultureSlug(city) {
+    if (!city) return null;
+    const pool = cityFoodCulture[city];
+    if (!pool || !pool.length) return null;
+    for (const slug of pool) {
+      if (!usedDishSlugs.has(slug)) {
+        usedDishSlugs.add(slug);
+        return slug;
+      }
+    }
+    return null;
+  }
+
+  function pickRestaurantWiki(r, city) {
+    // 1) Famous: the restaurant has its own Wikipedia article.
+    //    Highest precision — a real photo of THIS restaurant.
     if (r.name && restaurantWikiMap[r.name] && !usedDishSlugs.has(restaurantWikiMap[r.name])) {
       const slug = restaurantWikiMap[r.name];
       usedDishSlugs.add(slug);
       return slug;
     }
-    // 2) The must_order field mentions a specific dish we know
+    // 2) must_order names a specific dish we know — most specific
+    //    visual after the restaurant itself.
     const fromMust = pickDishFromString(r.must_order);
     if (fromMust) return fromMust;
-    // 3) The cuisine field mentions a specific dish concept
+    // 3) ATMOSPHERE keyword in any text field — sells the scene
+    //    ("rooftop bar", "wine cellar", "market hall", "konoba",
+    //    "ruin bar") instead of an isolated plate. The user's
+    //    brief: lifestyle, interiors, mood — not close-up food.
+    const fromMood = pickAtmosphereSlug(r);
+    if (fromMood) return fromMood;
+    // 4) CITY-specific food culture (Spaccanapoli for Naples,
+    //    Naschmarkt for Vienna, Skadarlija for Belgrade). Comes
+    //    BEFORE generic country dish so cities feel unique.
+    const fromCity = pickCityCultureSlug(city);
+    if (fromCity) return fromCity;
+    // 5) Cuisine field mentions a dish concept
     const fromCuisine = pickDishFromString(r.cuisine);
     if (fromCuisine) return fromCuisine;
-    // 4) The vibe / description sometimes names the speciality
+    // 6) Vibe / description name the speciality
     const fromVibe = pickDishFromString(r.vibe);
     if (fromVibe) return fromVibe;
     const fromDesc = pickDishFromString(r.description);
@@ -11442,13 +11810,17 @@
     // page gets a unique image.
     resetDishPool();
     el.innerHTML = restaurants.map((r, i) => {
-      // Priority chain:
-      //   1) Restaurant has its own Wikipedia article (Disfrutar, Noma...)
-      //   2) Must-order names a known dish → that dish's Wikipedia photo
-      //   3) Cuisine field mentions a dish concept
-      //   4) Vibe / description mentions a dish
-      //   5) Fall back to the country's national dish
-      const wikiSlug = pickRestaurantWiki(r) || pickDishWiki(country, i);
+      // Priority chain (most specific → most generic):
+      //   1) Restaurant has its own Wikipedia article (Disfrutar, Noma…)
+      //   2) must_order names a known dish → dish's Wikipedia photo
+      //   3) Atmosphere keyword in vibe/desc (rooftop, market hall,
+      //      konoba, brown café, ruin bar…) → dining-SCENE image
+      //   4) City-specific food culture (Spaccanapoli, Naschmarkt,
+      //      Mercat Central, Skadarlija…) → unique per city
+      //   5) Cuisine field mentions a dish
+      //   6) Vibe / description mention a dish
+      //   7) Country's national dish (final fallback)
+      const wikiSlug = pickRestaurantWiki(r, city) || pickDishWiki(country, i);
       const emoji = cuisineEmoji(r.cuisine, country);
       const query = encodeURIComponent(r.name + ' ' + city + ' restaurant');
       const imgHtml = wikiSlug
