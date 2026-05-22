@@ -3813,50 +3813,20 @@
     .lf-pin {
       position: relative;
       cursor: pointer;
-      /* Reveal / hide animations — premium, cinematic, no pop-in.
-         The full set transitions in coordination so dormant → revealed
-         and back feels like a torchlight sweeping across a wall map. */
       transition:
         transform 0.45s var(--ease-out),
-        opacity   0.55s var(--ease-out),
-        filter    0.55s var(--ease-out);
+        opacity   0.55s var(--ease-out);
     }
-    /* DORMANT — the default state. Markers exist on the map but stay
-       quiet so the satellite imagery breathes. Pointer-events off
-       prevents accidental popup-opens on markers the user isn't aiming
-       for; they only become interactive once revealed. */
-    .lf-pin.dormant {
-      opacity: 0.18;
-      transform: scale(0.72);
-      filter: blur(0.6px) saturate(0.55);
-      pointer-events: none;
+    /* Stagger fade-in for scene markers — added one-by-one with
+       inline animation-delay so each marker appears 110ms apart
+       for the cinematic "scene assembling" feel. */
+    .lf-pin.scene-in {
+      animation: lfSceneIn 0.65s var(--ease-out) both;
     }
-    .lf-pin.dormant .lf-dot::before { animation: none; opacity: 0.2; }
-    /* REVEALED — full premium presence. Best markers are always
-       revealed regardless of cursor position (brand promise: the
-       top picks are visible from any zoom level). */
-    .lf-pin.revealed,
-    .lf-pin.best {
-      opacity: 1;
-      transform: scale(1);
-      filter: none;
-      pointer-events: auto;
-    }
-    /* Touch devices can't proximity-hover — always reveal everything.
-       The proximity behaviour is a desktop/cursor enhancement, not a
-       hard accessibility filter. */
-    @media (hover: none) {
-      .lf-pin,
-      .lf-pin.dormant {
-        opacity: 1;
-        transform: scale(1);
-        filter: none;
-        pointer-events: auto;
-      }
-      .lf-pin.dormant .lf-dot::before {
-        animation: lfPinPulse 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
-        opacity: 1;
-      }
+    @keyframes lfSceneIn {
+      0%   { opacity: 0; transform: scale(0.55) translateY(6px); filter: blur(2px); }
+      60%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
     }
     .lf-pin .lf-chip {
       display: flex; align-items: center; gap: 0.45rem;
@@ -4057,7 +4027,226 @@
       box-shadow: 0 0 0 3px rgba(45, 190, 92, 0.22);
       animation: aiBlink 1.8s ease-in-out infinite;
     }
-    
+
+    /* ============================================================
+       MAP HINT PILL — idle prompt + scene reset
+       Bottom-centre floating glass pill. Two states:
+         idle  → "Pick a city to enter the scene" + location icon
+         scene → "← Overview" reset button (city name implicit in
+                 the satellite zoom + sidebar selection)
+       ============================================================ */
+    .map-hint {
+      position: absolute;
+      bottom: clamp(1rem, 2.2vw, 1.6rem);
+      left: 50%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.95rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.15) 60%, rgba(255,255,255,0.05) 100%),
+        rgba(20, 17, 13, 0.42);
+      backdrop-filter: saturate(1.8) blur(28px);
+      -webkit-backdrop-filter: saturate(1.8) blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 100px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 14px 38px -10px rgba(18, 17, 15, 0.55);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      letter-spacing: 0.02em;
+      font-weight: 500;
+      z-index: 8;
+      transition: opacity 0.5s var(--ease-out), transform 0.55s var(--ease-out);
+      pointer-events: auto;
+      white-space: nowrap;
+    }
+    .map-hint-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      color: rgba(255, 214, 138, 0.95);
+    }
+    .map-hint-icon svg { width: 14px; height: 14px; }
+    .map-hint-label { opacity: 0.92; }
+    .map-hint-action {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: none; border: 0;
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      letter-spacing: 0.02em;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.18rem 0.4rem;
+      border-radius: 100px;
+      transition: background 0.25s var(--ease-out);
+    }
+    .map-hint-action:hover { background: rgba(255, 255, 255, 0.10); }
+    .map-hint-action svg { width: 13px; height: 13px; }
+    .map-hint[data-mode="scene"] .map-hint-icon { display: none; }
+    .map-hint[data-mode="scene"] .map-hint-label { opacity: 0.7; font-size: 0.68rem; }
+    /* Subtle entrance — the pill fades in 600ms after the section
+       appears, so it doesn't fight with the map's own paint-in. */
+    @keyframes mapHintIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .map-hint { animation: mapHintIn 0.7s var(--ease-out) 0.6s both; }
+
+    /* Cinematic transition: blur the satellite tiles briefly while
+       the camera is mid-flight. Restored at zoomend/moveend. */
+    .leaflet-host.map-blurring .leaflet-tile-pane,
+    .leaflet-host.map-moving   .leaflet-tile-pane {
+      filter: blur(2.5px) saturate(1.15);
+      transition: filter 0.5s var(--ease-out);
+    }
+    .leaflet-host .leaflet-tile-pane {
+      transition: filter 0.55s var(--ease-out);
+    }
+
+    /* ============================================================
+       SCENE MARKERS — the four pins that appear after city select
+         lf-scene-hero  : large city centre chip (gold ring)
+         lf-scene-chip  : satellite category chip (stays / eats / things-to-do)
+       Both stagger-fade in via .lf-pin.scene-in defined above.
+       ============================================================ */
+    .lf-scene-hero {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1rem 0.55rem 0.7rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #2a241d 0%, #161210 100%);
+      color: var(--cream);
+      border-radius: 100px;
+      border: 1px solid rgba(255, 214, 138, 0.45);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 0 0 1px rgba(255, 214, 138, 0.34),
+        0 16px 38px -8px rgba(18, 17, 15, 0.65),
+        0 0 48px rgba(255, 214, 138, 0.40);
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .lf-scene-hero .lf-scene-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #FFD68A;
+      box-shadow:
+        0 0 0 3px rgba(18, 17, 15, 0.9),
+        0 0 16px rgba(255, 214, 138, 0.85);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .lf-scene-hero .lf-scene-dot::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: rgba(255, 214, 138, 0.55);
+      animation: lfPinPulse 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+    }
+    .lf-scene-hero .lf-scene-sub {
+      color: rgba(255, 214, 138, 0.85);
+      font-weight: 500;
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+    }
+    .lf-scene-chip {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.38rem 0.75rem 0.38rem 0.55rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 100%),
+        rgba(255, 255, 253, 0.85);
+      backdrop-filter: saturate(1.7) blur(20px);
+      -webkit-backdrop-filter: saturate(1.7) blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 100px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(18, 17, 15, 0.08),
+        0 8px 22px -6px rgba(18, 17, 15, 0.4);
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.01em;
+    }
+    .lf-scene-chip .lf-scene-emoji { font-size: 0.85rem; line-height: 1; }
+    .lf-scene-chip .lf-scene-count {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.66rem;
+    }
+    /* Scene pin entrance — sub-class of .lf-pin handled above. */
+    .lf-scene-hero, .lf-scene-chip {
+      animation: lfSceneIn 0.7s var(--ease-out) both;
+      animation-delay: var(--scene-delay, 0ms);
+      transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+    }
+    .lf-scene-chip:hover {
+      transform: translate(-50%, -50%) translateY(-3px) scale(1.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(18, 17, 15, 0.14),
+        0 16px 32px -6px rgba(18, 17, 15, 0.55);
+    }
+    /* Scene popup — the small card surfacing top-3 picks per category */
+    .lf-scene-pop { width: 260px; }
+    .lf-scene-pop-eyebrow {
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.55rem;
+    }
+    .lf-scene-pop-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .lf-scene-pop-item {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(18, 17, 15, 0.08);
+    }
+    .lf-scene-pop-item:last-child { border-bottom: 0; }
+    .lf-scene-pop-name {
+      font-family: var(--serif);
+      font-size: 0.94rem;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .lf-scene-pop-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.18rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .lf-scene-pop-cta {
+      margin-top: 0.85rem;
+      padding-top: 0.65rem;
+      border-top: 1px solid var(--hairline);
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.01em;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+
     .ml-foot {
       margin-top: 1rem;
       padding-top: 0.9rem;
@@ -6985,6 +7174,21 @@
             <div class="div"></div>
             <div><span class="num" id="ms-count">9</span><span class="lbl">Within reach</span></div>
           </div>
+
+          <!-- On-demand scene reveal: idle = subtle prompt, scene = reset.
+               The map starts as an almost-empty satellite canvas; clicking
+               any city from the sidebar (or any rail / best-deal card)
+               flies the camera in and reveals just THAT city's scene. -->
+          <div class="map-hint" id="mapHint" data-mode="idle" aria-live="polite">
+            <span class="map-hint-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
+            <span class="map-hint-label" id="mapHintLabel">Pick a city to enter the scene</span>
+            <button type="button" class="map-hint-action" id="mapHintAction" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Overview
+            </button>
+          </div>
         </div>
 
         <!-- Smart sidebar — ranked list -->
@@ -9806,6 +10010,14 @@
     const detail = document.getElementById('detail');
     const veil = document.getElementById('detailVeil');
     const cityName = trip.place || trip.title || 'Destination';
+    // Map continuity — when the user opens any city detail (from the
+    // sidebar list, a rail card, a best-deal card, or a hash share),
+    // the map underneath enters that city's scene. So when the user
+    // later closes the detail, the satellite below has already become
+    // an editorial "you were just here" view, not a fresh empty canvas.
+    if (typeof enterCityScene === 'function' && cityName && typeof cityCoords !== 'undefined' && cityCoords[cityName]) {
+      try { enterCityScene(cityName); } catch (e) { /* map not yet inited */ }
+    }
     // SEO + share — rewrite <title> / OG / canonical to be city-aware
     // and push #/city/Name into the URL so shares carry the city.
     if (MV.seo) {
@@ -14476,14 +14688,13 @@
     tileSatelliteLabels.addTo(leafletMap);
     host.classList.add('satellite-view');
 
-    // Proximity-based marker reveal — wire once at init. Mouse-move
-    // updates the dormant/revealed state, mouse-out falls back to
-    // topN-only, zoom changes recompute pixel distances. Touch
-    // devices skip this path via @media (hover: none) in CSS.
-    leafletMap.on('mousemove', _onMapMouseMove);
-    leafletMap.on('mouseout',  _onMapMouseOut);
-    leafletMap.on('zoomend',   _onMapZoomOrMove);
-    leafletMap.on('moveend',   _onMapZoomOrMove);
+    // Brief blur on tile pane during zoom flights — the camera glide
+    // already smooths panning, but blurring the tiles in motion
+    // sells the cinematic "scene change" feel when entering a city.
+    leafletMap.on('zoomstart', () => host.classList.add('map-blurring'));
+    leafletMap.on('zoomend',   () => host.classList.remove('map-blurring'));
+    leafletMap.on('movestart', () => host.classList.add('map-moving'));
+    leafletMap.on('moveend',   () => host.classList.remove('map-moving'));
 
     renderLeafletMarkers();
   }
@@ -14624,140 +14835,43 @@
   }
 
   // ============================================================
-  // MAP — PROXIMITY-BASED MARKER REVEAL
+  // MAP RENDERING — ON-DEMAND CITY SCENE
   //
-  // Brief: the map should feel like a discovery experience, not
-  // a database dump on a satellite photo. So instead of showing
-  // every ranked destination at full intensity at once, markers
-  // default to a dormant low-opacity state and reveal as the
-  // cursor sweeps nearby — like a hand-held torch lighting up
-  // a wall map.
+  // Default state: an almost-empty satellite map. Only the home
+  // marker (user's departure city) anchors the canvas. No
+  // destination markers. No clusters. No noise.
   //
-  // Two reveal triggers:
-  //   1. Marker is in the top-N by rank — N grows with zoom level
-  //      so a continent view shows only 4 picks, a city view shows
-  //      all 25 (the brand promise: best picks visible from far)
-  //   2. Cursor is within REVEAL_RADIUS pixels of the marker
+  // When the user explicitly selects a city (click a sidebar entry,
+  // open a city detail page, click a rail card or best-deals card)
+  // the map enters a "city scene": flies in, briefly blurs the
+  // tiles, then stagger-reveals 4 markers (1 hero + 3 category
+  // chips around the centre). The scene persists until the user
+  // resets via the bottom hint pill.
   //
-  // Performance: zero DOM rebuilds. We toggle .revealed / .dormant
-  // classes on existing marker elements. mousemove uses RAF to
-  // coalesce events to 60Hz max.
-  //
-  // Touch devices fall through @media (hover: none) — proximity
-  // is meaningless without a cursor.
+  // This shape replaces the previous "show top-25 ranked pins on
+  // every render" behaviour. The sidebar list still surfaces the
+  // full ranked set — discovery happens there, the map provides
+  // the immersive scene that follows.
   // ============================================================
-  let _lastCursorPx = null;
-  let _markerRafToken = null;
-  const PROXIMITY_RADIUS_PX = 200;
+  let _currentScene = null;          // cityName currently in scene mode, or null
+  let _sceneMarkers = [];            // markers added by the current city scene
 
-  function _topNForZoom(zoom) {
-    // Sparse-to-dense reveal as the user zooms in. At continent
-    // overview only the absolute top picks shine; as the camera
-    // descends, more cities light up — mirroring how a traveller
-    // explores a region on a paper map.
-    if (zoom <= 4.5)  return 3;
-    if (zoom <= 5.5)  return 6;
-    if (zoom <= 6.5)  return 12;
-    if (zoom <= 7.5)  return 18;
-    return 999;   // close zoom → everyone visible
-  }
-
-  function updateMarkerVisibility(cursorPx) {
-    if (!leafletMap || !cityMarkers || cityMarkers.size === 0) return;
-    const zoom  = leafletMap.getZoom();
-    const topN  = _topNForZoom(zoom);
-    let rankIdx = 0;
-    cityMarkers.forEach((marker, key) => {
-      if (key === '__home__') return;  // home anchor — always visible
-      const el = marker.getElement && marker.getElement();
-      if (!el) return;
-      const pin = el.querySelector('.lf-pin');
-      if (!pin) return;
-      // Always-revealed: any marker that earned the "best" class
-      // (top-3 by value score). Dictates the brand promise — best
-      // value picks are visible at any zoom from any cursor position.
-      const isBest = pin.classList.contains('best');
-      const inTopN = rankIdx < topN;
-      // Also: keep markers with their popup open always revealed.
-      // Without this, the marker fades to dormant the moment the
-      // cursor moves off the chip onto the popup — visually janky.
-      const popupOpen = marker.isPopupOpen && marker.isPopupOpen();
-      let revealed = isBest || inTopN || popupOpen;
-      // Proximity check — only matters when not already revealed
-      if (!revealed && cursorPx) {
-        const latLng = marker.getLatLng();
-        const px = leafletMap.latLngToContainerPoint(latLng);
-        const dx = px.x - cursorPx.x;
-        const dy = px.y - cursorPx.y;
-        if (dx * dx + dy * dy < PROXIMITY_RADIUS_PX * PROXIMITY_RADIUS_PX) {
-          revealed = true;
-        }
-      }
-      pin.classList.toggle('revealed', revealed);
-      pin.classList.toggle('dormant',  !revealed);
-      rankIdx++;
-    });
-  }
-
-  function _scheduleMarkerVisibility() {
-    if (_markerRafToken) return;
-    _markerRafToken = requestAnimationFrame(() => {
-      _markerRafToken = null;
-      updateMarkerVisibility(_lastCursorPx);
-    });
-  }
-
-  function _onMapMouseMove(e) {
-    _lastCursorPx = e.containerPoint;
-    _scheduleMarkerVisibility();
-  }
-
-  function _onMapMouseOut() {
-    // Cursor left the map → fall back to topN-only reveal. The fade
-    // out is handled by CSS transitions, no abrupt removal.
-    _lastCursorPx = null;
-    _scheduleMarkerVisibility();
-  }
-
-  function _onMapZoomOrMove() {
-    // After zoom/pan, marker pixel positions change → recompute
-    // proximity against the (possibly cached) last cursor.
-    _scheduleMarkerVisibility();
+  function _clearSceneMarkers() {
+    _sceneMarkers.forEach(m => { try { leafletMap.removeLayer(m); } catch(e){} });
+    _sceneMarkers = [];
   }
 
   function renderLeafletMarkers() {
     if (!leafletMap || typeof L === 'undefined') return;
     cityMarkers.forEach(m => leafletMap.removeLayer(m));
     cityMarkers.clear();
+    _clearSceneMarkers();
 
     const from = mapState.from;
-    const sort = mapState.sort;
-    // Cap markers to the top-25 by value score. With 65+ destinations
-    // the European map gets visually overwhelming above ~30 pins —
-    // the sidebar still lists everything ranked, so nothing's hidden,
-    // just visually triaged for the map view.
-    const ranked = rankedDestinations(from, sort).slice(0, 25);
-    const top3 = new Set(ranked.slice(0, 3).map(d => d.key));
 
-    ranked.forEach((d, i) => {
-      const coords = cityCoords[d.key];
-      if (!coords) return;
-      const marker = buildMarker({
-        coords,
-        label: d.key,
-        country: d.country,
-        vibe: d.vibe,
-        priceLabel: priceFromRange(d.price),
-        flightLabel: fmtFlight(d.flight) + ' flight',
-        isBest: top3.has(d.key),
-        isTopOne: i === 0,
-        onSelect: (pt) => openSmartDetail(pt.label)
-      });
-      marker.addTo(leafletMap);
-      cityMarkers.set(d.key, marker);
-    });
-
-    // Home-departure marker — separate visual treatment, not a destination
+    // Home departure marker — the single always-present anchor.
+    // Acts as the "you are here" reference. Smaller treatment now
+    // that there's no destination clutter competing with it.
     const home = cityCoords[from];
     if (home) {
       const homeIcon = L.divIcon({
@@ -14776,12 +14890,247 @@
       cityMarkers.set('__home__', homeMarker);
     }
 
-    // Initial reveal state — apply dormant/revealed classes immediately
-    // so we don't show every marker at full intensity for the brief
-    // moment before the first mouse event arrives. Defer one frame so
-    // Leaflet finishes attaching DOM nodes first.
-    requestAnimationFrame(() => updateMarkerVisibility(_lastCursorPx));
+    // If we were in a city scene, re-enter it for the new origin
+    // (so changing departure city while looking at Lisbon keeps
+    // Lisbon's scene on screen).
+    if (_currentScene) {
+      enterCityScene(_currentScene, { silent: true });
+    } else {
+      _updateMapHint('idle');
+    }
   }
+
+  // ============================================================
+  // CITY SCENE — enter/exit a focused single-city map mode
+  //
+  // Replaces the previous "show all 25 ranked markers" behaviour.
+  // The map is now an experience canvas: nothing on it by default,
+  // a fly-in + 4 stagger-revealed markers when the user explicitly
+  // selects a city (sidebar click, detail open, deal-card click).
+  //
+  // Markers in scene mode:
+  //   1. lf-scene-hero  → large gold-ringed pin at the city centre
+  //   2. lf-scene-chip × 3 → small category chips at small geographic
+  //      offsets (~700m) labelled Stays / Things to do / Where to eat
+  //
+  // Each chip's popup surfaces the top 3 entries from cityProfiles
+  // (or the smart-fallback set for un-profiled cities). The chip's
+  // position is intentionally offset so it reads as "the city's
+  // stays scene" not "this exact hotel location" — we don't have
+  // hotel coordinates and won't pretend to.
+  // ============================================================
+  const SCENE_OFFSETS = {
+    // Tiny lat/lng deltas — about 700m at European latitudes. Positioned
+    // around the city centre clockwise: stays NW, eats NE, things-to-do S.
+    stays:      { dLat:  0.0055, dLng: -0.0070 },
+    eats:       { dLat:  0.0055, dLng:  0.0070 },
+    activities: { dLat: -0.0070, dLng:  0.0000 }
+  };
+
+  function _updateMapHint(mode, opts) {
+    const el = document.getElementById('mapHint');
+    if (!el) return;
+    const label  = document.getElementById('mapHintLabel');
+    const action = document.getElementById('mapHintAction');
+    el.dataset.mode = mode;
+    if (mode === 'idle') {
+      if (label)  label.textContent = 'Pick a city to enter the scene';
+      if (action) action.hidden = true;
+    } else if (mode === 'scene') {
+      const name = (opts && opts.city) || _currentScene || '';
+      if (label)  label.textContent = name ? ('Now exploring ' + name) : 'Now exploring';
+      if (action) action.hidden = false;
+    } else if (mode === 'transitioning') {
+      if (label)  label.textContent = 'Flying in…';
+      if (action) action.hidden = true;
+    }
+  }
+
+  function _buildSceneHero(city, vibe) {
+    const html = `
+      <div class="lf-pin lf-scene-hero" style="--scene-delay: 0ms;">
+        <span class="lf-scene-dot" aria-hidden="true"></span>
+        <span class="lf-scene-name">${city}</span>
+        ${vibe ? '<span class="lf-scene-sub">· ' + vibe + '</span>' : ''}
+      </div>
+    `;
+    const icon = L.divIcon({
+      className: 'lf-scene-icon',
+      html,
+      iconSize: [160, 36],
+      iconAnchor: [80, 18]
+    });
+    return icon;
+  }
+
+  function _buildSceneChip(emoji, label, count, delayMs) {
+    const sub = count > 0 ? ('<span class="lf-scene-count">' + count + '</span>') : '';
+    const html = `
+      <div class="lf-pin lf-scene-chip" style="--scene-delay: ${delayMs}ms;">
+        <span class="lf-scene-emoji" aria-hidden="true">${emoji}</span>
+        <span class="lf-scene-label">${label}</span>
+        ${sub}
+      </div>
+    `;
+    const icon = L.divIcon({
+      className: 'lf-scene-icon',
+      html,
+      iconSize: [120, 28],
+      iconAnchor: [60, 14]
+    });
+    return icon;
+  }
+
+  function _scenePopupHtml(city, kind, entries) {
+    const heading = { stays: 'Where to stay', eats: 'Where to eat', activities: 'Things to do' }[kind];
+    const items = (entries || []).slice(0, 3).map(it => {
+      const name  = it.name || '';
+      const sub   = it.neighbourhood || it.cuisine || it.category || it.vibe || '';
+      const price = (kind === 'stays' && it.price_per_night != null)
+                      ? '~€' + it.price_per_night + '/night'
+                      : (kind === 'activities' && it.price_per_person != null)
+                          ? (it.price_per_person === 0 ? 'Free' : '~€' + it.price_per_person + ' p/p')
+                          : (it.price_range || '');
+      return `
+        <li class="lf-scene-pop-item">
+          <div class="lf-scene-pop-name">${name}</div>
+          <div class="lf-scene-pop-sub">${sub}${price ? ' · ' + price : ''}</div>
+        </li>
+      `;
+    }).join('');
+    return `
+      <div class="lf-pop lf-scene-pop">
+        <div class="lf-pop-body">
+          <div class="lf-scene-pop-eyebrow">${city} · ${heading}</div>
+          <ul class="lf-scene-pop-list">${items || '<li class="lf-scene-pop-item"><div class="lf-scene-pop-name">Open the city page</div></li>'}</ul>
+          <div class="lf-scene-pop-cta">Open ${city} →</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function _addSceneChip(city, kind, baseLatLng, delayMs) {
+    const off = SCENE_OFFSETS[kind];
+    if (!off) return;
+    const meta = {
+      stays:      { emoji: '🛏', label: 'Stays' },
+      eats:       { emoji: '🍴', label: 'Where to eat' },
+      activities: { emoji: '🎟', label: 'Things to do' }
+    }[kind];
+    const pool = (cityProfiles[city] || {});
+    const entries = kind === 'stays'
+        ? (pool.hotels || (typeof fallbackHotels === 'function' ? fallbackHotels(city) : []))
+        : kind === 'eats'
+            ? (pool.restaurants || (typeof fallbackRestaurants === 'function' ? fallbackRestaurants(city) : []))
+            : (pool.activities || (typeof fallbackActivities === 'function' ? fallbackActivities(city) : []));
+    const count = entries.length;
+    const icon = _buildSceneChip(meta.emoji, meta.label, count, delayMs);
+    const latLng = [baseLatLng[0] + off.dLat, baseLatLng[1] + off.dLng];
+    const marker = L.marker(latLng, { icon, riseOnHover: true, keyboard: false, zIndexOffset: 400 });
+    marker.bindPopup(_scenePopupHtml(city, kind, entries), {
+      className: 'lf-pop-wrap',
+      closeButton: false,
+      offset: [0, -6],
+      maxWidth: 280,
+      autoPan: true
+    });
+    marker.on('click', () => {
+      if (typeof openSmartDetail === 'function') openSmartDetail(city);
+    });
+    marker.on('popupopen', (e) => {
+      const root = e.popup.getElement();
+      if (!root) return;
+      const card = root.querySelector('.lf-scene-pop');
+      if (card && !card.dataset.wired) {
+        card.dataset.wired = '1';
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => openSmartDetail(city));
+      }
+    });
+    marker.addTo(leafletMap);
+    _sceneMarkers.push(marker);
+  }
+
+  function enterCityScene(cityName, opts) {
+    opts = opts || {};
+    if (!leafletMap || !cityName) return;
+    const coords = cityCoords[cityName];
+    if (!coords) return;
+
+    // Find vibe for hero label (smartDestinations is the canonical source)
+    const sd = (typeof smartDestinations !== 'undefined')
+      ? smartDestinations.find(s => s.key === cityName)
+      : null;
+    const vibe = sd ? (sd.vibe || '').split('·')[0].trim() : '';
+
+    // Clear any previous scene markers — entering a new scene resets
+    _clearSceneMarkers();
+    _currentScene = cityName;
+
+    _updateMapHint('transitioning');
+
+    // Step 1 — cinematic fly-in. Tile blur is auto-applied via the
+    // zoomstart/movestart listeners we wired in initLeaflet. flyTo
+    // returns instantly; we listen for moveend before adding markers
+    // so the camera + tiles settle first.
+    const targetZoom = 8.5;
+    leafletMap.flyTo(coords, targetZoom, {
+      duration: opts.silent ? 0 : 1.4,
+      easeLinearity: 0.12,
+      noMoveStart: false
+    });
+
+    // Step 2 — once the flight is done, stagger-add the markers.
+    const onArrive = () => {
+      leafletMap.off('moveend', onArrive);
+
+      // Hero (delay 0) + Stays (180ms) + Eats (340ms) + Things-to-do (500ms)
+      const heroIcon = _buildSceneHero(cityName, vibe);
+      const hero = L.marker(coords, { icon: heroIcon, zIndexOffset: 600, riseOnHover: true, keyboard: false });
+      hero.on('click', () => { if (typeof openSmartDetail === 'function') openSmartDetail(cityName); });
+      hero.addTo(leafletMap);
+      _sceneMarkers.push(hero);
+
+      _addSceneChip(cityName, 'stays',      coords, 180);
+      _addSceneChip(cityName, 'eats',       coords, 340);
+      _addSceneChip(cityName, 'activities', coords, 500);
+
+      _updateMapHint('scene', { city: cityName });
+    };
+
+    if (opts.silent) {
+      // Silent re-entry (e.g. origin changed while scene is open) —
+      // skip the camera glide, just rebuild markers immediately.
+      onArrive();
+    } else {
+      leafletMap.once('moveend', onArrive);
+      // Safety net: in case moveend doesn't fire (very short fly), bail
+      // after 1.7s and add markers anyway.
+      setTimeout(() => { if (_currentScene === cityName && _sceneMarkers.length === 0) onArrive(); }, 1700);
+    }
+  }
+
+  function exitCityScene() {
+    if (!leafletMap) return;
+    _clearSceneMarkers();
+    _currentScene = null;
+    // Camera glides back to the original European overview
+    leafletMap.flyTo([48.5, 13.5], 4.2, {
+      duration: 1.4,
+      easeLinearity: 0.14,
+      noMoveStart: false
+    });
+    _updateMapHint('idle');
+  }
+
+  // Reset-overview button (city scene only). Wired once at script init.
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest && e.target.closest('#mapHintAction');
+    if (btn) {
+      e.preventDefault();
+      exitCityScene();
+    }
+  });
   
   // ============================================================
   // BEST CURRENT DEALS — renderer
@@ -15033,9 +15382,11 @@
       sub.textContent = `Ranked from ${from} · ${label}`;
     }
   
-    // Leaflet markers + smooth camera glide to the new picks
+    // Re-render the home marker (and, if a city scene is active,
+    // re-enter it for the new origin). No global "fly to top picks"
+    // any more — the map is on-demand-only now; the camera moves
+    // only when the user explicitly selects a city.
     renderLeafletMarkers();
-    if (leafletMap) flyToTopPick();
 
     // Refresh Best Deals + manifesto min-price when origin/sort changes
     if (typeof renderBestDeals === 'function') renderBestDeals();
