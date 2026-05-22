@@ -3813,7 +3813,50 @@
     .lf-pin {
       position: relative;
       cursor: pointer;
-      transition: transform 0.45s var(--ease-out);
+      /* Reveal / hide animations — premium, cinematic, no pop-in.
+         The full set transitions in coordination so dormant → revealed
+         and back feels like a torchlight sweeping across a wall map. */
+      transition:
+        transform 0.45s var(--ease-out),
+        opacity   0.55s var(--ease-out),
+        filter    0.55s var(--ease-out);
+    }
+    /* DORMANT — the default state. Markers exist on the map but stay
+       quiet so the satellite imagery breathes. Pointer-events off
+       prevents accidental popup-opens on markers the user isn't aiming
+       for; they only become interactive once revealed. */
+    .lf-pin.dormant {
+      opacity: 0.18;
+      transform: scale(0.72);
+      filter: blur(0.6px) saturate(0.55);
+      pointer-events: none;
+    }
+    .lf-pin.dormant .lf-dot::before { animation: none; opacity: 0.2; }
+    /* REVEALED — full premium presence. Best markers are always
+       revealed regardless of cursor position (brand promise: the
+       top picks are visible from any zoom level). */
+    .lf-pin.revealed,
+    .lf-pin.best {
+      opacity: 1;
+      transform: scale(1);
+      filter: none;
+      pointer-events: auto;
+    }
+    /* Touch devices can't proximity-hover — always reveal everything.
+       The proximity behaviour is a desktop/cursor enhancement, not a
+       hard accessibility filter. */
+    @media (hover: none) {
+      .lf-pin,
+      .lf-pin.dormant {
+        opacity: 1;
+        transform: scale(1);
+        filter: none;
+        pointer-events: auto;
+      }
+      .lf-pin.dormant .lf-dot::before {
+        animation: lfPinPulse 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+        opacity: 1;
+      }
     }
     .lf-pin .lf-chip {
       display: flex; align-items: center; gap: 0.45rem;
@@ -14432,6 +14475,16 @@
     tileSatellite.addTo(leafletMap);
     tileSatelliteLabels.addTo(leafletMap);
     host.classList.add('satellite-view');
+
+    // Proximity-based marker reveal — wire once at init. Mouse-move
+    // updates the dormant/revealed state, mouse-out falls back to
+    // topN-only, zoom changes recompute pixel distances. Touch
+    // devices skip this path via @media (hover: none) in CSS.
+    leafletMap.on('mousemove', _onMapMouseMove);
+    leafletMap.on('mouseout',  _onMapMouseOut);
+    leafletMap.on('zoomend',   _onMapZoomOrMove);
+    leafletMap.on('moveend',   _onMapZoomOrMove);
+
     renderLeafletMarkers();
   }
   
@@ -14570,6 +14623,108 @@
     return marker;
   }
 
+  // ============================================================
+  // MAP — PROXIMITY-BASED MARKER REVEAL
+  //
+  // Brief: the map should feel like a discovery experience, not
+  // a database dump on a satellite photo. So instead of showing
+  // every ranked destination at full intensity at once, markers
+  // default to a dormant low-opacity state and reveal as the
+  // cursor sweeps nearby — like a hand-held torch lighting up
+  // a wall map.
+  //
+  // Two reveal triggers:
+  //   1. Marker is in the top-N by rank — N grows with zoom level
+  //      so a continent view shows only 4 picks, a city view shows
+  //      all 25 (the brand promise: best picks visible from far)
+  //   2. Cursor is within REVEAL_RADIUS pixels of the marker
+  //
+  // Performance: zero DOM rebuilds. We toggle .revealed / .dormant
+  // classes on existing marker elements. mousemove uses RAF to
+  // coalesce events to 60Hz max.
+  //
+  // Touch devices fall through @media (hover: none) — proximity
+  // is meaningless without a cursor.
+  // ============================================================
+  let _lastCursorPx = null;
+  let _markerRafToken = null;
+  const PROXIMITY_RADIUS_PX = 200;
+
+  function _topNForZoom(zoom) {
+    // Sparse-to-dense reveal as the user zooms in. At continent
+    // overview only the absolute top picks shine; as the camera
+    // descends, more cities light up — mirroring how a traveller
+    // explores a region on a paper map.
+    if (zoom <= 4.5)  return 3;
+    if (zoom <= 5.5)  return 6;
+    if (zoom <= 6.5)  return 12;
+    if (zoom <= 7.5)  return 18;
+    return 999;   // close zoom → everyone visible
+  }
+
+  function updateMarkerVisibility(cursorPx) {
+    if (!leafletMap || !cityMarkers || cityMarkers.size === 0) return;
+    const zoom  = leafletMap.getZoom();
+    const topN  = _topNForZoom(zoom);
+    let rankIdx = 0;
+    cityMarkers.forEach((marker, key) => {
+      if (key === '__home__') return;  // home anchor — always visible
+      const el = marker.getElement && marker.getElement();
+      if (!el) return;
+      const pin = el.querySelector('.lf-pin');
+      if (!pin) return;
+      // Always-revealed: any marker that earned the "best" class
+      // (top-3 by value score). Dictates the brand promise — best
+      // value picks are visible at any zoom from any cursor position.
+      const isBest = pin.classList.contains('best');
+      const inTopN = rankIdx < topN;
+      // Also: keep markers with their popup open always revealed.
+      // Without this, the marker fades to dormant the moment the
+      // cursor moves off the chip onto the popup — visually janky.
+      const popupOpen = marker.isPopupOpen && marker.isPopupOpen();
+      let revealed = isBest || inTopN || popupOpen;
+      // Proximity check — only matters when not already revealed
+      if (!revealed && cursorPx) {
+        const latLng = marker.getLatLng();
+        const px = leafletMap.latLngToContainerPoint(latLng);
+        const dx = px.x - cursorPx.x;
+        const dy = px.y - cursorPx.y;
+        if (dx * dx + dy * dy < PROXIMITY_RADIUS_PX * PROXIMITY_RADIUS_PX) {
+          revealed = true;
+        }
+      }
+      pin.classList.toggle('revealed', revealed);
+      pin.classList.toggle('dormant',  !revealed);
+      rankIdx++;
+    });
+  }
+
+  function _scheduleMarkerVisibility() {
+    if (_markerRafToken) return;
+    _markerRafToken = requestAnimationFrame(() => {
+      _markerRafToken = null;
+      updateMarkerVisibility(_lastCursorPx);
+    });
+  }
+
+  function _onMapMouseMove(e) {
+    _lastCursorPx = e.containerPoint;
+    _scheduleMarkerVisibility();
+  }
+
+  function _onMapMouseOut() {
+    // Cursor left the map → fall back to topN-only reveal. The fade
+    // out is handled by CSS transitions, no abrupt removal.
+    _lastCursorPx = null;
+    _scheduleMarkerVisibility();
+  }
+
+  function _onMapZoomOrMove() {
+    // After zoom/pan, marker pixel positions change → recompute
+    // proximity against the (possibly cached) last cursor.
+    _scheduleMarkerVisibility();
+  }
+
   function renderLeafletMarkers() {
     if (!leafletMap || typeof L === 'undefined') return;
     cityMarkers.forEach(m => leafletMap.removeLayer(m));
@@ -14620,6 +14775,12 @@
       homeMarker.addTo(leafletMap);
       cityMarkers.set('__home__', homeMarker);
     }
+
+    // Initial reveal state — apply dormant/revealed classes immediately
+    // so we don't show every marker at full intensity for the brief
+    // moment before the first mouse event arrives. Defer one frame so
+    // Leaflet finishes attaching DOM nodes first.
+    requestAnimationFrame(() => updateMarkerVisibility(_lastCursorPx));
   }
   
   // ============================================================
