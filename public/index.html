@@ -6947,7 +6947,7 @@
     </a>
     <div class="nav-links">
       <a href="#destinations">Destinations</a>
-      <a href="#collections">Villas</a>
+      <a href="#weekends">Weekends</a>
       <a href="#map">Map</a>
       <a href="#concierge">Concierge</a>
       <a href="#stories">Journal</a>
@@ -6965,13 +6965,12 @@
   <div class="fullmenu" id="fullmenu">
     <div class="fullmenu-grid">
       <a href="#destinations"><span>Destinations</span><span class="num">01</span></a>
-      <a href="#collections"><span>Luxury Villas</span><span class="num">02</span></a>
-      <a href="#weekends"><span>Weekend Escapes</span><span class="num">03</span></a>
-      <a href="#beaches"><span>Beach Retreats</span><span class="num">04</span></a>
-      <a href="#hidden"><span>Hidden Gems</span><span class="num">05</span></a>
-      <a href="#map"><span>The Map</span><span class="num">06</span></a>
-      <a href="#concierge"><span>AI Concierge</span><span class="num">07</span></a>
-      <a href="#stories"><span>The Journal</span><span class="num">08</span></a>
+      <a href="#weekends"><span>Weekend Escapes</span><span class="num">02</span></a>
+      <a href="#beaches"><span>Beach Retreats</span><span class="num">03</span></a>
+      <a href="#hidden"><span>Hidden Gems</span><span class="num">04</span></a>
+      <a href="#map"><span>The Map</span><span class="num">05</span></a>
+      <a href="#concierge"><span>AI Concierge</span><span class="num">06</span></a>
+      <a href="#stories"><span>The Journal</span><span class="num">07</span></a>
     </div>
     <div class="fullmenu-footer">
       <div>© 2026 Maison Voyage</div>
@@ -7108,7 +7107,6 @@
             </div>
             <div class="cg-tabs">
               <button class="cg-tab on">Weekend</button>
-              <button class="cg-tab">Villa stay</button>
               <button class="cg-tab">Open trip</button>
             </div>
           </div>
@@ -7515,24 +7513,9 @@
   </section>
 
   <!-- ============================================================
-       COLLECTION 2 — LUXURY VILLAS
-       ============================================================ -->
-  <section class="collection alt" id="collections">
-    <div class="rail-head">
-      <div class="left reveal">
-        <div class="eyebrow"><span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 0.5rem;"></span>The Villa Collection</div>
-        <h2 class="h-2" style="margin-top: 0.5rem;">A private door to <em style="font-style: italic; color: var(--accent);">the sea</em></h2>
-      </div>
-      <div class="rail-controls reveal d1">
-        <button class="rail-btn" data-rail="villas" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
-        <button class="rail-btn" data-rail="villas" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
-      </div>
-    </div>
-    <div class="rail" id="rail-villas"></div>
-  </section>
-
-  <!-- ============================================================
-       COLLECTION 3 — HIDDEN GEMS
+       COLLECTION 2 — HIDDEN GEMS
+       (the villa collection that lived here was removed — it
+       didn't fit the cheap-weekend identity of the platform)
        ============================================================ -->
   <section class="collection" id="hidden">
     <div class="rail-head">
@@ -7638,17 +7621,17 @@
       <div class="foot-grid">
         <div class="foot-brand">
           <div class="foot-logo"><span class="dot"></span>Maison<em style="font-style: italic; color: var(--accent-2); margin-left: 2px;">Voyage</em></div>
-          <p>A private travel concierge. Curated escapes, hidden villas and weekend journeys across Europe.</p>
+          <p>A private travel concierge for cheap, beautiful European weekends. Hand-picked flights, smart bus and train routes, and the stays worth the budget.</p>
           <p style="font-size: 0.78rem; opacity: 0.5;">An independent weekend-curation project · Switzerland-operated.</p>
         </div>
         <div>
           <h4>Discover</h4>
           <ul>
             <li><a href="#destinations">Destinations</a></li>
-            <li><a href="#collections">Villas</a></li>
             <li><a href="#weekends">Weekend Trips</a></li>
             <li><a href="#beaches">Beach Retreats</a></li>
             <li><a href="#hidden">Hidden Gems</a></li>
+            <li><a href="#stories">The Journal</a></li>
           </ul>
         </div>
         <div>
@@ -7729,7 +7712,7 @@
   <div class="loading-veil" id="loadingVeil">
     <div class="orbit"></div>
     <h3 id="loadingTitle">Composing your escape…</h3>
-    <p id="loadingSub">The concierge is choosing the villa with the right light, the dinner above the harbour, the road that's worth the detour.</p>
+    <p id="loadingSub">The concierge is checking the cheapest flight, the smartest stay and the one thing actually worth doing.</p>
     <div class="tick" id="loadingTick">Curating</div>
   </div>
 
@@ -7969,15 +7952,8 @@
       { place: 'Vienna', country: 'Austria', img: 'photo-1516550893923-42d28e5677af', desc: 'Imperial cafés and twilight on the Ringstrasse.', tags: ['Imperial', 'Coffee', 'Music'], price: 'from €820' },
       { place: 'Marrakech', country: 'Morocco', img: 'photo-1597212618440-806262de4f6b', desc: 'A riad behind a hidden door. Mint tea on the rooftop at golden hour.', tags: ['Riad', 'Spice', 'Cinematic'], price: 'from €920' }
     ],
-    villas: [
-      { place: 'Casa Sole', country: 'Amalfi · Italy', img: 'photo-1564501049412-61c2a3083791', desc: 'A cliffside villa with three terraces, a lemon grove and a private path to the sea.', tags: ['Sea view', 'Private pool', '6 guests'], price: '€2,400 / night' },
-      { place: 'Villa Blanca', country: 'Ibiza · Spain', img: 'photo-1602002418082-a4443e081dd1', desc: 'Whitewashed walls, infinity pool above Cala Salada. Sunset is included.', tags: ['Infinity pool', 'Coastal', '8 guests'], price: '€3,100 / night' },
-      { place: 'Olive Hill', country: 'Tuscany · Italy', img: 'photo-1568084680786-a84f91d1153c', desc: '18th-century farmhouse on 40 hectares of olive trees. A long lunch under the pergola.', tags: ['Estate', 'Pool', '12 guests'], price: '€1,800 / night' },
-      { place: 'Maison du Cap', country: 'Côte d\'Azur · France', img: 'photo-1499793983690-e29da59ef1c2', desc: 'A modernist villa carved into the cliff above Cap Ferrat. The boat is included.', tags: ['Architectural', 'Yacht', '10 guests'], price: '€4,200 / night' },
-      { place: 'Villa Pelago', country: 'Mykonos · Greece', img: 'photo-1601581875039-e899893d520c', desc: 'Cycladic stone, six suites, a chef who arrives at six.', tags: ['Cycladic', 'Chef', '12 guests'], price: '€3,600 / night' },
-      { place: 'Lago Suite', country: 'Como · Italy', img: 'photo-1601581875309-fafbf2d3ed3a', desc: 'Lake-edge palazzo with a private boat and a Steinway in the drawing room.', tags: ['Lakefront', 'Piano', '6 guests'], price: '€2,900 / night' },
-      { place: 'Klima House', country: 'Milos · Greece', img: 'photo-1632310438439-43d57b48de0e', desc: 'A converted fisherman\'s house on the edge of the Aegean. You will want to stay forever.', tags: ['Aegean', 'Intimate', '4 guests'], price: '€1,400 / night' }
-    ],
+    // (the "villas" collection was removed — luxury rental properties
+    //  pulled the homepage away from its cheap-weekend identity.)
     hidden: [
       { place: 'Procida', country: 'Italy', img: 'photo-1631019906391-4ed5e2c4f57f', desc: 'A pastel fishing island twenty minutes from Naples. Nobody has heard of it. Yet.', tags: ['Pastel', 'Fishing', 'Quiet'], price: 'from €620' },
       { place: 'Cefalù', country: 'Sicily · Italy', img: 'photo-1591802155894-0d2bc78f0c12', desc: 'A Norman cathedral, golden beaches and an old town frozen in honey light.', tags: ['Beach', 'Heritage', 'Slow'], price: 'from €580' },
@@ -8035,7 +8011,7 @@
     // price reflects reality (Lisbon from Berlin is genuinely cheaper
     // than Paris from Madrid, and the rail now shows that). The static
     // strings remain as fallback for cities outside cityEconomy and
-    // for non-weekend rails (villas show /night, hidden/beach lists
+    // for non-weekend rails (hidden/beach lists
     // include place names we don't have economy entries for).
     const fromCity = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
     items.forEach(it => {
@@ -8234,7 +8210,7 @@
   // GENERATE — AI call
   // ============================================================
   const loadingMessages = [
-    { t: 'Composing your escape…', s: 'The concierge is choosing the villa with the right light.' },
+    { t: 'Composing your escape…', s: 'The concierge is checking the cheapest flight and the smartest stay.' },
     { t: 'Choosing the right village…', s: 'Where to eat, where to swim, where to disappear for an hour.' },
     { t: 'Asking our locals…', s: 'The best secrets travel by word of mouth.' },
     { t: 'Pouring the rosé…', s: 'Finalising the moments that will become memories.' }
@@ -9708,7 +9684,7 @@
       tags: item.tags,
       price: item.price,
       best_for: 'Travellers who notice the details',
-      highlights: ['A villa with the right light', 'Dinner above the harbour', 'A morning swim before the world wakes', 'A road worth the detour'],
+      highlights: ['A stay with the right light', 'Dinner above the harbour', 'A morning swim before the world wakes', 'A road worth the detour'],
       image_keywords: item.place
     };
     openTripDetail(trip, 0, item.img);
@@ -10314,7 +10290,7 @@
   "currency": "EUR",
   "hotels": [
     {
-      "name": "REAL named hotel or villa in ${city}",
+      "name": "REAL named hotel in ${city}",
       "neighbourhood": "Specific neighbourhood name",
       "vibe": "Specific 4-6 word vibe (e.g. 'Rooftop pool in El Born')",
       "description": "1 specific sentence — what makes THIS stay different. No 'beautiful' or 'modern amenities' — use the actual neighbourhood, an architectural detail, or a real perk.",
@@ -15974,7 +15950,7 @@
       price: priceLabel,
       best_for: 'Weekend escapes from ' + from,
       highlights: [
-        `A villa or boutique stay in ${d.key}`,
+        `A smart, cheap stay in ${d.key}`,
         `${d.vibe} — a dinner that says it all`,
         `A morning to yourself before the city wakes`,
         `The detour worth the drive`
