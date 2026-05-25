@@ -4710,20 +4710,63 @@
       width: 100%; height: 100%; object-fit: cover;
       /* Slow fade-in once Wikipedia returns an image — avoids the
          pop-in flash on slower connections, gives the restaurant
-         card the cinematic feeling the brand asks for. */
+         card the cinematic feeling the brand asks for.
+         Saturate + contrast subtly bumped so dining photos read
+         as appetisingly lit even when the original source is flat. */
       opacity: 0;
-      transition: opacity 0.65s var(--ease-out), transform 1s var(--ease-out);
+      filter: saturate(1.05) contrast(1.04);
+      transition:
+        opacity 0.65s var(--ease-out),
+        transform 1s var(--ease-out),
+        filter 0.8s var(--ease-out);
     }
     /* Once the parent loses .has-placeholder (image loaded), reveal. */
     .listing-img:not(.has-placeholder) > img { opacity: 1; }
-    /* Hover zoom — already cinematic, kept identical. */
-    .listing:hover .listing-img:not(.has-placeholder) img { transform: scale(1.06); }
+    /* Hover lifts the warmth a touch more — feels like the light
+       just turned on in the restaurant window. */
+    .listing:hover .listing-img:not(.has-placeholder) img {
+      transform: scale(1.06);
+      filter: saturate(1.12) contrast(1.06);
+    }
     /* Subtle warm glow on restaurant cards while loading — turns the
        grey skeleton into something that looks intentional. */
     .listing-img.has-placeholder {
       background:
         radial-gradient(circle at 30% 30%, rgba(252, 245, 232, 0.85) 0%, transparent 55%),
         linear-gradient(135deg, var(--sand) 0%, var(--bg-3) 100%);
+    }
+    /* For cards that will NEVER get a Wikipedia image (no slug found),
+       upgrade the placeholder background to a warmer amber-cream wash
+       that feels intentionally curated, not "data missing". A slow
+       30-second drift on the inner radial gives the card subtle life. */
+    .listing-img-noimg {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(255, 224, 168, 0.55) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(217, 184, 130, 0.30) 0%, transparent 55%),
+        linear-gradient(135deg, #F5E8CF 0%, var(--bg-3) 100%);
+    }
+    .listing-img-noimg .img-placeholder {
+      background: transparent;
+    }
+    /* Restaurant card stagger reveal — each card animates in 80ms
+       after the previous one (delay set inline via --scene-delay).
+       Soft scale + opacity, blur-to-sharp — same shape as the map
+       scene markers so the brand language is consistent. */
+    .listing-reveal {
+      animation: listingReveal 0.7s var(--ease-out) both;
+      animation-delay: var(--scene-delay, 0ms);
+    }
+    @keyframes listingReveal {
+      0%   { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(2px); }
+      55%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    /* Respect users who prefer reduced motion. */
+    @media (prefers-reduced-motion: reduce) {
+      .listing-reveal {
+        animation: none;
+        opacity: 1;
+      }
     }
     .listing-body { display: flex; flex-direction: column; min-width: 0; }
     .listing-rank {
@@ -8642,8 +8685,193 @@
     'Bergen Fish Market':              'Bergen_fish_market',
     // Helsinki
     'Old Market Hall':                 'Old_Market_Hall_(Helsinki)',
-    'Olo':                             'Modern_Finnish_cuisine'
+    'Olo':                             'Modern_Finnish_cuisine',
+    // ----- Additional famous restaurants surfaced via cityProfiles audit -----
+    // Madrid
+    'DiverXO':                         'DiverXO',
+    'Sala de Despiece':                'Spanish_cuisine',
+    'Café de Klepel':                  'Dutch_cuisine',
+    // Berlin
+    'Tim Raue':                        'Tim_Raue_(restaurant)',
+    'Lokal':                           'Berlin_cuisine',
+    "Mustafa's":                       "Mustafa's_Gemüse_Kebap",
+    "Markthalle Neun (Street Food Thursday)": 'Markthalle_Neun',
+    // Rome
+    'La Pergola':                      'La_Pergola_(restaurant)',
+    // London
+    'Padella':                         'Padella_(restaurant)',
+    "Dishoom King's Cross":            'Dishoom',
+    'St JOHN':                         'St._John_(restaurant)',
+    'Sketch (The Gallery)':            'Sketch_(restaurant)',
+    'The Pig':                         'The_Pig_Hotels',
+    // Brussels
+    'Fritland':                        'Belgian_fries',
+    'Chez Léon':                       'Moules-frites',
+    'Noordzee Mer du Nord':            'Belgian_cuisine',
+    // Dublin
+    'Leo Burdock':                     'Leo_Burdock',
+    'The Brazen Head':                 'The_Brazen_Head',
+    'Tradition':                       'Irish_cuisine',
+    // Stockholm + Oslo
+    'Vurma Café':                      'Swedish_fika',
+    'Oaxen Slip':                      'Swedish_cuisine',
+    // Naples
+    'Palazzo Petrucci':                'Neapolitan_cuisine',
+    "L'Antica Pizzeria da Michele":    "L'Antica_Pizzeria_da_Michele",
+    // Amalfi
+    'Lo Scoglio':                      'Amalfi_Coast',
+    'Pizzeria Donna Rosa':             'Neapolitan_pizza',
+    'Da Vincenzo':                     'Amalfi_Coast',
+    // Mykonos
+    'Matsuhisa Mykonos':               'Nobuyuki_Matsuhisa',
+    'Spilia Seaside':                  'Mykonos',
+    "Joanna's Nikos Place":            'Greek_taverna',
+    // Santorini
+    'Lauda · Andronis Boutique':       'Santorini',
+    'To Psaraki':                      'Pyrgos_Kallistis',
+    'Kounelas Fish Tavern':            'Greek_taverna',
+    // Lisbon + Porto
+    'Taberna da Rua das Flores':       'Portuguese_cuisine',
+    'A Cevicheria':                    'Ceviche',
+    'Tasco':                           'Portuguese_cuisine',
+    'Cafeína':                         'Porto',
+    // Budapest extras
+    'Kispiac Bisztró':                 'Hungarian_cuisine',
+    'Karavan Street Food':             'Lángos',
+    'Stand25':                         'Hungarian_cuisine',
+    // Prague extras
+    'U Modré Kachničky':               'Czech_cuisine',
+    // Krakow extras
+    'Pierogarnia Krakowiacy':          'Pierogi',
+    'Bar Mleczny Pod Temida':          'Polish_milk_bar',
+    // Barcelona extras
+    'Bar del Pla':                     'Catalan_cuisine',
+    'Cervecería Catalana':             'Tapas',
+    // Milan extras
+    'Pavé':                            'Italian_pastry',
+    'Ratanà':                          'Milanese_cuisine',
+    'Seta · Mandarin Oriental':        'Milanese_cuisine',
+    // Copenhagen extras
+    'Manfreds':                        'New_Nordic_cuisine',
+    'Hart Bageri':                     'Danish_pastry',
+    // Dubrovnik + Split extras
+    'Konoba Lady Pi-Pi':               'Dalmatian_cuisine',
+    'Restaurant 360°':                 'Dubrovnik',
+    'Konoba Dubrava':                  'Konoba',
+    'Buffet Škola':                    'Croatian_cuisine',
+    // Amsterdam extras
+    'De Kas':                          'Dutch_cuisine',
+    'Restaurant De Plataan':           'Dutch_cuisine',
+    // Paris extras
+    'Le Mary Celeste':                 'Cocktail',
+    // Comme Chez Soi already mapped above
   };
+
+  // ============================================================
+  // CUISINE DESCRIPTOR → Wikipedia article
+  //
+  // Catches cuisine fields like "Catalan modern", "New Nordic ·
+  // 3 Michelin", "Andalusian classic", "Old taberna", "Modern
+  // Greek" that the dish-level dishKeywordWiki misses (because
+  // those keywords describe a STYLE, not a dish).
+  //
+  // Match is substring against the lowercased cuisine field.
+  // First match wins. Inserted into pickRestaurantWiki BETWEEN
+  // atmosphere keywords and cityFoodCulture — so when the
+  // cuisine descriptor is specific to a regional cooking style,
+  // we pull the cuisine article instead of falling back to
+  // the city's generic food culture.
+  // ============================================================
+  const cuisineWikiMap = [
+    // Iberian
+    ['catalan',           'Catalan_cuisine'],
+    ['valencian',         'Valencian_cuisine'],
+    ['andalusian',        'Andalusian_cuisine'],
+    ['basque',            'Basque_cuisine'],
+    ['galician',          'Galician_cuisine_(Spain)'],
+    ['madrilenian',       'Madrilenian_cuisine'],
+    ['portuguese',        'Portuguese_cuisine'],
+    // Italian regional
+    ['neapolitan',        'Neapolitan_cuisine'],
+    ['sicilian',          'Sicilian_cuisine'],
+    ['tuscan',            'Tuscan_cuisine'],
+    ['venetian',          'Venetian_cuisine'],
+    ['milanese',          'Milanese_cuisine'],
+    ['roman cuisine',     'Roman_cuisine'],
+    ['apulian',           'Apulian_cuisine'],
+    ['ligurian',          'Ligurian_cuisine'],
+    ['piedmontese',       'Piedmontese_cuisine'],
+    ['emilian',           'Emilia-Romagna'],
+    ['umbrian',           'Umbrian_cuisine'],
+    // French regional
+    ['provençal',         'Cuisine_of_Provence'],
+    ['provencal',         'Cuisine_of_Provence'],
+    ['niçoise',           'Niçoise_cuisine'],
+    ['nicoise',           'Niçoise_cuisine'],
+    ['savoyard',          'Savoyard_cuisine'],
+    ['alsatian',          'Alsatian_cuisine'],
+    ['parisian café',     'Parisian_café'],
+    ['parisian cafe',     'Parisian_café'],
+    ['brasserie',         'Brasserie'],
+    // Central / Eastern European
+    ['austrian',          'Austrian_cuisine'],
+    ['viennese',          'Viennese_cuisine'],
+    ['tirolean',          'Tirolean_cuisine'],
+    ['bavarian',          'Bavarian_cuisine'],
+    ['swabian',           'Swabian_cuisine'],
+    ['czech',             'Czech_cuisine'],
+    ['bohemian',          'Bohemian_cuisine'],
+    ['polish',            'Polish_cuisine'],
+    ['hungarian',         'Hungarian_cuisine'],
+    ['slovak',            'Slovak_cuisine'],
+    ['slovenian',         'Slovenian_cuisine'],
+    // Balkan
+    ['dalmatian',         'Dalmatian_cuisine'],
+    ['croatian',          'Croatian_cuisine'],
+    ['serbian',           'Serbian_cuisine'],
+    ['bosnian',           'Bosnian_cuisine'],
+    ['albanian',          'Albanian_cuisine'],
+    ['macedonian',        'Macedonian_cuisine'],
+    ['bulgarian',         'Bulgarian_cuisine'],
+    // Hellenic
+    ['cretan',            'Cretan_cuisine'],
+    ['greek',             'Greek_cuisine'],
+    ['mediterranean',     'Mediterranean_cuisine'],
+    // Nordic
+    ['new nordic',        'New_Nordic_cuisine'],
+    ['nordic',            'Nordic_cuisine'],
+    ['icelandic',         'Icelandic_cuisine'],
+    ['finnish',           'Finnish_cuisine'],
+    ['norwegian',         'Norwegian_cuisine'],
+    ['swedish',           'Swedish_cuisine'],
+    ['danish',            'Danish_cuisine'],
+    // British / Irish
+    ['british modern',    'Modern_British_cuisine'],
+    ['gastropub',         'Gastropub'],
+    ['british',           'British_cuisine'],
+    ['irish',             'Irish_cuisine'],
+    // Belgian / Dutch
+    ['belgian',           'Belgian_cuisine'],
+    ['dutch',             'Dutch_cuisine'],
+    // Swiss
+    ['swiss',             'Swiss_cuisine'],
+    // Baltic
+    ['latvian',           'Latvian_cuisine'],
+    ['lithuanian',        'Lithuanian_cuisine'],
+    ['estonian',          'Estonian_cuisine']
+  ];
+
+  function pickCuisineSlug(r) {
+    if (!r || !r.cuisine) return null;
+    const c = String(r.cuisine).toLowerCase();
+    for (const [kw, slug] of cuisineWikiMap) {
+      if (c.includes(kw) && !usedDishSlugs.has(slug)) {
+        usedDishSlugs.add(slug);
+        return slug;
+      }
+    }
+    return null;
+  }
 
   // ============================================================
   // CITY FOOD CULTURE — atmospheric Wikipedia slugs per city
@@ -8994,15 +9222,21 @@
     //    brief: lifestyle, interiors, mood — not close-up food.
     const fromMood = pickAtmosphereSlug(r);
     if (fromMood) return fromMood;
-    // 4) CITY-specific food culture (Spaccanapoli for Naples,
+    // 4) CUISINE DESCRIPTOR — regional cooking style (Catalan,
+    //    Sicilian, Niçoise, New Nordic, Dalmatian, …). Pulls a
+    //    cuisine-level Wikipedia article, which tends to have a
+    //    rich lead image of the cuisine's signature dish/scene.
+    const fromCuisineKw = pickCuisineSlug(r);
+    if (fromCuisineKw) return fromCuisineKw;
+    // 5) CITY-specific food culture (Spaccanapoli for Naples,
     //    Naschmarkt for Vienna, Skadarlija for Belgrade). Comes
     //    BEFORE generic country dish so cities feel unique.
     const fromCity = pickCityCultureSlug(city);
     if (fromCity) return fromCity;
-    // 5) Cuisine field mentions a dish concept
+    // 6) Cuisine field mentions a specific DISH (carbonara, paella, …)
     const fromCuisine = pickDishFromString(r.cuisine);
     if (fromCuisine) return fromCuisine;
-    // 6) Vibe / description name the speciality
+    // 7) Vibe / description name the speciality
     const fromVibe = pickDishFromString(r.vibe);
     if (fromVibe) return fromVibe;
     const fromDesc = pickDishFromString(r.description);
@@ -12347,17 +12581,23 @@
       //   2) must_order names a known dish → dish's Wikipedia photo
       //   3) Atmosphere keyword in vibe/desc (rooftop, market hall,
       //      konoba, brown café, ruin bar…) → dining-SCENE image
-      //   4) City-specific food culture (Spaccanapoli, Naschmarkt,
+      //   4) Cuisine descriptor (Catalan, Sicilian, New Nordic…) →
+      //      cuisine-level Wikipedia article
+      //   5) City-specific food culture (Spaccanapoli, Naschmarkt,
       //      Mercat Central, Skadarlija…) → unique per city
-      //   5) Cuisine field mentions a dish
-      //   6) Vibe / description mention a dish
-      //   7) Country's national dish (final fallback)
+      //   6) Cuisine field mentions a dish
+      //   7) Vibe / description mention a dish
+      //   8) Country's national dish (final fallback)
       const wikiSlug = pickRestaurantWiki(r, city) || pickDishWiki(country, i);
       const emoji = cuisineEmoji(r.cuisine, country);
       const query = encodeURIComponent(r.name + ' ' + city + ' restaurant');
+      // Stagger each card's reveal so the grid assembles in a soft
+      // cinematic cascade instead of all six popping in at once.
+      // 80ms steps · CSS animation handles the actual fade-in.
+      const sceneDelay = (i * 80) + 'ms';
       const imgHtml = wikiSlug
         ? `<div class="listing-img has-placeholder" data-label="${r.cuisine || country || 'Local'}" data-wiki="${wikiSlug}"><img alt="${r.name || 'Restaurant'}" loading="lazy" /></div>`
-        : `<div class="listing-img has-placeholder">
+        : `<div class="listing-img has-placeholder listing-img-noimg">
              <div class="img-placeholder">
                <div class="ip-mark">
                  <span class="ip-emoji" style="font-size: clamp(2.2rem, 5vw, 3.4rem);">${emoji}</span>
@@ -12366,7 +12606,7 @@
              </div>
            </div>`;
       return `
-        <a class="listing" href="https://www.google.com/maps/search/${query}" target="_blank" rel="noopener">
+        <a class="listing listing-reveal" style="--scene-delay: ${sceneDelay};" href="https://www.google.com/maps/search/${query}" target="_blank" rel="noopener">
           ${imgHtml}
           <div class="listing-body">
             <span class="listing-rank">${r.cuisine || 'Dining'}${r.price_range ? ' · ' + r.price_range : ''}</span>
