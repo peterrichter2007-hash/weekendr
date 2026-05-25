@@ -4199,6 +4199,79 @@
         0 0 0 1px rgba(18, 17, 15, 0.14),
         0 16px 32px -6px rgba(18, 17, 15, 0.55);
     }
+
+    /* ============================================================
+       AMBIENT MARKERS — soft glass chips that appear near the
+       cursor while drifting over the map. Transient: fade in on
+       reveal, fade out on mouse-leave. Each marker is clickable
+       and enters the city scene. */
+    .lf-ambient {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.32rem 0.7rem 0.32rem 0.5rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.15) 60%, rgba(255,255,255,0.05) 100%),
+        rgba(255, 255, 253, 0.85);
+      backdrop-filter: saturate(1.8) blur(22px);
+      -webkit-backdrop-filter: saturate(1.8) blur(22px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 100px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(18, 17, 15, 0.10),
+        0 10px 24px -6px rgba(18, 17, 15, 0.40);
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      color: var(--ink);
+      letter-spacing: 0.005em;
+      cursor: pointer;
+      pointer-events: auto;
+      /* Cinematic entrance — fade + scale + blur-to-sharp. Same
+         curve as scene markers so the whole map speaks one motion
+         language. */
+      animation: lfAmbientIn 0.55s var(--ease-out) both;
+      transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+    }
+    @keyframes lfAmbientIn {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.55) translateY(4px); filter: blur(2px); }
+      55%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1)   translateY(0);   filter: blur(0); }
+    }
+    /* Exit animation — applied when Leaflet removes the icon element
+       (via an extra wrap class we add at removal time, see JS).
+       For simplicity the JS just removes; the entrance feels light
+       enough that the absence isn't jarring. */
+    .lf-ambient:hover {
+      transform: translate(-50%, -50%) translateY(-2px) scale(1.04);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(126, 98, 48, 0.20),
+        0 16px 32px -6px rgba(18, 17, 15, 0.50);
+    }
+    .lf-ambient-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 10px rgba(255, 214, 138, 0.4);
+      flex-shrink: 0;
+    }
+    .lf-ambient-name {
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .lf-ambient-price {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.66rem;
+      letter-spacing: 0.01em;
+    }
+    /* Mobile: ambient hover doesn't apply on touch, but if it ever
+       does fire (hybrid devices), reduce the chip footprint. */
+    @media (hover: none) {
+      .lf-ambient { display: none; }
+    }
+
     /* Scene popup — the small card surfacing top-3 picks per category */
     .lf-scene-pop { width: 260px; }
     .lf-scene-pop-eyebrow {
@@ -15161,10 +15234,12 @@
       zoomControl: true,
       attributionControl: true,
       // Apple-Maps-style fluid wheel + smooth zoom:
-      // no snap, finer steps, longer debounce → silk motion
+      // no snap, finer steps, longer debounce → silk motion.
+      // Tuned further for cinematic feel: longer wheel zoom, longer
+      // inertia glide, softer easing.
       scrollWheelZoom: 'center',
-      wheelDebounceTime: 40,
-      wheelPxPerZoomLevel: 110,
+      wheelDebounceTime: 50,
+      wheelPxPerZoomLevel: 130,
       zoomSnap: 0,
       zoomDelta: 0.5,
       zoomAnimation: true,
@@ -15172,9 +15247,9 @@
       fadeAnimation: true,
       markerZoomAnimation: true,
       inertia: true,
-      inertiaDeceleration: 1400,        // softer, longer glide
-      inertiaMaxSpeed: 1200,
-      easeLinearity: 0.18,              // cinematic, not mechanical
+      inertiaDeceleration: 1100,        // longer glide than 1400 — more film-like
+      inertiaMaxSpeed: 1400,
+      easeLinearity: 0.10,              // even slower-easing than 0.18 — silk
       worldCopyJump: false,
       maxBounds: [[34, -25], [71, 45]],
       maxBoundsViscosity: 0.85,
@@ -15211,6 +15286,18 @@
     leafletMap.on('zoomend',   () => host.classList.remove('map-blurring'));
     leafletMap.on('movestart', () => host.classList.add('map-moving'));
     leafletMap.on('moveend',   () => host.classList.remove('map-moving'));
+
+    // Ambient hover reveal — show a few cities physically near the
+    // cursor as the user drifts across the map. rAF-coalesced so we
+    // never thrash on fast mousemoves. mouseout clears the set so
+    // the map returns to its calm default.
+    leafletMap.on('mousemove', _onMapMouseMoveAmbient);
+    leafletMap.on('mouseout',  _onMapMouseOutAmbient);
+    // Recompute on zoom/pan so distance-from-cursor stays accurate.
+    // _scheduleAmbientUpdate is a no-op when there's no cached cursor,
+    // so calling unconditionally is safe.
+    leafletMap.on('zoomend', _scheduleAmbientUpdate);
+    leafletMap.on('moveend', _scheduleAmbientUpdate);
 
     renderLeafletMarkers();
   }
@@ -15371,10 +15458,143 @@
   // ============================================================
   let _currentScene = null;          // cityName currently in scene mode, or null
   let _sceneMarkers = [];            // markers added by the current city scene
+  let _ambientMarkers = [];          // transient "near my cursor" markers
+  let _ambientRaf = null;            // RAF token for mousemove coalescing
+  const AMBIENT_REVEAL_COUNT = 4;    // max ambient markers on screen at once
+  const AMBIENT_RADIUS_PX    = 260;  // only reveal cities within this radius
 
   function _clearSceneMarkers() {
     _sceneMarkers.forEach(m => { try { leafletMap.removeLayer(m); } catch(e){} });
     _sceneMarkers = [];
+  }
+
+  function _clearAmbientMarkers() {
+    _ambientMarkers.forEach(m => { try { leafletMap.removeLayer(m); } catch(e){} });
+    _ambientMarkers = [];
+  }
+
+  // ============================================================
+  // AMBIENT HOVER REVEAL — show ~4 cities nearest to the cursor
+  //
+  // The default state is an empty map (only the home anchor + hint
+  // pill). When the user drifts the cursor across the map the four
+  // ranked destinations physically nearest to the cursor fade in as
+  // a small glass chip showing name + price. Move further away,
+  // they fade out; move toward a different region, the set swaps.
+  //
+  // It's a discovery layer that sits BETWEEN the "nothing visible"
+  // default and the "City Scene" mode (which is the explicit-pick
+  // single-city zoomed experience). City Scene mode takes
+  // precedence: while one is open, ambient reveal is suppressed.
+  // ============================================================
+  function _buildAmbientMarker(d, coords) {
+    const priceLabel = (typeof priceFromRange === 'function')
+      ? priceFromRange(d.price)
+      : ('from €' + (d.price || 99));
+    const flightLabel = (typeof fmtFlight === 'function' && d.flight != null)
+      ? fmtFlight(d.flight)
+      : '';
+    const html = `
+      <div class="lf-ambient">
+        <span class="lf-ambient-dot" aria-hidden="true"></span>
+        <span class="lf-ambient-name">${d.key}</span>
+        <span class="lf-ambient-price">${priceLabel}${flightLabel ? ' · ' + flightLabel : ''}</span>
+      </div>
+    `;
+    const icon = L.divIcon({
+      className: 'lf-ambient-icon',
+      html,
+      iconSize: [140, 28],
+      iconAnchor: [70, 14]
+    });
+    const m = L.marker(coords, { icon, riseOnHover: true, keyboard: false, zIndexOffset: 300 });
+    m.on('click', () => {
+      if (typeof openSmartDetail === 'function') openSmartDetail(d.key);
+    });
+    return m;
+  }
+
+  function _updateAmbientReveal(containerPx) {
+    if (!leafletMap || typeof L === 'undefined') return;
+    // City scene takes precedence — never compete with the focused
+    // experience.
+    if (_currentScene) { _clearAmbientMarkers(); return; }
+    // No cursor → no ambient markers
+    if (!containerPx) { _clearAmbientMarkers(); return; }
+
+    // Candidate pool: top-20 ranked destinations from the current
+    // origin so "nearest" is biased toward GENUINELY interesting
+    // weekends, not random Eastern European stops if the user lives
+    // in Madrid. Then filter by pixel distance, then sort, then cap.
+    const ranked = (typeof rankedDestinations === 'function')
+      ? rankedDestinations(mapState.from, 'value').slice(0, 22)
+      : [];
+    const candidates = [];
+    for (const d of ranked) {
+      const coords = cityCoords[d.key];
+      if (!coords) continue;
+      const px = leafletMap.latLngToContainerPoint(coords);
+      const dx = px.x - containerPx.x;
+      const dy = px.y - containerPx.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > AMBIENT_RADIUS_PX * AMBIENT_RADIUS_PX) continue;
+      candidates.push({ d, distSq, coords });
+    }
+    candidates.sort((a, b) => a.distSq - b.distSq);
+    const wanted = candidates.slice(0, AMBIENT_REVEAL_COUNT);
+    const wantedKeys = new Set(wanted.map(c => c.d.key));
+
+    // Diff: remove markers no longer in set, add new ones. Keeping
+    // the unchanged ones in place avoids flicker as the cursor
+    // sweeps and the set partially overlaps.
+    _ambientMarkers = _ambientMarkers.filter(m => {
+      if (!wantedKeys.has(m._mvCity)) {
+        try { leafletMap.removeLayer(m); } catch (e) {}
+        return false;
+      }
+      return true;
+    });
+    const existingKeys = new Set(_ambientMarkers.map(m => m._mvCity));
+    wanted.forEach(c => {
+      if (existingKeys.has(c.d.key)) return;
+      const marker = _buildAmbientMarker(c.d, c.coords);
+      marker._mvCity = c.d.key;
+      marker.addTo(leafletMap);
+      _ambientMarkers.push(marker);
+    });
+
+    // Update the hint pill so it reads as a live indicator
+    if (typeof _updateMapHint === 'function') {
+      if (_ambientMarkers.length > 0) _updateMapHint('ambient', { count: _ambientMarkers.length });
+      else _updateMapHint('idle');
+    }
+  }
+
+  // Cached cursor (in container pixels) — used by zoom/move handlers
+  // to recompute reveal without needing a fresh mousemove event.
+  let _ambientLastPx = null;
+  function _onMapMouseMoveAmbient(e) {
+    _ambientLastPx = e.containerPoint;
+    if (_ambientRaf) return;
+    _ambientRaf = requestAnimationFrame(() => {
+      _ambientRaf = null;
+      _updateAmbientReveal(_ambientLastPx);
+    });
+  }
+
+  function _onMapMouseOutAmbient() {
+    if (_ambientRaf) { cancelAnimationFrame(_ambientRaf); _ambientRaf = null; }
+    _ambientLastPx = null;
+    _clearAmbientMarkers();
+    if (typeof _updateMapHint === 'function' && !_currentScene) _updateMapHint('idle');
+  }
+
+  function _scheduleAmbientUpdate() {
+    if (_ambientRaf || !_ambientLastPx) return;
+    _ambientRaf = requestAnimationFrame(() => {
+      _ambientRaf = null;
+      _updateAmbientReveal(_ambientLastPx);
+    });
   }
 
   function renderLeafletMarkers() {
@@ -15450,7 +15670,11 @@
     const action = document.getElementById('mapHintAction');
     el.dataset.mode = mode;
     if (mode === 'idle') {
-      if (label)  label.textContent = 'Pick a city to enter the scene';
+      if (label)  label.textContent = 'Hover anywhere to discover · click to enter';
+      if (action) action.hidden = true;
+    } else if (mode === 'ambient') {
+      const n = (opts && opts.count) || 0;
+      if (label)  label.textContent = n + ' weekend' + (n === 1 ? '' : 's') + ' near here · click any to enter';
       if (action) action.hidden = true;
     } else if (mode === 'scene') {
       const name = (opts && opts.city) || _currentScene || '';
