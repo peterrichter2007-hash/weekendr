@@ -4821,17 +4821,43 @@
       transform: translateY(-50%);
       background: rgba(26, 22, 18, 0.08);
       border-radius: 100px;
-      overflow: hidden;
+      /* No overflow:hidden — the tier marks need to sit on the track */
       pointer-events: none;
+    }
+    /* Tier boundary hairlines — subtle dots on the track so the user
+       can SEE the Shoestring / Cheap / Sweet / Comfortable / Splurge
+       breakpoints without reading labels. Positioned inline in HTML. */
+    .cg-slider-tier-mark {
+      position: absolute;
+      top: 50%;
+      width: 2px; height: 10px;
+      background: rgba(26, 22, 18, 0.18);
+      transform: translate(-50%, -50%);
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 0;
     }
     .cg-slider-fill {
       position: absolute;
       top: 0; left: 0; bottom: 0;
       width: 30%;
-      background: linear-gradient(90deg, rgba(217, 184, 130, 0.6) 0%, var(--accent) 100%);
+      background: linear-gradient(90deg, rgba(217, 184, 130, 0.55) 0%, var(--accent) 100%);
       border-radius: 100px;
-      transition: width 0.15s var(--ease-out);
+      /* Premium springy fill — slower curve, less linear, so dragging
+         feels weighty. Eases settle smoothly past tier boundaries. */
+      transition: width 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+                  background 0.5s var(--ease-out);
+      z-index: 1;
     }
+    /* The fill's hue subtly shifts by tier so the slider feels alive.
+       The change is small enough to feel like premium feedback, not
+       a discount tag — gold range across the whole spectrum. */
+    .cg-slider-wrap[data-tier="shoestring"]  .cg-slider-fill { background: linear-gradient(90deg, rgba(199, 168, 110, 0.55) 0%, #B89561 100%); }
+    .cg-slider-wrap[data-tier="cheap"]       .cg-slider-fill { background: linear-gradient(90deg, rgba(208, 174, 116, 0.6) 0%, #C09E68 100%); }
+    .cg-slider-wrap[data-tier="sweet"]       .cg-slider-fill { background: linear-gradient(90deg, rgba(217, 184, 130, 0.6) 0%, var(--accent) 100%); }
+    .cg-slider-wrap[data-tier="comfortable"] .cg-slider-fill { background: linear-gradient(90deg, rgba(216, 178, 122, 0.65) 0%, #B7884A 100%); }
+    .cg-slider-wrap[data-tier="splurge"]     .cg-slider-fill { background: linear-gradient(90deg, rgba(216, 173, 119, 0.7) 0%, #A57939 100%); }
+    .cg-slider-wrap[data-tier="open"]        .cg-slider-fill { background: linear-gradient(90deg, rgba(210, 165, 110, 0.75) 0%, #8C6431 100%); }
     .cg-slider {
       appearance: none;
       -webkit-appearance: none;
@@ -4856,26 +4882,60 @@
     }
     .cg-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 28px; height: 28px;
+      width: 26px; height: 26px;
       border-radius: 50%;
       background: var(--cream);
-      border: 1px solid var(--g-border);
-      box-shadow: var(--g-inner-glow), 0 6px 14px -4px rgba(26, 22, 18, 0.32);
-      margin-top: -11px;
-      transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+      border: 1px solid rgba(126, 98, 48, 0.45);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 -1px 0 rgba(126, 98, 48, 0.10),
+        0 0 0 1px rgba(126, 98, 48, 0.18),
+        0 8px 18px -4px rgba(26, 22, 18, 0.40);
+      margin-top: -10px;
+      transition:
+        transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.25s var(--ease-out),
+        border-color 0.25s var(--ease-out);
       cursor: grab;
     }
     .cg-slider::-moz-range-thumb {
-      width: 28px; height: 28px;
+      width: 26px; height: 26px;
       border-radius: 50%;
       background: var(--cream);
-      border: 1px solid var(--g-border);
-      box-shadow: var(--g-inner-glow), 0 6px 14px -4px rgba(26, 22, 18, 0.32);
+      border: 1px solid rgba(126, 98, 48, 0.45);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(126, 98, 48, 0.18),
+        0 8px 18px -4px rgba(26, 22, 18, 0.40);
       cursor: grab;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s var(--ease-out);
     }
-    .cg-slider:hover::-webkit-slider-thumb { transform: scale(1.08); box-shadow: var(--g-inner-glow), 0 10px 20px -4px rgba(26, 22, 18, 0.42); }
-    .cg-slider:active::-webkit-slider-thumb { transform: scale(1.15); }
-    .cg-slider:hover::-moz-range-thumb { transform: scale(1.08); }
+    .cg-slider:hover::-webkit-slider-thumb {
+      transform: scale(1.10);
+      border-color: rgba(126, 98, 48, 0.65);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(126, 98, 48, 0.30),
+        0 12px 24px -4px rgba(26, 22, 18, 0.50),
+        0 0 0 6px rgba(255, 214, 138, 0.15);
+    }
+    .cg-slider:active::-webkit-slider-thumb {
+      transform: scale(1.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(126, 98, 48, 0.40),
+        0 14px 28px -4px rgba(26, 22, 18, 0.55),
+        0 0 0 10px rgba(255, 214, 138, 0.20);
+    }
+    .cg-slider:hover::-moz-range-thumb {
+      transform: scale(1.10);
+      box-shadow: 0 0 0 1px rgba(126, 98, 48, 0.30), 0 12px 24px -4px rgba(26, 22, 18, 0.50), 0 0 0 6px rgba(255, 214, 138, 0.15);
+    }
+    .cg-slider:active::-moz-range-thumb { transform: scale(1.18); }
+    .cg-slider:focus-visible::-webkit-slider-thumb {
+      outline: 2px solid rgba(126, 98, 48, 0.55);
+      outline-offset: 3px;
+    }
     .cg-slider:focus { outline: none; }
     .cg-slider-ticks {
       display: flex; justify-content: space-between;
@@ -4885,6 +4945,29 @@
       letter-spacing: 0.06em;
       color: var(--muted);
       font-weight: 500;
+    }
+    /* Sub-label — live counter + microcopy under the slider.
+       Editorial italic serif feels like a continuous read with the
+       value chip above. Smooth fade when text updates. */
+    .cg-slider-sub {
+      margin-top: 0.75rem;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 0.82rem;
+      letter-spacing: -0.005em;
+      color: var(--muted);
+      transition: opacity 0.3s var(--ease-out);
+      min-height: 1.4em;
+    }
+    /* Mobile sub-label parallel — same logic, sw skin */
+    .sw-budget-sub {
+      margin-top: 0.6rem;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 0.86rem;
+      letter-spacing: -0.005em;
+      color: var(--muted);
+      text-align: center;
     }
     
     /* ============================================================
@@ -6983,17 +7066,26 @@
             <div class="cg-field cg-field-wide">
               <div class="cg-slider-head">
                 <span class="cg-lbl">Your weekend budget · per person</span>
-                <span class="cg-slider-value" id="budgetValue">€500 — sweet spot</span>
+                <span class="cg-slider-value" id="budgetValue">€500 — Sweet spot</span>
               </div>
-              <div class="cg-slider-wrap">
-                <input type="range" id="budgetSlider" class="cg-slider" min="150" max="2000" step="25" value="500" />
+              <div class="cg-slider-wrap" data-tier="sweet">
+                <input type="range" id="budgetSlider" class="cg-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person, total weekend" />
                 <div class="cg-slider-track" aria-hidden="true">
+                  <!-- Tier-boundary hairlines so the user senses where
+                       Shoestring ends and Sweet spot begins. Positioned
+                       at the same breakpoints as BUDGET_TIERS (200/350/
+                       600/1000) scaled to 100-1500 = 7.1%/17.9%/35.7%/64.3%. -->
+                  <span class="cg-slider-tier-mark" style="left: 7.1%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 17.9%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 35.7%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 64.3%"></span>
                   <div class="cg-slider-fill" id="budgetFill"></div>
                 </div>
                 <div class="cg-slider-ticks">
-                  <span>€150</span><span>€350</span><span>€600</span><span>€1000</span><span>€2000+</span>
+                  <span>€100</span><span>€350</span><span>€600</span><span>€1000</span><span>€1500+</span>
                 </div>
               </div>
+              <div class="cg-slider-sub" id="budgetSub" aria-live="polite">estimates per person — flight + stay + 1 experience</div>
             </div>
           </div>
 
@@ -7615,11 +7707,12 @@
         <p class="sw-help">Total per-person for the whole weekend — flight, stay, the lot.</p>
         <div class="sw-budget">
           <div class="sw-budget-display" id="swBudgetDisplay">€500</div>
-          <div class="sw-budget-label" id="swBudgetLabel">Sweet spot · most weekends</div>
-          <input type="range" id="swBudgetSlider" class="cg-slider sw-slider" min="150" max="2000" step="25" value="500" />
+          <div class="sw-budget-label" id="swBudgetLabel">Sweet spot · mid + select premium</div>
+          <input type="range" id="swBudgetSlider" class="cg-slider sw-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person" />
           <div class="sw-budget-ticks">
-            <span>€150</span><span>€500</span><span>€1000</span><span>€2000+</span>
+            <span>€100</span><span>€350</span><span>€600</span><span>€1500+</span>
           </div>
+          <div class="sw-budget-sub" id="swBudgetSub" aria-live="polite">estimates per person — all-in weekend</div>
         </div>
       </div>
 
@@ -15513,34 +15606,118 @@
   }
   
   // ====== BUDGET SLIDER ======
+  // ============================================================
+  // BUDGET TIERS — single source of truth for the slider
+  //
+  // Every budget surface (desktop slider value + microcopy, mobile
+  // step-wizard label, AI-prompt budget hint, sidebar's
+  // "in-budget" annotations) routes through these definitions.
+  // Tiers are aligned with cityEconomy tiers so the slider's
+  // "Shoestring" range matches the destinations that are actually
+  // affordable in that range.
+  //
+  //   shoestring (≤ €200)  → budget-tier cities only
+  //   cheap      (≤ €350)  → budget + mid-tier
+  //   sweet      (≤ €600)  → mid + premium
+  //   comfortable(≤ €1000) → all premium
+  //   splurge    (≤ €1500) → luxury unlocked
+  //   open       (>  €1500) → no cap
+  //
+  // maxCityTier is informational — used by the in-range counter
+  // to set a sensible expectation for which destinations belong
+  // at this tier.
+  // ============================================================
+  const BUDGET_TIERS = [
+    { key: 'shoestring', max: 200,  label: 'Shoestring',   micro: 'Hostels + budget airlines · cheapest cities only',         maxCityTier: 'budget' },
+    { key: 'cheap',      max: 350,  label: 'Cheap weekend',micro: 'Budget airline + shared apartment',                        maxCityTier: 'mid' },
+    { key: 'sweet',      max: 600,  label: 'Sweet spot',   micro: 'Mid + select premium · boutique stay + a paid experience', maxCityTier: 'premium' },
+    { key: 'comfortable',max: 1000, label: 'Comfortable',  micro: 'Premium cities · design hotel + curated experiences',      maxCityTier: 'premium' },
+    { key: 'splurge',    max: 1500, label: 'Splurge',      micro: 'Luxury unlocked · Swiss Alps, Greek islands, Riviera',     maxCityTier: 'luxury' },
+    { key: 'open',       max: Infinity, label: 'Open budget', micro: 'No cap · every destination in range',                   maxCityTier: 'luxury' }
+  ];
+  function budgetTier(v) {
+    return BUDGET_TIERS.find(t => v <= t.max) || BUDGET_TIERS[BUDGET_TIERS.length - 1];
+  }
   function fmtBudget(v) {
-    if (v <= 250) return `€${v} — shoestring`;
-    if (v <= 450) return `€${v} — cheap weekend`;
-    if (v <= 700) return `€${v} — sweet spot`;
-    if (v <= 1100) return `€${v} — comfortable`;
-    if (v <= 1700) return `€${v} — splurge`;
-    return `€${v}+ — open / luxury`;
+    const t = budgetTier(v);
+    return (t.key === 'open' ? `€${v}+ — ${t.label}` : `€${v} — ${t.label}`);
   }
   function budgetLabelFromValue(v) {
-    if (v <= 250) return `€${v} per person — shoestring · backpacker hostels, cheapest flights only`;
-    if (v <= 450) return `€${v} per person — cheap weekend · budget airline, hostel or shared apartment`;
-    if (v <= 700) return `€${v} per person — sweet spot · cheap flight + boutique stay + 2 activities`;
-    if (v <= 1100) return `€${v} per person — comfortable · good flight + design hotel + experiences`;
-    return `€${v}+ per person — open budget`;
+    const t = budgetTier(v);
+    return (t.key === 'open' ? `€${v}+` : `€${v}`) + ` per person — ${t.label} · ${t.micro}`;
   }
+
+  // Live counter — how many of our 67 destinations have a
+  // weekendEstimate.totalPP ≤ the user's budget, given current
+  // origin/adults/nights. Returns { count, total, samples }
+  // so the UI can show "23 of 67 weekends fit · cheapest Krakow".
+  function countDestinationsInRange(budget, ctxIn) {
+    if (typeof smartDestinations === 'undefined' || typeof weekendEstimate !== 'function') {
+      return { count: 0, total: 0, samples: [] };
+    }
+    const ctx = ctxIn || (typeof getSearchContext === 'function' ? getSearchContext() : { origin: 'Berlin', adults: 2, nights: 2 });
+    const total = smartDestinations.length;
+    let count = 0;
+    const fits = [];
+    smartDestinations.forEach(d => {
+      if (!d || d.key === ctx.origin) return;
+      try {
+        const est = weekendEstimate(d.key, ctx);
+        if (est && est.totalPP <= budget) {
+          count++;
+          fits.push({ name: d.key, totalPP: est.totalPP });
+        }
+      } catch (e) { /* skip — coords or economy missing */ }
+    });
+    fits.sort((a, b) => a.totalPP - b.totalPP);
+    return { count, total, samples: fits.slice(0, 3) };
+  }
+
+  function _budgetCounterText(budget) {
+    const r = countDestinationsInRange(budget);
+    if (!r.total) return 'estimates per person — flight + stay + 1 experience';
+    if (r.count === 0) {
+      return 'No weekends fit this budget yet — try raising it or picking a closer origin.';
+    }
+    const cheapest = r.samples[0];
+    const cheap = cheapest ? ` · cheapest ${cheapest.name} from €${cheapest.totalPP}` : '';
+    return `${r.count} of ${r.total} weekends fit${cheap}`;
+  }
+
   (function bindBudgetSlider() {
     const slider = document.getElementById('budgetSlider');
-    const val = document.getElementById('budgetValue');
-    const fill = document.getElementById('budgetFill');
+    const val    = document.getElementById('budgetValue');
+    const fill   = document.getElementById('budgetFill');
+    const wrap   = document.querySelector('.cg-slider-wrap');
+    const sub    = document.getElementById('budgetSub');
     if (!slider || !val || !fill) return;
     const update = () => {
       const v = parseInt(slider.value);
       val.textContent = fmtBudget(v);
-      const pct = (v - slider.min) / (slider.max - slider.min) * 100;
+      const min = parseInt(slider.min);
+      const max = parseInt(slider.max);
+      const pct = Math.max(0, Math.min(100, (v - min) / (max - min) * 100));
       fill.style.width = pct + '%';
+      // Tier class drives the active-zone colour + sub-label tone
+      const t = budgetTier(v);
+      if (wrap) wrap.dataset.tier = t.key;
+      if (sub)  sub.textContent  = _budgetCounterText(v);
     };
     slider.addEventListener('input', update);
+    // Recompute the counter when origin / nights / group change —
+    // changing the user's departure city moves which destinations
+    // fit (Berlin → Prague costs €120 p/p; Madrid → Prague is €260).
+    ['i-from', 'i-when', 'i-length', 'i-group'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', update);
+    });
+    // Also recompute when the user blurs the origin input (autocomplete
+    // commit) so we don't wait for explicit change events.
+    const fromInput = document.getElementById('i-from');
+    if (fromInput) fromInput.addEventListener('blur', update);
     update();
+    // Expose for the step wizard to call after sw → form sync
+    window._mvUpdateBudgetUI = update;
   })();
   
   // ============================================================
@@ -16347,15 +16524,21 @@
     });
   });
 
-  // Budget — drag slider, update display
+  // Budget — drag slider, update display + microcopy + counter.
+  // Routes through the same BUDGET_TIERS used by the desktop slider
+  // so the labels stay coherent between mobile + desktop.
   function swUpdateBudgetDisplay(v) {
-    document.getElementById('swBudgetDisplay').textContent = '€' + v;
-    const lbl = document.getElementById('swBudgetLabel');
-    if (v <= 250)      lbl.textContent = 'Shoestring · hostels, cheapest flights';
-    else if (v <= 450) lbl.textContent = 'Cheap weekend · budget airline + shared';
-    else if (v <= 700) lbl.textContent = 'Sweet spot · most weekends';
-    else if (v <= 1100)lbl.textContent = 'Comfortable · design hotels';
-    else               lbl.textContent = 'Splurge · open budget';
+    const disp = document.getElementById('swBudgetDisplay');
+    const lbl  = document.getElementById('swBudgetLabel');
+    const sub  = document.getElementById('swBudgetSub');
+    if (disp) disp.textContent = (v >= 1500) ? ('€' + v + '+') : ('€' + v);
+    if (typeof budgetTier === 'function' && lbl) {
+      const t = budgetTier(v);
+      lbl.textContent = t.label + ' · ' + t.micro;
+    }
+    if (sub && typeof _budgetCounterText === 'function') {
+      sub.textContent = _budgetCounterText(v);
+    }
   }
   document.getElementById('swBudgetSlider')?.addEventListener('input', e => {
     swUpdateBudgetDisplay(parseInt(e.target.value));
