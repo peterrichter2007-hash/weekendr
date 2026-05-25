@@ -4422,6 +4422,62 @@
       color: var(--cream);
     }
 
+    /* Alternative-transport row — sits under the chosen-mode cb-row
+       and surfaces the other modes available for this pair so the
+       user can compare without leaving the page. Each chip is
+       clickable and opens the partner's search in a new tab. */
+    .cb-alt-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.65rem 0 0.25rem;
+      margin-left: 44px;        /* aligns with cb-row body, past the icon */
+    }
+    .cb-alt-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.42rem 0.7rem 0.42rem 0.55rem;
+      background: rgba(252, 248, 240, 0.65);
+      border: 1px solid var(--hairline);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      color: var(--ink);
+      letter-spacing: 0.005em;
+      text-decoration: none;
+      transition:
+        background 0.25s var(--ease-out),
+        border-color 0.25s var(--ease-out),
+        transform 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out);
+      cursor: pointer;
+    }
+    .cb-alt-chip:hover {
+      background: rgba(252, 248, 240, 1);
+      border-color: rgba(126, 98, 48, 0.32);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px -6px rgba(26, 22, 18, 0.30);
+    }
+    .cb-alt-icon  { font-size: 0.95rem; line-height: 1; }
+    .cb-alt-mode  { font-weight: 600; letter-spacing: 0.01em; }
+    .cb-alt-meta  { color: var(--muted); font-weight: 500; }
+    .cb-alt-delta {
+      margin-left: 0.35rem;
+      padding: 0.06rem 0.4rem;
+      border-radius: 100px;
+      background: rgba(18, 17, 15, 0.06);
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+    }
+    @media (max-width: 720px) {
+      .cb-alt-row {
+        margin-left: 0;
+        padding-left: 0;
+      }
+    }
+
     /* Total bar */
     .cb-total {
       display: flex;
@@ -8206,6 +8262,18 @@
   - Cheapest first. Most expensive option should not exceed budget × 1.3.
   - "price" must be HONEST (Skyscanner-level realistic) — flight €40-€150 + 2 nights hostel/Airbnb €60-€200 + 1 activity €30-€80.
   - Names like "Lisbon", "Krakow", "Naples", "Porto", "Budapest", "Sofia", "Tallinn", "Valencia" should appear before Mykonos/Santorini/Amalfi.
+  - TRANSPORT INTELLIGENCE: for short-haul nearby routes, RECOMMEND bus or
+    train when it beats flying. The platform's route DB confirms FlixBus
+    wins on pairs like Berlin↔Prague (€16, 4.5h), Vienna↔Bratislava (€6, 1h),
+    Munich↔Salzburg (€9, 1.8h), Zurich↔Milan (bus €19 or SBB train €35),
+    Berlin↔Hamburg (€12 / Deutsche Bahn €19), Vienna↔Budapest (€14, 3h),
+    Krakow↔Wrocław (€14), Prague↔Krakow (€22), Madrid↔Barcelona (AVE €35),
+    Rome↔Florence (Italo €19), Milan↔Venice (€14-€19), London↔Paris
+    (Eurostar €65), Amsterdam↔Brussels (Thalys €35), Paris↔Brussels (€11
+    bus or €35 Thalys). For these pairs, mention in description: "skip
+    flying — FlixBus is €X / Italo is €X". For islands (Reykjavik,
+    Mykonos, Santorini, Ibiza, Mallorca, Bergen, Catania, Sicily) NEVER
+    suggest bus/train — flight only.
   - No generic AI fluff. Write like Suitcase Magazine on a backpacker's budget.
   Return ONLY valid JSON array.`;
   
@@ -10228,62 +10296,108 @@
               </div>
 
               ${(() => {
-                // FLIGHT ROW — only show when we actually have a flight option.
-                // For cities without an airport AND no cheaper-than-flight
-                // alternative, we skip the flight row entirely and let the
-                // bus/train row carry the trip.
-                const flightInfo = links.skyscannerInfo || { url: links.skyscanner, valid: false, note: null };
-                const showFlight = links.canFly !== false;        // default true when unknown
-                if (!showFlight) return '';
-                const subBits = [flightTime, 'cheapest-sorted on Skyscanner'];
-                if (flightInfo.note) subBits.unshift(flightInfo.note); // "Closest airport · Nice"
+                // UNIFIED TRANSPORT SECTION — multi-modal pick + alternatives.
+                //
+                // Replaces the previous "Return flight" + "Or by bus/train"
+                // pair. Now the row's label and icon reflect the ACTUAL
+                // cheapest mode (could be FlixBus to Prague, Italo to
+                // Florence, or a flight to Reykjavik). Alternatives appear
+                // as small chips below so the user sees the trade-off
+                // (faster by train, but pricier; cheaper by bus, but
+                // slower) at a glance.
+                const summary = (typeof transportSummary === 'function')
+                  ? transportSummary(ctx.origin, cityName, ctx)
+                  : null;
+                if (!summary || !summary.chosen) {
+                  // No route data at all — fall back to a generic flight
+                  // row so the cost-breakdown still computes a total.
+                  const flightInfo = links.skyscannerInfo || { url: links.skyscanner, valid: false, note: null };
+                  if (links.canFly === false) return '';
+                  const subBits = [flightTime, 'cheapest-sorted on Skyscanner'];
+                  if (flightInfo.note) subBits.unshift(flightInfo.note);
+                  return `
+                    <div class="cb-row">
+                      <div class="cb-row-icon">✈</div>
+                      <div class="cb-row-body">
+                        <div class="cb-row-label">Return flight</div>
+                        <div class="cb-row-sub">${subBits.join(' · ')}</div>
+                      </div>
+                      <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
+                      <a class="cb-row-cta" href="${flightInfo.url}" target="_blank" rel="noopener" title="Search opens on Skyscanner">${flightInfo.valid ? 'Search live →' : 'Search Google Flights →'}</a>
+                    </div>
+                  `;
+                }
+                const fmtDur = (h) => {
+                  if (h == null) return '';
+                  const H = Math.floor(h), M = Math.round((h - H) * 60);
+                  return M > 0 ? H + 'h ' + M + 'm' : H + 'h';
+                };
+                const modeMeta = (MV.transport && MV.transport.modeMeta) || {
+                  flight: { icon: '✈', label: 'Flight', short: 'Fly' },
+                  bus:    { icon: '🚌', label: 'Bus',    short: 'Bus' },
+                  train:  { icon: '🚆', label: 'Train',  short: 'Train' }
+                };
+                // Mode → partner CTA URL + label. Honest: only use the
+                // validated builder URLs from partnerLinks, never inline.
+                const ctaFor = (opt) => {
+                  if (opt.mode === 'bus')   return { url: links.flixbus   || 'https://global.flixbus.com/', label: 'Check FlixBus →', title: 'Search opens on FlixBus' };
+                  if (opt.mode === 'train') return { url: links.trainline || 'https://www.trainline.com/', label: 'Check Trainline →', title: 'Search opens on Trainline' };
+                  const info = links.skyscannerInfo || {};
+                  return {
+                    url:   info.url || links.skyscanner,
+                    label: info.valid !== false ? 'Search live →' : 'Search Google Flights →',
+                    title: 'Search opens on Skyscanner'
+                  };
+                };
+
+                const main   = summary.chosen;
+                const mainMeta = modeMeta[main.mode] || modeMeta.flight;
+                const mainCta  = ctaFor(main);
+                // Headline label varies by mode + win-vs-flight
+                const isReturn = main.mode === 'flight';
+                const wins = summary.isOverlandWin && summary.savingsVsFlight > 0;
+                const heroLabel =
+                  isReturn ? 'Return flight'
+                  : main.mode === 'bus'   ? (wins ? `Cheapest by bus · save €${summary.savingsVsFlight} vs flying` : 'By bus')
+                  : main.mode === 'train' ? (wins ? `Cheapest by train · save €${summary.savingsVsFlight} vs flying` : 'By train')
+                  : 'Cheapest option';
+
+                const subBits = [];
+                if (main.duration) subBits.push(fmtDur(main.duration));
+                if (main.provider) subBits.push(main.provider);
+                if (isReturn && links.skyscannerInfo && links.skyscannerInfo.note) {
+                  subBits.unshift(links.skyscannerInfo.note);   // "Closest airport · Nice"
+                }
+                subBits.push(main.mode === 'flight' ? 'cheapest-sorted on Skyscanner' : 'route-confirmed estimate');
+
+                // Alternative chips — show modes other than the chosen
+                // one, capped at 2. Each chip is a button-like clickable
+                // that swaps focus to the alternative's partner URL.
+                const altChips = (summary.alternatives || []).slice(0, 2).map(alt => {
+                  const m   = modeMeta[alt.mode] || modeMeta.flight;
+                  const dur = fmtDur(alt.duration);
+                  const dPp = (alt.savesVsChosen < 0 ? '+€' + Math.abs(alt.savesVsChosen) : '−€' + alt.savesVsChosen);
+                  const c   = ctaFor(alt);
+                  return `
+                    <a class="cb-alt-chip" href="${c.url}" target="_blank" rel="noopener" title="${c.title}">
+                      <span class="cb-alt-icon">${m.icon}</span>
+                      <span class="cb-alt-mode">${m.label}</span>
+                      <span class="cb-alt-meta">${dur ? dur + ' · ' : ''}€${alt.price}<span class="cb-alt-delta">${dPp}</span></span>
+                    </a>
+                  `;
+                }).join('');
+
                 return `
                   <div class="cb-row">
-                    <div class="cb-row-icon">✈</div>
+                    <div class="cb-row-icon">${mainMeta.icon}</div>
                     <div class="cb-row-body">
-                      <div class="cb-row-label">Return flight</div>
+                      <div class="cb-row-label">${heroLabel}</div>
                       <div class="cb-row-sub">${subBits.join(' · ')}</div>
                     </div>
-                    <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
-                    <a class="cb-row-cta" href="${flightInfo.url}" target="_blank" rel="noopener" title="Search opens on Skyscanner">${flightInfo.valid ? 'Search live →' : 'Search Google Flights →'}</a>
+                    <div class="cb-row-price">€${main.price}<span class="cb-row-unit">p/p</span></div>
+                    <a class="cb-row-cta" href="${mainCta.url}" target="_blank" rel="noopener" title="${mainCta.title}">${mainCta.label}</a>
                   </div>
-                `;
-              })()}
-
-              ${(() => {
-                // OVERLAND ROW — surface bus/train when MV.transport has a
-                // confirmed route AND it's meaningfully cheaper than the
-                // flight, OR when there's no flight at all (then any
-                // overland option is the headline).
-                if (typeof MV === 'undefined' || !MV.transport) return '';
-                const options = MV.transport.getOptions(ctx.origin, cityName) || [];
-                const overland = options.find(o => o.mode === 'bus' || o.mode === 'train');
-                if (!overland) return '';
-                const flightCost = (options.find(o => o.mode === 'flight') || {}).price || flightPP;
-                const flightAvailable = links.canFly !== false;
-                // Show overland if (a) no flight at all, or (b) ≥€20 cheaper
-                if (flightAvailable && overland.price + 20 > flightCost) return '';
-                const meta = MV.transport.modeMeta[overland.mode];
-                const dur = (function(h){ const H=Math.floor(h),M=Math.round((h-H)*60); return M>0?H+'h '+M+'m':H+'h'; })(overland.duration || 0);
-                // Use validated builder for the CTA URL — never inline a raw
-                // flixbus search URL again.
-                const partnerUrl = overland.mode === 'bus'
-                  ? (links.flixbus || 'https://global.flixbus.com/')
-                  : (links.trainline || 'https://www.trainline.com/');
-                const partnerLabel = overland.mode === 'bus' ? 'Check FlixBus →' : 'Check Trainline →';
-                const lede = flightAvailable
-                  ? `Or by ${meta.label.toLowerCase()} · save €${Math.max(0, flightCost - overland.price)}`
-                  : `By ${meta.label.toLowerCase()} · no direct flight`;
-                return `
-                  <div class="cb-row">
-                    <div class="cb-row-icon">${meta.icon}</div>
-                    <div class="cb-row-body">
-                      <div class="cb-row-label">${lede}</div>
-                      <div class="cb-row-sub">${dur} · ${overland.provider} · slower but lighter on cash + carbon</div>
-                    </div>
-                    <div class="cb-row-price">€${overland.price}<span class="cb-row-unit">p/p</span></div>
-                    <a class="cb-row-cta" href="${partnerUrl}" target="_blank" rel="noopener" title="Search opens on ${overland.provider}">${partnerLabel}</a>
-                  </div>
+                  ${altChips ? `<div class="cb-alt-row">${altChips}</div>` : ''}
                 `;
               })()}
 
@@ -11861,6 +11975,76 @@
     };
   }
 
+  // ============================================================
+  // TRANSPORT SUMMARY — multi-modal pick + alternatives
+  //
+  // Surfaces the cheapest realistic option plus 0–2 alternatives
+  // (other modes that exist for this pair). Used by the city
+  // cost-breakdown and any future UI that wants a multi-modal
+  // view.
+  //
+  //   transportSummary('Berlin', 'Prague', ctx) →
+  //     {
+  //       chosen:       { mode:'bus',    price:16, duration:4.5, provider:'FlixBus' },
+  //       alternatives: [
+  //         { mode:'train', price:29, duration:4.5, provider:'Deutsche Bahn', savesVsChosen:-13 },
+  //         { mode:'flight',price:39, duration:1.0, provider:'Skyscanner',     savesVsChosen:-23 }
+  //       ],
+  //       savingsVsFlight: 23,   // chosen vs flight (positive = cheaper than flying)
+  //       hasFlight: true,
+  //       isOverlandWin: true    // cheapest is bus or train, not a flight
+  //     }
+  //
+  // For Reykjavik or Mykonos (no overland routes exist), this
+  // returns just the flight as chosen, no alternatives.
+  // ============================================================
+  function transportSummary(from, to, ctxIn) {
+    if (!from || !to || from === to) return null;
+    const ctx = ctxIn || (typeof getSearchContext === 'function' ? getSearchContext() : { origin: from });
+    // 1. Pull every available option from MV.transport
+    let options = [];
+    if (typeof MV !== 'undefined' && MV.transport && MV.transport.getOptions) {
+      options = MV.transport.getOptions(from, to) || [];
+    }
+    // 2. Ensure a flight option exists (smartDestinations is the fallback
+    //    source when MV.transport's flight branch missed the pair —
+    //    happens for cities where we have IATAs but no smartDestinations
+    //    row, or vice versa).
+    if (!options.some(o => o.mode === 'flight')) {
+      const sd = (typeof smartDestinations !== 'undefined')
+        ? smartDestinations.find(s => s.key === to)
+        : null;
+      if (sd && sd.prices && sd.prices[from] > 0) {
+        options.push({
+          mode: 'flight',
+          price: sd.prices[from],
+          duration: sd.flights && sd.flights[from],
+          provider: 'Skyscanner',
+          source: 'estimate'
+        });
+      }
+    }
+    if (!options.length) return null;
+    // Cheapest first (MV.transport.getOptions already sorts by price,
+    // but the smartDestinations injection above could reorder)
+    options.sort((a, b) => a.price - b.price);
+    const chosen = options[0];
+    const alternatives = options.slice(1).map(o => ({
+      ...o,
+      savesVsChosen: chosen.price - o.price  // negative = costs more than chosen
+    }));
+    const flight = options.find(o => o.mode === 'flight');
+    const savingsVsFlight = flight ? Math.max(0, flight.price - chosen.price) : 0;
+    return {
+      chosen,
+      alternatives,
+      hasFlight: !!flight,
+      flight,
+      savingsVsFlight,
+      isOverlandWin: chosen.mode !== 'flight'
+    };
+  }
+
   // ----- Country-aware vocab for smart fallback content -----
   // Used by genericHotels/Activities/Restaurants to generate names
   // that don't feel templated. Falls back to neutral terms.
@@ -13424,6 +13608,27 @@
       return [a, b].sort().join('↔');
     }
 
+    // Normalize the route DBs so every key is in alphabetic order —
+    // routeKey() always sorts, so a data entry like "Vienna↔Bratislava"
+    // would silently miss the lookup ("Bratislava↔Vienna"). The data
+    // was hand-curated in narrative order (from → to), which broke
+    // ~30 of ~80 entries: Vienna↔Bratislava, Zurich↔Milan, Rome↔
+    // Florence, Salzburg↔Vienna, etc. all looked correct in source
+    // but never returned a hit. This one-pass normalization fixes
+    // every entry at module init.
+    function _normalizeRouteDb(db) {
+      const out = {};
+      Object.keys(db).forEach(k => {
+        const parts = k.split('↔');
+        if (parts.length !== 2) { out[k] = db[k]; return; }
+        const sorted = parts.sort().join('↔');
+        out[sorted] = db[k];
+      });
+      return out;
+    }
+    const _busRoutesN   = _normalizeRouteDb(busRoutes);
+    const _trainRoutesN = _normalizeRouteDb(trainRoutes);
+
     function getOptions(from, to) {
       if (!from || !to || from === to) return [];
       const key = routeKey(from, to);
@@ -13443,12 +13648,14 @@
         });
       }
 
-      // Bus + train — only present when we have a known route for the pair
-      const bus = busRoutes[key];
+      // Bus + train — look up against the normalized DBs so entries
+      // written in either order (Vienna↔Bratislava OR Bratislava↔Vienna)
+      // are both found.
+      const bus = _busRoutesN[key];
       if (bus) {
         out.push({ mode: 'bus', ...bus, source: 'route-db' });
       }
-      const train = trainRoutes[key];
+      const train = _trainRoutesN[key];
       if (train) {
         out.push({ mode: 'train', ...train, source: 'route-db' });
       }
@@ -15322,24 +15529,35 @@
       const meta = MV.transport.modeMeta[d.opt.mode] || { icon: '✈', label: 'Travel' };
       const dur = _fmtDealDuration(d.opt.duration);
       const provider = d.opt.provider || '';
+      const fromOrigin = d.from || (typeof mapState !== 'undefined' && mapState.from) || 'Berlin';
       // All-in per-person is the honest headline — transport price alone
       // ("from €49") implies the whole weekend is that price, which it
       // isn't if hotels are €145/night. Compute the same number the city
       // detail page will show so users trust the breakdown.
       const est = (typeof weekendEstimate === 'function')
-        ? weekendEstimate(d.city.name, { origin: d.from || (typeof mapState !== 'undefined' && mapState.from) || 'Berlin', adults: 2, nights: 2 })
+        ? weekendEstimate(d.city.name, { origin: fromOrigin, adults: 2, nights: 2 })
         : null;
       const allIn = est ? est.totalPP : d.opt.price;
       const badge = _badgeFor(d.opt, i, allIn);
+      // Multi-modal awareness — when the chosen mode is bus/train AND
+      // a flight also exists for this pair, show the savings vs flying
+      // so the user understands WHY the bus/train wins.
+      const summary = (typeof transportSummary === 'function')
+        ? transportSummary(fromOrigin, d.city.name)
+        : null;
+      const savesVsFlight = summary && summary.isOverlandWin && summary.savingsVsFlight > 0
+        ? summary.savingsVsFlight
+        : 0;
+      const modeChipLabel = `${meta.short} €${d.opt.price}${dur ? ' · ' + dur : ''}${savesVsFlight ? ' · saves €' + savesVsFlight + ' vs ✈' : ''}`;
       return `
         <article class="deal-card" data-city="${d.city.name}" onclick="openSmartDetail('${d.city.name}')">
           <div class="deal-img has-placeholder" data-label="${d.city.name}" data-wiki="${d.city.name}">
             <img alt="${d.city.name}" loading="lazy" decoding="async" />
           </div>
           ${badge ? `<span class="deal-badge ${i === 0 ? 'best' : ''}">${badge}</span>` : ''}
-          <span class="deal-mode" title="${provider}">
+          <span class="deal-mode" title="${provider}${savesVsFlight ? ' — cheaper than flying' : ''}">
             <span class="deal-mode-icon">${meta.icon}</span>
-            <span>${meta.short} €${d.opt.price}${dur ? ' · ' + dur : ''}</span>
+            <span>${modeChipLabel}</span>
           </span>
           <div class="deal-body">
             <div class="deal-country">${d.city.country}</div>
