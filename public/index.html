@@ -7006,6 +7006,95 @@
       .lm-body { padding: 1.4rem 1.2rem 2.4rem; }
       .lm-content { font-size: 0.92rem; line-height: 1.6; }
     }
+
+    /* ============================================================
+       PERFORMANCE — render-tier polish
+       Added in the perf pass: content-visibility on below-fold
+       sections so the browser skips painting them until they
+       approach the viewport, contain hints on long lists so layout
+       work is scoped, and softer backdrop-filter on mobile where
+       blur is the most expensive paint operation.
+       ============================================================ */
+
+    /* content-visibility: auto + contain-intrinsic-size — modern
+       browsers skip layout + paint for off-screen sections, which
+       is a huge win on a 15k-line single-file homepage. The size
+       hint stops the scrollbar from jumping when sections collapse
+       in/out of the viewport. */
+    .section, .collection, .stories-section, footer {
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 800px;
+    }
+    /* The hero, concierge form, map and detail modal must always
+       paint — they're either above the fold or critical to first
+       interaction. Override the rule above. */
+    .hero, #concierge, .map-section, #detail, .results, #fullmenu,
+    .nav, .nav-links, .cg-pg,
+    .cookie-banner, .legal-modal {
+      content-visibility: visible;
+    }
+
+    /* Long card grids (listings, rails, deal cards) get layout
+       containment so re-layout of one card never bubbles past the
+       grid. paint contain also lets the compositor cache the grid
+       tile texture across scrolls. */
+    .rail, .deals-grid, .listing-grid, .guides-grid,
+    .ml-items, .compare-grid {
+      contain: layout paint;
+    }
+
+    /* Mobile blur reduction — backdrop-filter: blur is the single
+       most expensive paint operation on iOS Safari, and the visual
+       difference between 48px blur and 24px blur is imperceptible
+       on a 5" screen. Cut blur in half + drop saturate, save GPU.
+       Desktop keeps the full glass treatment. */
+    @media (max-width: 720px) {
+      .lf-pop,
+      .cookie-banner,
+      .legal-modal,
+      .compare-modal,
+      .cg-autocomplete,
+      .lf-ambient,
+      .lf-scene-hero,
+      .lf-scene-chip,
+      .map-hint,
+      .map-stats,
+      .nav.scrolled {
+        backdrop-filter: saturate(1.4) blur(18px) !important;
+        -webkit-backdrop-filter: saturate(1.4) blur(18px) !important;
+      }
+      /* The hero ambient orbs are a desktop-only flourish. */
+      .hero .orb { display: none; }
+    }
+
+    /* Reduced-motion now also disables the ambient drift on
+       placeholders and the listing-reveal cascade — both are pure
+       polish, not informational. */
+    @media (prefers-reduced-motion: reduce) {
+      .img-placeholder::before,
+      .listing-img-noimg,
+      .lf-pin .lf-dot::before {
+        animation: none !important;
+      }
+      .listing-reveal,
+      .lf-scene-hero,
+      .lf-scene-chip,
+      .lf-ambient {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: translate(-50%, -50%) !important;
+      }
+      .lf-pin, .lf-pin .lf-chip,
+      .deal-card, .listing,
+      .rail-card { transition: none !important; }
+    }
+
+    /* will-change hints — only on elements that animate VERY
+       frequently. Used sparingly because will-change costs memory.
+       The map markers + hero slides earn it. */
+    .lf-pin, .lf-ambient, .lf-scene-hero, .lf-scene-chip {
+      will-change: transform, opacity;
+    }
   </style>
 </head>
 <body>
@@ -8280,50 +8369,226 @@
   }
   
   // ============================================================
-  // GENERATE — AI call
+  // GENERATE — instant-first search, AI enrichment in background
+  //
+  // Why this is a two-stage flow:
+  //   /api/generate-trips proxies Anthropic; latency is 8–25s
+  //   on a long prompt. The first commit of this flow waited for
+  //   the AI to return before rendering anything — search felt
+  //   broken on slow connections.
+  //
+  // Now: we synthesise 5 results from smartDestinations within
+  // ~50ms, render the drawer immediately, then fire the AI in
+  // the background. When AI returns we MERGE its editorial copy
+  // into the cards already on screen — they pulse-update in
+  // place rather than the user staring at a spinner.
   // ============================================================
+
+  // Honest loading STAGES — each maps to a real bit of work, not
+  // random magazine copy. The cycle adjusts pace so users on slow
+  // connections see "Almost there…" rather than running off the
+  // end of the list. Used by the legacy loading overlay if it
+  // surfaces during AI enrichment.
   const loadingMessages = [
-    { t: 'Composing your escape…', s: 'The concierge is checking the cheapest flight and the smartest stay.' },
-    { t: 'Choosing the right village…', s: 'Where to eat, where to swim, where to disappear for an hour.' },
-    { t: 'Asking our locals…', s: 'The best secrets travel by word of mouth.' },
-    { t: 'Pouring the rosé…', s: 'Finalising the moments that will become memories.' }
+    { t: 'Finding cheapest routes…',    s: 'Checking flight, bus and train pairs from your origin.' },
+    { t: 'Checking destinations…',      s: 'Filtering 67 European weekends to the ones in your budget.' },
+    { t: 'Building weekend plans…',     s: 'Stay, one paid experience, the cheapest realistic flight.' },
+    { t: 'Asking the editors…',         s: 'Adding the editorial layer — the one neighbourhood, the one bar.' },
+    { t: 'Almost there…',               s: 'Final pass — the moments that will become memories.' }
   ];
+
+  // ============================================================
+  // INSTANT TRIP SYNTHESIS — no AI, no network
+  // Returns 5 trip-shaped objects matching the user's brief in
+  // <50ms. Each entry uses curated copy from cityProfiles +
+  // cityEconomy + weekendEstimate, so the result is honest and
+  // pricing-coherent with everything else on the platform.
+  // ============================================================
+  function _vibeTagMatchScore(d, wanted) {
+    if (!wanted || wanted.length === 0) return 0;
+    const tags = (d.vibeTags || []).map(x => x.toLowerCase());
+    let s = 0;
+    wanted.forEach(v => {
+      const lv = String(v).toLowerCase();
+      tags.forEach(t => {
+        if (t === lv) s += 4;
+        else if (t.includes(lv) || lv.includes(t)) s += 2;
+      });
+    });
+    return s;
+  }
+
+  function synthesizeInstantTrips(opts) {
+    opts = opts || {};
+    const origin    = opts.from || 'Berlin';
+    const adults    = opts.adults || 2;
+    const nights    = opts.nights || 2;
+    const budgetPP  = Math.max(80, opts.budgetPP || 500);
+    const vibes     = opts.vibes || [];
+    if (typeof smartDestinations === 'undefined') return [];
+    const candidates = [];
+    smartDestinations.forEach(d => {
+      if (!d || d.key === origin) return;
+      // Skip cities without a flight from this origin
+      const flightPrice = d.prices && d.prices[origin];
+      if (flightPrice == null || flightPrice <= 0) return;
+      // All-in estimate — coherent with the rest of the site
+      let est;
+      try {
+        est = (typeof weekendEstimate === 'function')
+          ? weekendEstimate(d.key, { origin, adults, nights })
+          : null;
+      } catch (e) { est = null; }
+      const totalPP = est ? est.totalPP : flightPrice + 100;
+      // Filter: total must fit budget (with a small 1.15× tolerance
+      // so the slider feels permissive). Anything well over budget
+      // is excluded.
+      if (totalPP > budgetPP * 1.15) return;
+      const vibeMatch = _vibeTagMatchScore(d, vibes);
+      // Score: cheaper wins, vibe match strongly bonused, short
+      // flights slightly favoured.
+      const flight = d.flights && d.flights[origin] != null ? d.flights[origin] : 3.0;
+      let score = totalPP - (vibeMatch * 28) + (flight * 6);
+      // Tier bonus — keep cheap-tier cities heavily favoured (brand promise)
+      const tier = (est && est.tier) || 'mid';
+      if (tier === 'budget') score -= 22;
+      else if (tier === 'luxury') score += 18;
+      candidates.push({ d, totalPP, flight, vibeMatch, score, est });
+    });
+    candidates.sort((a, b) => a.score - b.score);
+    const picks = candidates.slice(0, 5);
+    // Map to trip-shape — same fields openTripDetail consumes from
+    // the AI output. Copy comes from curated sources; the AI will
+    // overwrite description/highlights once it returns.
+    return picks.map((c, i) => {
+      const d = c.d;
+      const prof = (typeof cityProfiles !== 'undefined' && cityProfiles[d.key]) || null;
+      const guide = prof && prof.guides && prof.guides[0];
+      const summary = (guide && guide.summary) || d.tagline || '';
+      const highlightsFromProf = prof && [
+        prof.hotels && prof.hotels[0] && prof.hotels[0].name && ('Stay at ' + prof.hotels[0].name),
+        prof.activities && prof.activities[0] && prof.activities[0].name,
+        prof.restaurants && prof.restaurants[0] && prof.restaurants[0].name && ('Eat at ' + prof.restaurants[0].name),
+        guide && guide.title
+      ].filter(Boolean);
+      const fallbackHighlights = [
+        d.vibe || 'A long walk through the old quarter',
+        'The one neighbourhood worth the detour',
+        'Dinner at the busiest local counter',
+        'A morning swim or a free sunset'
+      ];
+      return {
+        place: d.key,
+        country: d.country,
+        title: d.key,
+        vibe: d.vibe,
+        description: summary,
+        highlights: (highlightsFromProf && highlightsFromProf.length)
+                      ? highlightsFromProf.slice(0, 4)
+                      : fallbackHighlights,
+        tags: (d.vibeTags || []).slice(0, 3).concat(i === 0 ? ['Best value'] : i === 1 ? ['Cheap flight'] : []),
+        price: 'from €' + c.totalPP + ' per person all-in',
+        best_for: vibes.length ? vibes.join(' · ') + ' weekends' : 'Weekend escapes from ' + origin,
+        image_keywords: d.key,
+        _synthesised: true,
+        _estTotalPP: c.totalPP
+      };
+    });
+  }
+
+  // Trip-search cache — TTL 30min. Avoids hammering the AI when
+  // the user toggles vibes / changes budget by a tick and re-fires.
+  const _TRIP_CACHE_TTL_MS = 30 * 60 * 1000;
+  function _tripCacheKey(ctx) {
+    const v = (ctx.vibes || []).slice().sort().join(',');
+    return 'mv_trips_' + (ctx.from || '') + '_' + (ctx.budget || '') + '_' + v;
+  }
+  function _tripCacheGet(ctx) {
+    try {
+      const raw = localStorage.getItem(_tripCacheKey(ctx));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.t || !parsed.trips) return null;
+      if (Date.now() - parsed.t > _TRIP_CACHE_TTL_MS) return null;
+      return parsed.trips;
+    } catch (e) { return null; }
+  }
+  function _tripCacheSet(ctx, trips) {
+    try {
+      localStorage.setItem(_tripCacheKey(ctx), JSON.stringify({ t: Date.now(), trips }));
+    } catch (e) {}
+  }
+
+  // Merge AI editorial fields into already-rendered cards. We
+  // ONLY overwrite descriptive/text fields — keep our pricing
+  // (the AI's prices are unreliable), our tags, our internal
+  // shape. The visual update is silent so the user just sees
+  // the description text refine on next render.
+  function _mergeAiIntoTrips(synthTrips, aiTrips) {
+    if (!Array.isArray(aiTrips) || !aiTrips.length) return synthTrips;
+    return synthTrips.map((t, i) => {
+      // Match by place name first, then by index. AI may return
+      // a different ordering or even different cities — that's
+      // OK, we only enrich what we can match.
+      const ai = aiTrips.find(a => a.place && t.place && a.place.toLowerCase() === t.place.toLowerCase()) || aiTrips[i];
+      if (!ai) return t;
+      return {
+        ...t,
+        title:       ai.title       || t.title,
+        vibe:        ai.vibe        || t.vibe,
+        description: ai.description || t.description,
+        highlights:  (Array.isArray(ai.highlights) && ai.highlights.length) ? ai.highlights : t.highlights,
+        tags:        (Array.isArray(ai.tags)       && ai.tags.length)       ? ai.tags       : t.tags,
+        best_for:    ai.best_for    || t.best_for,
+        _synthesised: false
+      };
+    });
+  }
   
   async function generate() {
-    const key = getKey();
-    if (!key) { openKey(); return; }
-  
     const from = document.getElementById('i-from').value.trim() || 'Berlin';
     const when = document.getElementById('i-when').value;
     const group = document.getElementById('i-group').value;
     const len = document.getElementById('i-length').value;
     const sliderEl = document.getElementById('budgetSlider');
-    const budget = sliderEl ? budgetLabelFromValue(parseInt(sliderEl.value)) : 'Open budget';
+    const budgetPPRaw = sliderEl ? parseInt(sliderEl.value) : 500;
+    const budget = sliderEl ? budgetLabelFromValue(budgetPPRaw) : 'Open budget';
     const vibes = [...document.querySelectorAll('.vibe-pill.on')].map(p => p.dataset.vibe);
-  
+    const ctx = getSearchContext();
+    const cacheCtx = { from, budget: budgetPPRaw, vibes };
+
+    // --- STAGE 1: INSTANT RESULTS ---------------------------------
+    // Synthesise 5 results from our own data in <50ms. The user sees
+    // a populated drawer before they have time to register any
+    // loading state — feels almost instant.
+    const synthTrips = synthesizeInstantTrips({
+      from, adults: ctx.adults, nights: ctx.nights, budgetPP: budgetPPRaw, vibes
+    });
+    if (synthTrips.length) {
+      renderResults(synthTrips, { from, vibes });
+    }
+
+    // If cache has fresh AI results for this exact (origin, budget,
+    // vibes) tuple — merge them in immediately, skip the AI call.
+    const cached = _tripCacheGet(cacheCtx);
+    if (cached && cached.length) {
+      renderResults(_mergeAiIntoTrips(synthTrips, cached), { from, vibes });
+      return;   // ✓ instant + enriched, zero network
+    }
+
+    // No AI key → we're done. The synthesised results are honest;
+    // they just don't have editorial copy. Don't pester the user.
+    const key = getKey();
+    if (!key) return;
+
+    // --- STAGE 2: AI ENRICHMENT (background) ----------------------
+    // From here on the user can scroll the (already-populated) drawer
+    // while the AI grinds. We don't show a blocking veil any more —
+    // a small button-state on the concierge CTA tells them we're
+    // still polishing.
     const btn = document.getElementById('genBtn');
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div><span class="btxt">Curating</span>';
-  
-    // Loading overlay
-    const veil = document.getElementById('loadingVeil');
-    veil.classList.add('show');
-    let lmi = 0;
-    const lmEl1 = document.getElementById('loadingTitle');
-    const lmEl2 = document.getElementById('loadingSub');
-    const cycle = setInterval(() => {
-      lmi = (lmi + 1) % loadingMessages.length;
-      lmEl1.style.opacity = '0';
-      lmEl2.style.opacity = '0';
-      setTimeout(() => {
-        lmEl1.textContent = loadingMessages[lmi].t;
-        lmEl2.textContent = loadingMessages[lmi].s;
-        lmEl1.style.opacity = '1';
-        lmEl2.style.opacity = '1';
-      }, 300);
-    }, 2400);
-    lmEl1.style.transition = 'opacity 0.3s';
-    lmEl2.style.transition = 'opacity 0.3s';
+    btn.innerHTML = '<div class="spinner"></div><span class="btxt">Refining</span>';
   
     const prompt = `You are Maison Voyage — the smartest tool for finding CHEAP, beautiful European weekend trips. Target user: young adults, students, couples, friend groups who want aesthetic destinations at the LOWEST possible budget.
   
@@ -8386,45 +8651,34 @@
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Network error' }));
-        clearInterval(cycle);
-        veil.classList.remove('show');
         if (res.status === 401 || /invalid|unauthorised|unauthorized|ungültig/i.test(err.error || '')) {
           localStorage.removeItem(KEY_STORAGE);
           openKey();
           document.getElementById('keyErr').textContent = 'That key didn\'t work. Please check it and try again.';
           document.getElementById('keyErr').classList.add('show');
-        } else {
-          alert('Something went wrong. ' + (err.error || ''));
         }
+        // Non-key errors stay silent — the synthesised results are
+        // already on screen, no reason to interrupt with an alert.
         resetBtn();
         return;
       }
 
       const data = await res.json();
       const text = data.content?.[0]?.text || '';
-      let trips = parseTrips(text);
-      clearInterval(cycle);
-      veil.classList.remove('show');
-      if (!trips || !trips.length) {
-        alert('The concierge couldn\'t compose results this time. Please try again.');
-        resetBtn();
-        return;
+      const aiTrips = parseTrips(text);
+      if (aiTrips && aiTrips.length) {
+        // Merge AI editorial copy into the already-rendered cards.
+        const merged = _mergeAiIntoTrips(synthTrips, aiTrips);
+        renderResults(merged, { from, vibes });
+        _tripCacheSet(cacheCtx, aiTrips);
       }
-      renderResults(trips, { from, vibes });
       resetBtn();
     } catch (e) {
-      // AbortError = user (or our own re-submit) cancelled — stay silent
-      if (e.name === 'AbortError') {
-        clearInterval(cycle);
-        veil.classList.remove('show');
-        resetBtn();
-        return;
-      }
-      console.error(e);
-      clearInterval(cycle);
-      veil.classList.remove('show');
-      alert('Something went wrong. ' + e.message);
+      // AbortError = user (or our own re-submit) cancelled — stay silent.
+      // Network errors also stay silent — synthesised results remain
+      // useful even without AI enrichment, no need to alert the user.
       resetBtn();
+      if (e.name !== 'AbortError') console.warn('AI enrichment failed silently:', e.message);
     } finally {
       if (window.__mvTripsCtrl === ctrl) window.__mvTripsCtrl = null;
     }
