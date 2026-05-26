@@ -64,7 +64,9 @@
       --ink: #12110F;
       --ink-2: #23211C;
       --muted: #5F584D;
-      --muted-2: #87807A;
+      /* --muted-2 darkened from #87807A → #6E665C: was 3.5:1 against
+         --bg (failed WCAG AA), now ~5.0:1 (passes AA, close to AAA). */
+      --muted-2: #6E665C;
     
       /* Hairlines */
       --hairline: rgba(18, 17, 15, 0.08);
@@ -349,11 +351,16 @@
     .hero-slide::after {
       content: '';
       position: absolute; inset: 0;
+      /* Cinematic scrim — strengthened in the headline zone (35–65%)
+         where white display type sits. The earlier 0.15 mid-tint
+         broke on bright sky photos; 0.32 keeps the imagery visible
+         while guaranteeing the headline reads on every slide. */
       background: linear-gradient(180deg,
-        rgba(26, 22, 18, 0.35) 0%,
-        rgba(26, 22, 18, 0.15) 35%,
-        rgba(26, 22, 18, 0.45) 75%,
-        rgba(26, 22, 18, 0.75) 100%);
+        rgba(26, 22, 18, 0.45) 0%,
+        rgba(26, 22, 18, 0.30) 30%,
+        rgba(26, 22, 18, 0.42) 60%,
+        rgba(26, 22, 18, 0.70) 85%,
+        rgba(26, 22, 18, 0.82) 100%);
       pointer-events: none;
     }
     .hero-slide img {
@@ -380,19 +387,32 @@
       display: flex; justify-content: space-between; align-items: flex-start;
       gap: 2rem;
     }
+    /* Hero text protection — every text element sitting over the
+       rotating Wikipedia imagery gets a subtle text-shadow as a
+       belt-and-braces safety net. The shadow is invisible on dark
+       slides but lifts contrast on bright-sky shots where the scrim
+       alone can't fully neutralise the imagery underneath. */
+    .hero-tagline,
+    .hero-meta,
+    .hero-meta .place,
+    .hero-headline {
+      text-shadow:
+        0 1px 2px rgba(18, 17, 15, 0.35),
+        0 2px 18px rgba(18, 17, 15, 0.30);
+    }
     .hero-tagline {
       font-size: 0.8rem;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       font-weight: 500;
-      color: rgba(251, 247, 239, 0.85);
+      color: rgba(251, 247, 239, 0.95);
       display: flex; align-items: center; gap: 0.7rem;
     }
-    .hero-tagline .line { width: 30px; height: 1px; background: rgba(251, 247, 239, 0.6); }
+    .hero-tagline .line { width: 30px; height: 1px; background: rgba(251, 247, 239, 0.75); }
     .hero-meta {
       text-align: right;
       font-size: 0.78rem;
-      color: rgba(251, 247, 239, 0.72);
+      color: rgba(251, 247, 239, 0.88);
       letter-spacing: 0.05em;
     }
     .hero-meta .place {
@@ -404,7 +424,7 @@
       margin-bottom: 0.25rem;
       letter-spacing: -0.01em;
     }
-    
+
     .hero-main {
       max-width: 1200px;
     }
@@ -420,7 +440,7 @@
     .hero-headline .italic {
       font-style: italic;
       font-weight: 300;
-      color: rgba(251, 247, 239, 0.92);
+      color: rgba(251, 247, 239, 0.96);
     }
     .hero-headline .word {
       display: inline-block;
@@ -715,7 +735,9 @@
       inset: 0;
       z-index: 1;
       background:
-        linear-gradient(180deg, rgba(18,17,15,0) 0%, rgba(18,17,15,0) 38%, rgba(18,17,15,0.55) 78%, rgba(18,17,15,0.85) 100%);
+        /* Gentle top scrim so badge + mode-chip never sit on pure
+           bright sky (was fully transparent in the top 38%). */
+        linear-gradient(180deg, rgba(18,17,15,0.32) 0%, rgba(18,17,15,0.05) 22%, rgba(18,17,15,0) 38%, rgba(18,17,15,0.62) 78%, rgba(18,17,15,0.88) 100%);
       pointer-events: none;
     }
     .deal-card .deal-badge {
@@ -750,14 +772,14 @@
       align-items: center;
       gap: 0.35rem;
       padding: 0.34rem 0.65rem;
-      background: rgba(18, 17, 15, 0.55);
+      background: rgba(18, 17, 15, 0.72);     /* bumped 0.55 → 0.72 for top-of-card readability on bright photos */
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-radius: 100px;
       font-size: 0.72rem;
       font-weight: 500;
-      color: rgba(255, 255, 253, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--cream);
+      border: 1px solid rgba(255, 255, 255, 0.22);
     }
     .deal-card .deal-mode-icon { font-size: 0.85rem; }
     .deal-card .deal-body {
@@ -770,7 +792,7 @@
       font-size: 0.7rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(255, 255, 253, 0.7);
+      color: rgba(255, 255, 253, 0.88);
       margin-bottom: 0.35rem;
     }
     .deal-card .deal-name {
@@ -801,7 +823,7 @@
     }
     .deal-card .deal-price-meta {
       font-size: 0.7rem;
-      color: rgba(255, 255, 253, 0.7);
+      color: rgba(255, 255, 253, 0.88);
       letter-spacing: 0.04em;
     }
     .deal-card .deal-cta {
@@ -1768,14 +1790,17 @@
       gap: 0.5rem;
     }
     .trust-list .trust-cat {
-      font-size: 0.6rem;
+      font-size: 0.62rem;
       font-weight: 600;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--accent-2);
-      padding: 0.12rem 0.5rem;
-      background: rgba(184, 148, 94, 0.10);
-      border: 1px solid rgba(184, 148, 94, 0.25);
+      /* Was --accent-2 (#B8945E ≈ 2.9:1 vs cream — failed AA). The
+         darker --accent (#7E6230 ≈ 5.4:1) keeps the warm-bronze
+         brand voice while passing AA for small text. */
+      color: var(--accent);
+      padding: 0.14rem 0.55rem;
+      background: rgba(126, 98, 48, 0.10);
+      border: 1px solid rgba(126, 98, 48, 0.26);
       border-radius: 100px;
       font-family: var(--sans);
       white-space: nowrap;
@@ -2131,9 +2156,30 @@
     .detail-hero::after {
       content: '';
       position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(26,22,18,0.5) 0%, transparent 30%, transparent 60%, rgba(26,22,18,0.85) 100%);
+      /* Detail hero scrim — stronger at top (under the back/save/
+         compare/CTA bar) AND in the lower headline zone. The
+         transparent mid-band was widening on tall photos; now we
+         keep a soft 0.18 floor through the middle so chips and
+         dot indicators never sit on raw image. */
+      background: linear-gradient(180deg,
+        rgba(26, 22, 18, 0.60) 0%,
+        rgba(26, 22, 18, 0.22) 28%,
+        rgba(26, 22, 18, 0.18) 50%,
+        rgba(26, 22, 18, 0.50) 78%,
+        rgba(26, 22, 18, 0.88) 100%);
       z-index: 1;
       pointer-events: none;
+    }
+    /* Belt-and-braces text protection for the city-detail headline
+       and surrounding chips, same logic as the homepage hero. */
+    .detail-headline,
+    .detail-headline h1,
+    .detail-headline .place,
+    .detail-headline .stats .val,
+    .detail-headline .stats .lbl {
+      text-shadow:
+        0 1px 2px rgba(18, 17, 15, 0.35),
+        0 2px 18px rgba(18, 17, 15, 0.30);
     }
     .detail-top, .detail-headline {
       z-index: 5;
@@ -2149,12 +2195,15 @@
     }
     .dh-dots span {
       width: 18px; height: 2px;
-      background: rgba(255, 255, 253, 0.35);
+      /* Inactive dots bumped 0.35 → 0.55 so progress indicator is
+         visible against bright slides without losing the soft feel. */
+      background: rgba(255, 255, 253, 0.55);
       border-radius: 2px;
       transition: all 0.5s var(--ease);
+      box-shadow: 0 0 6px rgba(18, 17, 15, 0.25);
     }
     .dh-dots span.on {
-      background: rgba(255, 255, 253, 0.95);
+      background: rgba(255, 255, 253, 1);
       width: 36px;
     }
     .detail-top {
@@ -5821,35 +5870,41 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      padding: 0.32rem 0.7rem 0.32rem 0.6rem;
-      background: rgba(18, 17, 15, 0.36);
-      backdrop-filter: blur(14px) saturate(1.4);
-      -webkit-backdrop-filter: blur(14px) saturate(1.4);
-      border: 1px solid rgba(255, 255, 253, 0.10);
+      padding: 0.34rem 0.78rem 0.34rem 0.62rem;
+      /* Stronger background scrim so the chip stays readable even
+         when it lands on a bright sky patch in the imagery cycle. */
+      background: rgba(18, 17, 15, 0.52);
+      backdrop-filter: blur(16px) saturate(1.5);
+      -webkit-backdrop-filter: blur(16px) saturate(1.5);
+      border: 1px solid rgba(255, 255, 253, 0.18);
       border-radius: 100px;
-      color: rgba(255, 255, 253, 0.62);
-      font-size: 0.62rem;
+      /* Text opacity raised 0.62 → 0.85 so it's legible without
+         drawing attention. */
+      color: rgba(255, 255, 253, 0.85);
+      font-size: 0.64rem;
       font-weight: 500;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       font-family: var(--sans);
       pointer-events: none;
       user-select: none;
-      opacity: 0.85;
+      opacity: 0.95;
     }
     .section-attribution .sa-dot {
-      width: 4px;
-      height: 4px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
-      background: rgba(255, 214, 138, 0.7);
+      background: rgba(255, 214, 138, 0.9);
       flex-shrink: 0;
     }
     @media (max-width: 720px) {
       .section-attribution {
         bottom: 0.85rem;
         right: 0.9rem;
-        padding: 0.25rem 0.6rem 0.25rem 0.5rem;
-        font-size: 0.56rem;
+        padding: 0.28rem 0.65rem 0.28rem 0.55rem;
+        /* 0.56rem was below the comfortable mobile-label floor.
+           0.62rem reads cleanly without overpowering the imagery. */
+        font-size: 0.62rem;
       }
     }
     /* ============================================================
