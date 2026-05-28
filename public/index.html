@@ -10677,16 +10677,26 @@
     if (!origin || !dest || origin === dest) {
       return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus routes', note: null };
     }
-    // SEO route page — always renders (FlixBus shows "no direct route"
-    // gracefully when the pair isn't served). Format verified:
-    //   https://global.flixbus.com/bus/{from-slug}-{to-slug}
-    const url = `https://global.flixbus.com/bus/${citySlug(origin)}-${citySlug(dest)}`;
-    const valid = canBus(origin, dest);    // we only show this CTA when valid
+    if (canBus(origin, dest)) {
+      // Known route → SEO route page renders the pair with current
+      // schedules + prices. Verified format:
+      //   https://global.flixbus.com/bus/{from-slug}-{to-slug}
+      return {
+        url: `https://global.flixbus.com/bus/${citySlug(origin)}-${citySlug(dest)}`,
+        valid: true,
+        label: 'Check FlixBus prices',
+        note: null
+      };
+    }
+    // Unknown route → CITY-LEVEL listing on FlixBus instead of a
+    // route page that would render "no routes found". User sees
+    // every FlixBus connection to the destination, can pick a
+    // workaround manually (e.g. Berlin → Vienna → Bratislava).
     return {
-      url,
-      valid,
-      label: valid ? 'Check FlixBus prices' : 'Browse FlixBus',
-      note: valid ? null : 'Direct route not confirmed'
+      url: `https://global.flixbus.com/bus-routes/${citySlug(dest)}`,
+      valid: false,
+      label: 'Browse FlixBus to ' + dest,
+      note: 'Direct route not confirmed — search city listings'
     };
   }
 
@@ -11190,20 +11200,27 @@
                 // Alternative chips — show modes other than the chosen
                 // one, capped at 2. Each chip is a button-like clickable
                 // that swaps focus to the alternative's partner URL.
+                // Prices shown as RANGES via priceRangeTransport because
+                // real partner results vary by day-of-week / advance
+                // window. "€12–€22 bus" sets honest expectations.
                 const altChips = (summary.alternatives || []).slice(0, 2).map(alt => {
                   const m   = modeMeta[alt.mode] || modeMeta.flight;
                   const dur = fmtDur(alt.duration);
-                  const dPp = (alt.savesVsChosen < 0 ? '+€' + Math.abs(alt.savesVsChosen) : '−€' + alt.savesVsChosen);
+                  // Round delta to ~€5 so it doesn't claim cent-precision
+                  const deltaAbs = Math.round(Math.abs(alt.savesVsChosen) / 5) * 5;
+                  const dPp = (alt.savesVsChosen < 0 ? '+~€' + deltaAbs : '−~€' + deltaAbs);
                   const c   = ctaFor(alt);
+                  const priceRange = priceRangeTransport(alt.price, alt.mode);
                   return `
-                    <a class="cb-alt-chip" href="${c.url}" target="_blank" rel="noopener" title="${c.title}">
+                    <a class="cb-alt-chip" href="${c.url}" target="_blank" rel="noopener" title="Estimate · live at ${alt.provider || c.title.replace('Search opens on ', '')}">
                       <span class="cb-alt-icon">${m.icon}</span>
                       <span class="cb-alt-mode">${m.label}</span>
-                      <span class="cb-alt-meta">${dur ? dur + ' · ' : ''}€${alt.price}<span class="cb-alt-delta">${dPp}</span></span>
+                      <span class="cb-alt-meta">${dur ? dur + ' · ' : ''}${priceRange}<span class="cb-alt-delta">${dPp}</span></span>
                     </a>
                   `;
                 }).join('');
 
+                const mainPriceRange = priceRangeTransport(main.price, main.mode);
                 return `
                   <div class="cb-row">
                     <div class="cb-row-icon">${mainMeta.icon}</div>
@@ -11211,7 +11228,7 @@
                       <div class="cb-row-label">${heroLabel}</div>
                       <div class="cb-row-sub">${subBits.join(' · ')}</div>
                     </div>
-                    <div class="cb-row-price">€${main.price}<span class="cb-row-unit">p/p</span></div>
+                    <div class="cb-row-price" title="Estimate · live price at partner checkout">${mainPriceRange}<span class="cb-row-unit">p/p · est</span></div>
                     <a class="cb-row-cta" href="${mainCta.url}" target="_blank" rel="noopener" title="${mainCta.title}">${mainCta.label}</a>
                   </div>
                   ${altChips ? `<div class="cb-alt-row">${altChips}</div>` : ''}
@@ -11240,8 +11257,8 @@
 
               <div class="cb-total">
                 <div>
-                  <div class="cb-total-eyebrow">All-in estimate · per person · €${flightPP} flight + €${est.stay.pp} stay + €${est.activity.pp} activity</div>
-                  <div class="cb-total-num">from €${flightPP + est.stay.pp + est.activity.pp}</div>
+                  <div class="cb-total-eyebrow">All-in estimate · per person · ~€${flightPP} transport + ~€${est.stay.pp} stay + ~€${est.activity.pp} activity</div>
+                  <div class="cb-total-num">${priceFromRange(flightPP + est.stay.pp + est.activity.pp)}<span class="cb-row-unit" style="display:inline; margin-left: 0.45em; font-size: 0.55em; vertical-align: middle;">EST</span></div>
                 </div>
                 <a class="cb-total-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve weekend
@@ -11251,7 +11268,7 @@
 
               <p class="cb-disclaimer">
                 <span class="ai-pill">AI-assisted · estimates</span>
-                Prices, hotel names and activity copy on this page are <strong>estimates</strong> — assembled from a research-informed city-economy database and refined by AI. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="affiliate">How we earn</a> · <a href="#" data-legal="privacy">Privacy</a>
+                Prices on this page are <strong>estimates</strong> shown as ranges (e.g. "€30–€70") because real partner results vary by day-of-week, advance window and demand. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="affiliate">How we earn</a> · <a href="#" data-legal="privacy">Privacy</a>
               </p>
             </div>
           </div>
@@ -15675,6 +15692,33 @@
     return 'from €' + low;
   }
 
+  // priceRangeTransport — wider ranges than the general priceRange.
+  //
+  // Real-world transport prices vary heavily by day-of-week, advance-
+  // booking window, demand. Showing exact "€49 flight" makes users
+  // distrust the platform when the partner returns €78. Showing
+  // "€30–€70 flight · estimate" sets the expectation correctly.
+  //
+  // Mode-specific spread:
+  //   flight  — high variability (low-cost airlines ±40% under €80,
+  //             ±30% mid-range, ±22% long-haul)
+  //   bus     — moderate variability (FlixBus stable but day-of-week
+  //             swings ±30%)
+  //   train   — low variability (operator pricing fairly fixed ±22%)
+  function priceRangeTransport(n, mode) {
+    if (n == null || n === 0) return 'Free';
+    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num)) return String(n);
+    let spread;
+    if (mode === 'bus')        spread = 0.30;
+    else if (mode === 'train') spread = 0.22;
+    else                       spread = num < 80 ? 0.40 : num < 200 ? 0.30 : 0.22;
+    const low  = Math.max(5, Math.floor(num * (1 - spread) / 5) * 5);
+    const high = Math.ceil(num * (1 + spread) / 5) * 5;
+    if (low === high) return '€' + low;
+    return '€' + low + '–€' + high;
+  }
+
   function fmtFlight(h) {
     const hours = Math.floor(h);
     const mins = Math.round((h - hours) * 60);
@@ -16543,7 +16587,15 @@
       const savesVsFlight = summary && summary.isOverlandWin && summary.savingsVsFlight > 0
         ? summary.savingsVsFlight
         : 0;
-      const modeChipLabel = `${meta.short} €${d.opt.price}${dur ? ' · ' + dur : ''}${savesVsFlight ? ' · saves €' + savesVsFlight + ' vs ✈' : ''}`;
+      // Price displayed as a RANGE (priceRangeTransport) instead of an
+      // exact number — partner results vary too much for "€16" to read
+      // as a promise. Savings also rounded to ~€5 so we don't claim
+      // cent precision on a delta either.
+      const opPriceRange = (typeof priceRangeTransport === 'function')
+        ? priceRangeTransport(d.opt.price, d.opt.mode)
+        : ('€' + d.opt.price);
+      const roundedSaves = savesVsFlight ? (Math.round(savesVsFlight / 5) * 5) : 0;
+      const modeChipLabel = `${meta.short} ${opPriceRange}${dur ? ' · ' + dur : ''}${roundedSaves ? ' · saves ~€' + roundedSaves + ' vs ✈' : ''}`;
       return `
         <article class="deal-card" data-city="${d.city.name}" onclick="openSmartDetail('${d.city.name}')">
           <div class="deal-img has-placeholder" data-label="${d.city.name}" data-wiki="${d.city.name}">
