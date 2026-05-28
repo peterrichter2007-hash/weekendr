@@ -52,8 +52,9 @@ What the site shows today:
 - **Favourites** — saved trips in localStorage
 - **Transport modes** — flight / FlixBus / train, cheapest-mode-wins with
   alternative chips, prices shown as RANGES (€30–€70) not exact numbers
-- **Legal & Trust system** — cookie banner, Impressum, Privacy, Affiliate
-  Disclosure, Trust Strip in footer
+- **Legal & Trust system** — cookie banner, Impressum, Privacy Policy,
+  Trust Strip in footer (no affiliate disclosure today — no programs
+  are active; bring it back when real affiliate IDs are wired)
 - **Social-share-ready** — dynamic OG/Twitter meta + URL hash routing
 
 ---

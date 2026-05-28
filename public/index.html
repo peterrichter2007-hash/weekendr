@@ -6963,8 +6963,8 @@
 
     /* ============================================================
        LEGAL MODAL SHELL — reusable container for Impressum /
-       Privacy / Affiliate / Cookies. Dark glass to integrate with
-       the rest of the cinematic UI (NO harsh white pages).
+       Privacy / Cookies. Dark glass to integrate with the rest of
+       the cinematic UI (NO harsh white pages).
        Content is slotted in per-route by MV.legal.register().
        ============================================================ */
     .legal-veil {
@@ -8032,7 +8032,6 @@
           <ul>
             <li><a href="#" data-legal="impressum">Impressum</a></li>
             <li><a href="#" data-legal="privacy">Privacy Policy</a></li>
-            <li><a href="#" data-legal="affiliate">Affiliate Disclosure</a></li>
             <li><a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();">Cookie Settings</a></li>
             <li><a href="mailto:hello@maisonvoyage.com">Contact</a></li>
           </ul>
@@ -8061,7 +8060,6 @@
         <div class="links">
           <a href="#" data-legal="impressum">Impressum</a>
           <a href="#" data-legal="privacy">Privacy</a>
-          <a href="#" data-legal="affiliate">Affiliate</a>
           <a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();">Cookies</a>
         </div>
       </div>
@@ -8267,9 +8265,8 @@
   <div class="compare-modal" id="compareModal" role="dialog" aria-modal="true" aria-label="Compare trips"></div>
 
   <!-- ============================================================
-       LEGAL MODAL SHELL — Impressum / Privacy / Affiliate / Cookies
-       Content is loaded per-route by MV.legal.open(name). The
-       shell stays empty in this commit; content lands in steps 4-7.
+       LEGAL MODAL SHELL — Impressum / Privacy / Cookies
+       Content is loaded per-route by MV.legal.open(name).
        ============================================================ -->
   <div class="legal-veil" id="legalVeil" onclick="MV.legal && MV.legal.close()"></div>
   <div class="legal-modal" id="legalModal" role="dialog" aria-modal="true" aria-labelledby="lmTitleText">
@@ -8286,7 +8283,6 @@
     <div class="lm-nav" id="lmNav">
       <button data-legal="impressum">Impressum</button>
       <button data-legal="privacy">Privacy</button>
-      <button data-legal="affiliate">Affiliate Disclosure</button>
       <button data-legal="cookies">Cookies</button>
     </div>
     <div class="lm-body">
@@ -8303,7 +8299,7 @@
   <div class="cookie-banner" id="cookieBanner" role="region" aria-label="Cookie consent">
     <div class="cb-head"><span class="cb-dot"></span>Cookies &amp; storage</div>
     <p class="cb-text">
-      We use <strong>localStorage</strong> to remember your saved trips, comparisons and Wikipedia image cache so the site stays fast on repeat visits. Analytics and affiliate-tracking are <strong>off</strong> until you accept — neither is wired yet, but your choice will apply when we add them.
+      We use <strong>localStorage</strong> to remember your saved trips, comparisons and Wikipedia image cache so the site stays fast on repeat visits. No analytics is currently active — your choice will apply if any is added in the future.
       <a id="cbTogglePrefs">Preferences</a> · <a data-legal="privacy" id="cbPrivacyLink">Privacy Policy</a>
     </p>
     <div class="cb-prefs" id="cbPrefs">
@@ -8312,12 +8308,8 @@
         <span class="cb-toggle locked on" title="Required" aria-disabled="true"></span>
       </div>
       <div class="cb-prefs-row">
-        <span class="lbl">Analytics<span class="sub">Anonymous page-view counts (none active yet — will use Plausible or Vercel Analytics).</span></span>
+        <span class="lbl">Analytics<span class="sub">Anonymous page-view counts (none active yet — your choice will apply if any is added).</span></span>
         <span class="cb-toggle" id="cbToggleAnalytics" role="switch" tabindex="0" aria-label="Analytics"></span>
-      </div>
-      <div class="cb-prefs-row">
-        <span class="lbl">Affiliate tracking<span class="sub">Lets partners know your booking came from Maison Voyage. No personal data shared.</span></span>
-        <span class="cb-toggle" id="cbToggleAffiliate" role="switch" tabindex="0" aria-label="Affiliate tracking"></span>
       </div>
     </div>
     <div class="cb-actions">
@@ -11239,7 +11231,7 @@
 
               <p class="cb-disclaimer">
                 <span class="ai-pill">AI-assisted · estimates</span>
-                Prices on this page are <strong>estimates</strong> shown as ranges (e.g. "€30–€70") because real partner results vary by day-of-week, advance window and demand. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="affiliate">How we earn</a> · <a href="#" data-legal="privacy">Privacy</a>
+                Prices on this page are <strong>estimates</strong> shown as ranges (e.g. "€30–€70") because real partner results vary by day-of-week, advance window and demand. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="privacy">Privacy</a>
               </p>
             </div>
           </div>
@@ -14244,13 +14236,12 @@
   //
   // Storage: localStorage['mv_consent_v1'] with the same versioned
   // shape used by favorites/compare so a future backend can sync it.
-  //   { version, decided, accepted, prefs: {analytics, affiliate},
-  //     decidedAt }
+  //   { version, decided, accepted, prefs: {analytics}, decidedAt }
   //
   // "Essential" storage (saved trips, image cache, compare list) is
   // always on — the app can't function without localStorage and we
-  // never share that data externally. Analytics + affiliate-tracking
-  // are off by default and gated behind explicit consent.
+  // never share that data externally. Analytics is off by default and
+  // gated behind explicit consent. No analytics is wired today.
   //
   // Public API:
   //   MV.consent.get()              → full state
@@ -14267,12 +14258,12 @@
     function read() {
       try {
         const raw = localStorage.getItem(KEY);
-        if (!raw) return { version: 1, decided: false, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: null };
+        if (!raw) return { version: 1, decided: false, accepted: false, prefs: { analytics: false }, decidedAt: null };
         const parsed = JSON.parse(raw);
-        if (!parsed.prefs) parsed.prefs = { analytics: false, affiliate: false };
+        if (!parsed.prefs) parsed.prefs = { analytics: false };
         return parsed;
       } catch (e) {
-        return { version: 1, decided: false, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: null };
+        return { version: 1, decided: false, accepted: false, prefs: { analytics: false }, decidedAt: null };
       }
     }
     function write(state) {
@@ -14286,9 +14277,7 @@
     // in-progress edits from a previous open.
     function reflect() {
       const tA = document.getElementById('cbToggleAnalytics');
-      const tF = document.getElementById('cbToggleAffiliate');
       if (tA) tA.classList.toggle('on', !!state.prefs.analytics);
-      if (tF) tF.classList.toggle('on', !!state.prefs.affiliate);
     }
 
     // Collapse the preferences panel back to its default closed
@@ -14337,20 +14326,20 @@
       get: () => ({ ...state, prefs: { ...state.prefs } }),
       has: (k) => !!state.prefs && !!state.prefs[k],
       accept: () => {
-        state = { version: 1, decided: true, accepted: true, prefs: { analytics: true, affiliate: true }, decidedAt: Date.now() };
+        state = { version: 1, decided: true, accepted: true, prefs: { analytics: true }, decidedAt: Date.now() };
         write(state);
         reflect();
         hideBanner();
       },
       decline: () => {
-        state = { version: 1, decided: true, accepted: false, prefs: { analytics: false, affiliate: false }, decidedAt: Date.now() };
+        state = { version: 1, decided: true, accepted: false, prefs: { analytics: false }, decidedAt: Date.now() };
         write(state);
         reflect();
         hideBanner();
       },
       setPrefs: (prefs) => {
-        const next = { analytics: !!(prefs && prefs.analytics), affiliate: !!(prefs && prefs.affiliate) };
-        state = { version: 1, decided: true, accepted: next.analytics && next.affiliate, prefs: next, decidedAt: Date.now() };
+        const next = { analytics: !!(prefs && prefs.analytics) };
+        state = { version: 1, decided: true, accepted: next.analytics, prefs: next, decidedAt: Date.now() };
         write(state);
         reflect();
         hideBanner();
@@ -14373,7 +14362,6 @@
       const togglePrefsLink = document.getElementById('cbTogglePrefs');
       const prefsPanel = document.getElementById('cbPrefs');
       const tAnalytics = document.getElementById('cbToggleAnalytics');
-      const tAffiliate = document.getElementById('cbToggleAffiliate');
       const btnAccept = document.getElementById('cbAcceptAll');
       const btnSave = document.getElementById('cbSavePrefs');
       const btnDecline = document.getElementById('cbDecline');
@@ -14400,7 +14388,6 @@
         });
       };
       toggleSwitch(tAnalytics, 'analytics');
-      toggleSwitch(tAffiliate, 'affiliate');
 
       if (btnAccept)  btnAccept.addEventListener('click',  () => api.accept());
       if (btnSave)    btnSave.addEventListener('click',    () => api.setPrefs(state.prefs));
@@ -14420,11 +14407,10 @@
   })();
 
   // ============================================================
-  // LEGAL MODAL — reusable shell for Impressum / Privacy /
-  //               Affiliate Disclosure / Cookie Policy.
+  // LEGAL MODAL — reusable shell for Impressum / Privacy / Cookies.
   //
-  // Content for each route is registered separately (steps 4-7)
-  // via MV.legal.register('impressum', { title, sub, html }). The
+  // Content for each route is registered separately via
+  // MV.legal.register('impressum', { title, sub, html }). The
   // shell renders an honest empty-state until a route is registered,
   // so partial deploys never show fake content.
   //
@@ -14812,8 +14798,9 @@
   //   moment we publish editorial pieces like the Journal).
   // - VAT / UID: only required once turnover exceeds CHF 100'000.
   //   Until then, an honest "below threshold" line is correct.
-  // - Liability / external-link / copyright clauses: standard but
-  //   tailored to the affiliate model we actually run.
+  // - Liability / external-link / copyright clauses: standard,
+  //   matching a deep-link recommendation platform without active
+  //   affiliate programs.
   // - "AI-assisted content" disclosure: matches the rest of the
   //   site's honesty rules.
   //
@@ -14844,7 +14831,7 @@
       <p>Maison Voyage is currently operated by a single natural person and stays below the Swiss VAT registration threshold of <strong>CHF 100'000</strong> annual turnover. A Swiss UID number will be added here once VAT registration becomes mandatory. No invoices with VAT are issued in the meantime.</p>
 
       <h3>Business model</h3>
-      <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. We do not sell flights, accommodation, activities or ground transport. Every "Search live" button opens an external partner — Skyscanner, Booking.com, FlixBus, GetYourGuide — and the booking happens there, under that partner's terms and conditions. We may receive a commission from partners; see the <a href="#" data-legal="affiliate">Affiliate Disclosure</a> for detail.</p>
+      <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. We do not sell flights, accommodation, activities or ground transport. Every "Search live" button opens an external partner — such as Skyscanner, Booking.com, FlixBus or GetYourGuide — and the booking takes place there, under that partner's terms and conditions. No affiliate programs are currently active; if this changes, the <a href="#" data-legal="privacy">Privacy Policy</a> will be updated accordingly.</p>
 
       <div class="lm-note">
         <strong>AI-assisted content.</strong> Some hotel names, activity descriptions and city-detail copy may be partially generated or refined by AI. Prices shown on this site are <em>estimates</em>, never live partner inventory. Always confirm the final price, availability and conditions on the partner site before paying.
@@ -14868,156 +14855,77 @@
   });
 
   // ============================================================
-  // LEGAL CONTENT — Privacy Policy (step 5/12)
+  // LEGAL CONTENT — Privacy Policy
   //
   // Plain-language privacy notice. The rule for this page: only
   // describe data flows that actually exist in the codebase right
-  // now. Anything aspirational ("we may use…", "we might collect…")
-  // gets cut — that's the kind of vagueness that erodes trust.
-  //
-  // Every claim here is verifiable against the source:
-  //   localStorage keys: search for `mv_favs_v1` / `mv_compare_v1` /
-  //     `mv_consent_v1` / `mv_api_key` / `mv_wiki_*` / `city_cache_*`
-  //   third-party endpoints: search for the host in this file
-  //   no analytics today: there is no analytics script tag anywhere
-  //
-  // When a new data flow is added (e.g. real analytics, real
-  // affiliate-pixel), this page gets updated in the SAME commit.
+  // now, and avoid absolute promises we can't operationally enforce.
+  // Generalised where exact implementation details aren't stable
+  // (endpoint names, exact server behaviour). No claims about
+  // affiliate tracking — no affiliate programs are active today.
   // ============================================================
   MV.legal.register('privacy', {
     title: 'Privacy Policy',
-    sub: 'What we collect, what we don\'t, what your browser sends where',
+    sub: 'What is stored locally, what is sent where',
     html: `
-      <p>We collect as little as possible. The site runs entirely in your browser — there is no user account, no login, and nothing about you sits on our servers. Below is the complete list of what your browser stores, what it sends to third parties, and what we ship through our own server.</p>
+      <p>Maison Voyage collects as little personal data as possible. The site runs primarily in your browser — there is no user account and no login. Below is a description of what is stored locally on your device, what is sent to third parties, and what passes through external APIs we use for content generation.</p>
 
-      <h3>What lives on your device</h3>
-      <p>We use your browser's <strong>localStorage</strong>, not cookies, to remember things between visits. The full list:</p>
+      <h3>What is stored on your device</h3>
+      <p>The site uses your browser's <strong>localStorage</strong> rather than cookies to remember a small set of preferences and to cache content for performance:</p>
       <ul>
-        <li><strong>mv_favs_v1</strong> — the cities you saved (just the city name + a timestamp).</li>
-        <li><strong>mv_compare_v1</strong> — the cities you added to the comparison tray (same shape).</li>
-        <li><strong>mv_consent_v1</strong> — your choice on the cookie/consent banner.</li>
-        <li><strong>mv_api_key</strong> — only if you paste an Anthropic API key into the AI Concierge modal. It stays on your device and we never see it stored anywhere. (See "Anthropic" below for how it's used during a request.)</li>
+        <li><strong>mv_favs_v1</strong> — cities you saved (city name + a timestamp).</li>
+        <li><strong>mv_compare_v1</strong> — cities you added to the comparison tray.</li>
+        <li><strong>mv_consent_v1</strong> — your choice on the consent banner.</li>
+        <li><strong>mv_api_key</strong> — present only if you choose to paste an Anthropic API key into the AI Concierge modal. The key is stored locally in your browser.</li>
         <li><strong>mv_wiki_*</strong> — cached Wikipedia image URLs and article summaries so the site stays fast on repeat visits.</li>
-        <li><strong>city_cache_*</strong> — the last AI-generated detail page per city (so it appears instantly next time).</li>
+        <li><strong>city_cache_*</strong> — the last AI-generated detail page per city.</li>
       </ul>
-      <p>You can see and delete any of these at any time. Open your browser's DevTools → <em>Application</em> → <em>Local Storage</em> → click <em>Clear</em>. Or in the console: <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">localStorage.clear()</code>.</p>
+      <p>You can view and delete any of these at any time via your browser's DevTools → <em>Application</em> → <em>Local Storage</em>. Clearing your browser storage will reset saved trips, comparisons and cached content.</p>
 
-      <h3>Third parties your browser talks to</h3>
-      <p>When you use Maison Voyage, your browser makes requests to a small set of public APIs and CDNs. None of these calls include any personal identifier we control. The honest list:</p>
+      <h3>Third-party services</h3>
+      <p>The site loads content from a small number of public services. As is standard for any HTTP request, the host receives your IP address and User-Agent. Each service is governed by its own privacy policy:</p>
       <ul>
-        <li><strong>Wikipedia</strong> (<em>en.wikipedia.org</em>, <em>upload.wikimedia.org</em>) — for city images and landmark summaries. We send only the article title.</li>
-        <li><strong>Open-Meteo</strong> (<em>api.open-meteo.com</em>) — for current weather and a 4-day forecast. We send only the destination's coordinates — never yours.</li>
-        <li><strong>Map tiles</strong> (<em>server.arcgisonline.com</em> for satellite imagery, <em>basemaps.cartocdn.com</em> for label overlays) — the tile host sees your IP address through normal HTTP, as with any image on the web.</li>
-        <li><strong>Google Fonts</strong> (<em>fonts.googleapis.com</em>, <em>fonts.gstatic.com</em>) — for the Fraunces and Inter typefaces. Google sees your IP and User-Agent when fonts load.</li>
-        <li><strong>unpkg.com</strong> — the CDN that serves the Leaflet map library, loaded on demand only when you scroll to the map section. The CDN host sees your IP.</li>
+        <li><strong>Wikipedia / Wikimedia</strong> — for city images and landmark summaries.</li>
+        <li><strong>Open-Meteo</strong> — for current weather and short-range forecasts.</li>
+        <li><strong>Map tile providers</strong> (Esri, Carto) — for satellite imagery and label overlays.</li>
+        <li><strong>Google Fonts</strong> — for typography.</li>
+        <li><strong>unpkg.com</strong> — content delivery for the Leaflet map library, loaded on demand when you scroll to the map.</li>
       </ul>
 
-      <h3>What we send through our own server</h3>
-      <p>One endpoint runs on our side: <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">POST /api/generate-trips</code>. This is a thin proxy to <strong>Anthropic</strong> for the AI Concierge and city-detail generation.</p>
-      <p>When you submit a search or open a city, we forward two things to Anthropic: <strong>your prompt</strong> (the search parameters you entered) and <strong>your own API key</strong> from <code style="background:rgba(255,214,138,0.10);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:0.86em;color:rgba(255,214,138,0.92);">mv_api_key</code>. Anthropic processes the request under their own privacy policy. <strong>We do not log, persist or analyse</strong> the prompt, the response, or the key. The request lives in memory on our serverless function for the duration of the call and is then gone.</p>
-
-      <h3>Affiliate / partner deep-links</h3>
-      <p>When you click a <em>Search live</em> button you leave Maison Voyage and land on a partner site — Skyscanner, Booking.com, FlixBus, GetYourGuide or Google Maps. The link includes your trip parameters (origin, dates, adults) so the partner can pre-fill the search. From that moment on, the partner's privacy policy applies. They may set their own cookies.</p>
-      <p>We do not set any tracking cookies before the redirect. Affiliate-commission attribution, when it becomes active, is handled by the partner reading a referrer parameter on the URL — no shared identifier is stored on our side. See the <a href="#" data-legal="affiliate">Affiliate Disclosure</a> for full detail.</p>
+      <h3>External APIs for content generation</h3>
+      <p>The website may use external APIs to generate or enrich editorial content (such as city descriptions and activity suggestions). Where this is the case, only the parameters needed to fulfil the request are transmitted, and only technically necessary data is processed. No long-term user profile is created on our side.</p>
+      <p>If you choose to use the AI Concierge with your own Anthropic API key, the key and your search parameters are forwarded to Anthropic to fulfil the request. Anthropic processes the request under their own privacy policy.</p>
 
       <h3>Hosting</h3>
-      <p>The site is served by <strong>Vercel</strong> (Vercel Inc., USA) from edge locations close to you. Vercel automatically logs standard HTTP request metadata (IP address, User-Agent, response time, status code) for security and uptime monitoring. We do not enrich these logs with any application data.</p>
-      <p>The source code lives on <strong>GitHub</strong> (GitHub Inc., USA). GitHub does not see your traffic — only ours when we push a new deploy.</p>
+      <p>The site is hosted by <strong>Vercel</strong>. As with any web host, standard HTTP request metadata (IP address, User-Agent, status code, response time) may be processed for security, reliability and abuse-prevention purposes.</p>
 
       <h3>Analytics</h3>
-      <p>There is <strong>no analytics</strong> active on this site today. If we add any, it will be a privacy-first product such as <strong>Plausible</strong> or <strong>Vercel Analytics</strong> — both cookieless, both without cross-site tracking — and we will only activate it for visitors who have accepted analytics on the <a href="#" data-legal="cookies">consent banner</a>. This page will be updated in the same commit.</p>
+      <p>No analytics or visitor tracking is active on this site. If this changes, the consent banner will reappear and this page will be updated accordingly.</p>
 
-      <h3>Your rights (GDPR / Swiss FADP)</h3>
-      <p>You can at any time ask to:</p>
-      <ul>
-        <li>access what we hold about you,</li>
-        <li>correct or delete it,</li>
-        <li>object to a specific processing,</li>
-        <li>export your data.</li>
-      </ul>
-      <p>Because nothing about you lives on our servers, the practical answer for most requests is: clear your browser's <em>localStorage</em> and there is nothing left of your visit. For everything else, write to <span class="placeholder">YOUR_EMAIL</span> — we aim to reply within five working days.</p>
+      <h3>Affiliate and partner links</h3>
+      <p>Maison Voyage links out to partner sites (such as Skyscanner, Booking.com, FlixBus, GetYourGuide) for the actual booking. <strong>No affiliate programs are currently active.</strong> If affiliate links are introduced in future, this page will be updated.</p>
+      <p>When you click a partner link, you leave Maison Voyage and land on the partner's site. From that point on, the partner's privacy policy applies to everything that happens there.</p>
+
+      <h3>Your rights</h3>
+      <p>Under applicable data-protection law (such as the EU GDPR and the Swiss FADP), you may have the right to request access to personal data held about you, correction or deletion of such data, restriction of or objection to specific processing, and data portability. Because Maison Voyage does not maintain user accounts or store profile information on our side, the practical answer for most requests is to clear your browser's local storage. For any other data-protection request, please contact us using the address listed on the <a href="#" data-legal="impressum">Impressum</a> page.</p>
 
       <h3>Children</h3>
       <p>Maison Voyage is not directed at children under 16. We do not knowingly collect personal data from anyone in that age group.</p>
 
       <h3>Changes to this page</h3>
-      <p>We update this page whenever a data flow is added or removed. The version date is at the bottom. If we ever make a change that meaningfully affects what we collect, we'll surface the consent banner again so you can re-decide.</p>
+      <p>This page is updated when the underlying data flows change. The version date is shown below.</p>
 
       <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
     `
   });
 
   // ============================================================
-  // LEGAL CONTENT — Affiliate Disclosure (step 6/12)
-  //
-  // The honest version of how affiliate commission works on this
-  // site. Two rules guided the wording:
-  //
-  //   1. Don't claim a commercial relationship we don't yet have.
-  //      Most partner integrations are still placeholders (Booking
-  //      affiliate ID is the example `aid=304142` from HANDOVER —
-  //      not a real ID). The page states this plainly.
-  //
-  //   2. Don't pretend the affiliate model influences the ranking
-  //      when it doesn't. Destinations are sorted by cheapest-from-
-  //      origin via cityEconomy + MV.transport — not by commission.
-  //      The page says that explicitly so a regulator (or a smart
-  //      visitor) doing the math can verify it.
-  //
-  // No "live inventory" claim. No "best price guaranteed" claim.
-  // Just the truth of how the deep-link → partner-checkout flow
-  // works today.
+  // Affiliate Disclosure page removed — no affiliate programs are
+  // active today. The Privacy Policy carries a brief note explaining
+  // this. Reintroduce a dedicated page only once real affiliate
+  // approvals (Booking.com, Skyscanner, GetYourGuide, FlixBus) are
+  // wired with real account IDs.
   // ============================================================
-  MV.legal.register('affiliate', {
-    title: 'Affiliate Disclosure',
-    sub: 'How the partner links work and what we earn',
-    html: `
-      <p>Maison Voyage links out to other companies for the actual booking — flights, hotels, activities, ground transport. If you book through one of our partner links, we <em>may</em> receive a small commission. This page is the honest version of how that works today.</p>
-
-      <h3>Who we link to</h3>
-      <ul>
-        <li><strong>Skyscanner</strong> — for flights</li>
-        <li><strong>Booking.com</strong> — for hotels and apartments</li>
-        <li><strong>FlixBus</strong> — for cheap overland coach routes</li>
-        <li><strong>GetYourGuide</strong> — for activities and tours</li>
-        <li><strong>Google Maps</strong> — for navigation and place info (no commission relationship here)</li>
-      </ul>
-      <p>If we add a new partner, this list is updated in the same deploy.</p>
-
-      <h3>What we earn (the honest part)</h3>
-      <p>We <em>may</em> earn a commission when a booking is completed via one of our partner links. As of today, <strong>most of our integrations are still placeholders</strong> — we deep-link to the partner's search results, but the affiliate IDs in the URLs are not yet wired to real approved accounts. Partner programmes (Booking.com, Skyscanner, GetYourGuide) all require approval before they pay out. Once approvals come through, commission attribution becomes active. This page is updated in the same commit.</p>
-      <p>When commission is active, the rate depends on the partner and the booking type — typically a single-digit percentage of the booking value for hotels and activities, a fixed amount per ticket for flights. It is paid by the partner, not by you.</p>
-
-      <h3>Does this change what you pay?</h3>
-      <p><strong>No.</strong> The price the partner shows you at checkout is the same whether you arrived from Maison Voyage or directly. Our affiliate link does not add anything to your bill.</p>
-
-      <h3>Does this change what we recommend?</h3>
-      <p><strong>No.</strong> Destinations are sorted by cheapest weekend cost from your selected origin, computed from a research-informed economic profile per city plus a known-routes database (flight, bus, train). We do not promote partners that pay higher commissions, and we do not bury cheaper options that pay less. The transport-mode picker selects whichever option is cheapest for the route — even when that points to a partner with a lower commission rate, or no commission at all (Google Maps).</p>
-
-      <h3>What the prices on Maison Voyage actually are</h3>
-      <p>Every price on this site — flight, hotel, activity, bus, train — is an <em>estimate</em>. We compute them from our curated economic profile per city and our route database. They are intended to give a directionally honest answer to "how much does a weekend in Lisbon cost from Berlin?" — not to be a binding quote.</p>
-      <p>The binding price is the one shown to you on the partner's checkout page. By the time you click through, the partner may have raised, lowered, or sold out of the price we displayed. We do not query partner inventory in real time and never claim to.</p>
-
-      <h3>How a click works</h3>
-      <ul>
-        <li>You click a "Search live" button on Maison Voyage.</li>
-        <li>Your browser opens the partner's site in a new tab. Your search parameters (origin, dates, adults) are passed along so the partner's form is pre-filled.</li>
-        <li>From that moment, the partner's terms and privacy policy apply. We do not have visibility into what you book, what you pay or whether you book at all — only into whether the partner attributes a commission to us.</li>
-      </ul>
-
-      <div class="lm-note">
-        <strong>Why we tell you all this.</strong> Affiliate models are often opaque — sites pretend they have active commission deals before they actually do, or quietly re-rank cheaper options below their highest-paying partner. Both are common enough that they erode trust. We'd rather be slow and honest.
-      </div>
-
-      <h3>How to support us</h3>
-      <p>If you find Maison Voyage useful, the simplest support is to use the partner links here when you book a trip you were going to take anyway. There is no other monetisation on this site — no ads, no paid placements, no premium tier.</p>
-
-      <h3>Questions or concerns</h3>
-      <p>Write to <span class="placeholder">YOUR_EMAIL</span>. The operator details are on the <a href="#" data-legal="impressum">Impressum</a> page. For how your data flows, see the <a href="#" data-legal="privacy">Privacy Policy</a>.</p>
-
-      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
-    `
-  });
 
   // ============================================================
   // EXTERNAL LINK AFFORDANCE — step 10/12
