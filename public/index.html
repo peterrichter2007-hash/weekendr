@@ -2755,62 +2755,11 @@
     }
     .concierge-light .wrap { position: relative; z-index: 2; }
     
-    .cg-trust {
-      align-self: flex-end;
-    }
-    .cg-trust-row {
-      display: flex; align-items: center; gap: 0.85rem;
-      padding: 0.6rem 0.85rem 0.6rem 0.6rem;
-      background: var(--g-bg-1);
-      border: 1px solid var(--g-border);
-      backdrop-filter: saturate(1.8) blur(36px);
-      -webkit-backdrop-filter: saturate(1.8) blur(36px);
-      border-radius: 100px;
-      box-shadow: var(--g-inner-glow), var(--g-shadow-sm);
-    }
-    .cg-avatars {
-      display: flex;
-    }
-    .cg-avatars .av {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      border: 2px solid var(--cream);
-      margin-left: -8px;
-      background-size: cover;
-      background-position: center;
-    }
-    .cg-avatars .av:first-child { margin-left: 0; }
-    /* Abstract gradient avatars — we won't fake real people */
-    .cg-avatars .av {
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 0.7rem;
-      color: var(--cream);
-      font-weight: 400;
-    }
-    .cg-avatars .av1 { background: linear-gradient(135deg, #B8945E 0%, #7E6230 100%); }
-    .cg-avatars .av1::before { content: 'S'; }
-    .cg-avatars .av2 { background: linear-gradient(135deg, #94A5B8 0%, #5C6D80 100%); }
-    .cg-avatars .av2::before { content: 'M'; }
-    .cg-avatars .av3 { background: linear-gradient(135deg, #D6BE8A 0%, #A88040 100%); }
-    .cg-avatars .av3::before { content: 'A'; }
-    .cg-avatars .av4 { background: linear-gradient(135deg, #C0B5A6 0%, #7E7060 100%); }
-    .cg-avatars .av4::before { content: 'L'; }
-    .cg-trust-num {
-      font-family: var(--serif);
-      font-size: 1rem;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-      line-height: 1.1;
-    }
-    .cg-trust-sub {
-      font-size: 0.72rem;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-      margin-top: 0.1rem;
-    }
-    
+    /* cg-trust / cg-avatars CSS removed — they styled fake user
+       social proof (gradient avatars, invented "4.96 ★ · 12,400
+       trips" pill). No platform-user data exists; the styles are
+       dead alongside the HTML they styled. */
+
     .cg-stage {
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
@@ -7488,20 +7437,12 @@
             An AI that ranks Europe's cheapest beautiful weekends by what you actually have — flight + stay + the three things worth doing. No filler, no upsell.
           </p>
         </div>
-        <div class="cg-trust reveal d1">
-          <div class="cg-trust-row">
-            <div class="cg-avatars">
-              <span class="av av1"></span>
-              <span class="av av2"></span>
-              <span class="av av3"></span>
-              <span class="av av4"></span>
-            </div>
-            <div>
-              <div class="cg-trust-num">From €189 all-in</div>
-              <div class="cg-trust-sub">★ 4.96 · 12,400 trips planned</div>
-            </div>
-          </div>
-        </div>
+        <!-- cg-trust block removed — the previous version implied fake
+             user avatars + an invented 4.96-star rating + a 12,400
+             trips-planned counter. The platform has no user-review
+             data yet; we don't fake social proof. The concierge
+             headline + lede above carry the value pitch on their own. -->
+
       </div>
 
       <div class="cg-stage reveal d1">
@@ -11500,16 +11441,6 @@
   // ============================================================
   const cityProfiles = {
     Barcelona: {
-      hotels: [
-        { name: 'Hostal Lemon', neighbourhood: 'El Raval', vibe: 'Backpacker · €40 dorm', description: 'Cheapest dorms within five minutes of Las Ramblas — clean, social, terrace upstairs.', price_per_night: 38, rating: 8.4 },
-        { name: 'Casa Gracia Hostel', neighbourhood: 'Passeig de Gràcia', vibe: 'Boutique hostel · rooftop', description: 'Private rooms with marble floors and a rooftop bar five minutes from Casa Batlló.', price_per_night: 72, rating: 8.7 },
-        { name: 'Hotel Brummell', neighbourhood: 'Poble Sec', vibe: 'Design hotel · small pool', description: 'A neighbourhood design hotel a block from the Picasso route — tiny rooftop pool, big breakfast.', price_per_night: 145, rating: 9.0 },
-        { name: 'Yurbban Trafalgar', neighbourhood: 'Born', vibe: 'Rooftop infinity pool', description: 'The cheapest rooftop pool with a Sagrada Familia view. Free wine hour at sunset.', price_per_night: 175, rating: 9.1 },
-        { name: 'The Wittmore', neighbourhood: 'Gothic Quarter', vibe: 'Adults-only townhouse', description: 'A 22-room townhouse — adults-only, library, no children, no noise.', price_per_night: 235, rating: 9.2 },
-        { name: 'Hotel Casa Bonay', neighbourhood: 'Eixample', vibe: 'Boutique · café · bar', description: 'A modernist palace turned hotel — house-roasted coffee, Catalan wine bar in the lobby.', price_per_night: 280, rating: 9.1 },
-        { name: 'Hotel Arts', neighbourhood: 'Barceloneta', vibe: 'Beachfront tower', description: 'The Ritz-Carlton on the beach — Frank Gehry fish sculpture out front, 44 floors of view.', price_per_night: 520, rating: 9.3 },
-        { name: 'Cotton House Hotel', neighbourhood: 'Eixample', vibe: 'Heritage 5-star', description: 'The former Cotton Guild headquarters — spiral staircase, rooftop pool, Penelope Cruz approved.', price_per_night: 410, rating: 9.4 }
-      ],
       activities: [
         { name: 'Sagrada Família + Park Güell combo', category: 'Cultural', vibe: 'The two Gaudís in one morning', description: 'Skip-the-line tickets, audio guide, finish at Park Güell for the mosaic terraces.', price_per_person: 45, duration: '4 hours' },
         { name: 'El Born tapas crawl', category: 'Food', vibe: 'Six bars · six bites · one guide', description: 'Hidden vermutería, an Albariño wine specialist, the best patatas bravas in town.', price_per_person: 75, duration: '3 hours' },
@@ -11534,16 +11465,6 @@
       ]
     },
     Lisbon: {
-      hotels: [
-        { name: 'Lisbon Destination Hostel', neighbourhood: 'Rossio', vibe: '€18 dorm · station-side', description: 'Inside Rossio train station — chandelier-lit lobby, cheapest beds in the centre.', price_per_night: 18, rating: 8.5 },
-        { name: 'Selina Secret Garden', neighbourhood: 'Bairro Alto', vibe: 'Co-working hostel · rooftop', description: 'Hostel + co-working + rooftop pool — the cheapest way to stay above the action.', price_per_night: 42, rating: 8.6 },
-        { name: 'Brown\'s Downtown', neighbourhood: 'Baixa', vibe: 'Boutique 4-star', description: 'A 4-star half a block from Praça do Comércio — small rooms, big breakfast, river view.', price_per_night: 115, rating: 8.8 },
-        { name: 'Memmo Alfama', neighbourhood: 'Alfama', vibe: 'Rooftop pool · Tagus view', description: 'A tiny rooftop infinity pool with the best view in Alfama — old wood, blue tiles.', price_per_night: 195, rating: 9.2 },
-        { name: 'Hotel Britania Art Deco', neighbourhood: 'Avenida', vibe: 'Heritage 4-star', description: 'A 1944 building untouched since — wooden lifts, the marble bar, full Portuguese breakfast.', price_per_night: 165, rating: 9.0 },
-        { name: 'Santiago de Alfama', neighbourhood: 'Alfama', vibe: 'Boutique · 19 rooms', description: '19th-century palace, 19 rooms, hand-painted tiles. Calmest hotel in the old quarter.', price_per_night: 285, rating: 9.3 },
-        { name: 'Bairro Alto Hotel', neighbourhood: 'Chiado', vibe: '5-star · rooftop bar', description: 'The Chiado address — pink-marble lobby, the BA Restaurant, sunset rooftop bar.', price_per_night: 410, rating: 9.2 },
-        { name: 'Palácio Belmonte', neighbourhood: 'Castelo', vibe: 'Private palace · 10 suites', description: 'A 15th-century palace inside the Castelo de São Jorge walls — only ten suites, no children.', price_per_night: 720, rating: 9.6 }
-      ],
       activities: [
         { name: 'Tram 28 + Alfama walking tour', category: 'Tour', vibe: 'The yellow tram done right', description: 'Board Tram 28 at 8:30am to skip the crowds, then walk Alfama with a local guide.', price_per_person: 35, duration: '3 hours' },
         { name: 'Pastéis de Belém + Jerónimos', category: 'Food', vibe: 'The original custard tart', description: 'Skip the queue at Pastéis de Belém and visit Jerónimos Monastery — UNESCO + €1.30 pastries.', price_per_person: 28, duration: '3 hours' },
@@ -11568,16 +11489,6 @@
       ]
     },
     Budapest: {
-      hotels: [
-        { name: 'Maverick City Lodge', neighbourhood: 'District V', vibe: '€20 dorm · cheapest', description: 'Hostel dorm in a 19th-century building five minutes from the river. Free walking tour at 10am.', price_per_night: 22, rating: 8.7 },
-        { name: 'Wombat\'s Budapest', neighbourhood: 'Jewish Quarter', vibe: 'Hostel · ruin-bar district', description: 'Within walking distance of every ruin bar — free coffee, big breakfast, bike rental.', price_per_night: 28, rating: 8.8 },
-        { name: 'Brody House', neighbourhood: 'Palace Quarter', vibe: 'Boutique · 11 art rooms', description: 'A members\' club + boutique in a 19th-century mansion. Each room curated by a local artist.', price_per_night: 92, rating: 9.0 },
-        { name: 'Hotel Rum Budapest', neighbourhood: 'District V', vibe: 'Industrial boutique', description: 'Concrete-and-brass design hotel a block from the Danube — rooftop bar with parliament view.', price_per_night: 115, rating: 9.1 },
-        { name: 'Aria Hotel', neighbourhood: 'Basilica', vibe: 'Music-themed 5-star', description: 'Each floor has a musical theme — High Note Skybar above with parliament dome view.', price_per_night: 245, rating: 9.4 },
-        { name: 'The Ritz-Carlton', neighbourhood: 'Erzsébet Square', vibe: 'Heritage 5-star', description: 'Insurance palace turned Ritz — domed lobby, Spago restaurant, walking distance to everything.', price_per_night: 380, rating: 9.3 },
-        { name: 'Párisi Udvar', neighbourhood: 'District V', vibe: 'Art Nouveau palace', description: 'A 1909 shopping arcade transformed into a Hyatt — the lobby alone is worth a visit.', price_per_night: 295, rating: 9.3 },
-        { name: 'Four Seasons Gresham Palace', neighbourhood: 'Chain Bridge', vibe: 'Best address in Budapest', description: 'The Art Nouveau gem on Roosevelt Square — Chain Bridge view, Kollázs restaurant.', price_per_night: 580, rating: 9.6 }
-      ],
       activities: [
         { name: 'Széchenyi Thermal Baths', category: 'Wellness', vibe: 'Yellow neo-baroque baths', description: 'The famous yellow bathhouse — three outdoor pools, 15 indoor, locals playing chess in the water.', price_per_person: 28, duration: '3 hours' },
         { name: 'Ruin bar crawl · Jewish Quarter', category: 'Nightlife', vibe: 'Szimpla + Mazel Tov + Instant', description: 'Three of the city\'s ruin bars in one night — abandoned buildings filled with bicycles and beer.', price_per_person: 35, duration: '4 hours' },
@@ -11602,16 +11513,6 @@
       ]
     },
     Prague: {
-      hotels: [
-        { name: 'Sophie\'s Hostel', neighbourhood: 'Vinohrady', vibe: '€18 dorm · local quarter', description: 'A renovated apartment block in cool-residential Vinohrady — five tram stops from the centre.', price_per_night: 18, rating: 8.6 },
-        { name: 'MOOo Apartments', neighbourhood: 'Old Town', vibe: 'Self-check-in studios', description: 'Cheap design studios with kitchenettes — 30 seconds from the Astronomical Clock.', price_per_night: 65, rating: 8.7 },
-        { name: 'Hotel Josef', neighbourhood: 'Old Town', vibe: 'Glass-and-white design', description: 'Eva Jiřičná\'s glass-staircase hotel — minimalist white rooms, courtyard breakfast.', price_per_night: 125, rating: 9.0 },
-        { name: 'BoHo Prague Hotel', neighbourhood: 'New Town', vibe: 'Boutique · spa', description: 'Industrial-loft boutique with a small spa — sauna, hot tub, 8-minute walk to Wenceslas Square.', price_per_night: 145, rating: 9.1 },
-        { name: 'The Emblem Hotel', neighbourhood: 'Old Town', vibe: 'Art-filled boutique', description: 'Original art in every room, a rooftop spa, the M Lounge restaurant. Near Týn Church.', price_per_night: 215, rating: 9.2 },
-        { name: 'Pytloun Boutique', neighbourhood: 'Lesser Town', vibe: 'Below the Castle', description: 'A baroque house at the foot of Prague Castle — quiet street, garden, beam-ceiling rooms.', price_per_night: 175, rating: 9.0 },
-        { name: 'Augustine, a Luxury Collection', neighbourhood: 'Lesser Town', vibe: '5-star inside a monastery', description: 'A working Augustinian monastery turned hotel — vaulted lobby, monk-brewed beer in the bar.', price_per_night: 385, rating: 9.3 },
-        { name: 'Four Seasons Prague', neighbourhood: 'Riverfront', vibe: 'Three buildings · 5-star', description: 'Three connected historic buildings on the Vltava — Castle view, CottoCrudo restaurant.', price_per_night: 520, rating: 9.5 }
-      ],
       activities: [
         { name: 'Castle Quarter walking tour', category: 'Cultural', vibe: 'Prague Castle · St Vitus · Golden Lane', description: 'The complete Castle complex with a guide — three hours, all entries included.', price_per_person: 38, duration: '3 hours' },
         { name: 'Charles Bridge sunrise', category: 'Cultural', vibe: 'Free · empty by 7am', description: 'The 14th-century bridge before the crowds — locals jog past, the river is mist.', price_per_person: 0, duration: '1 hour' },
@@ -11636,16 +11537,6 @@
       ]
     },
     Krakow: {
-      hotels: [
-        { name: 'Greg & Tom Hostel', neighbourhood: 'Old Town', vibe: '€15 dorm · breakfast included', description: 'Eight beds per room, dinner included three nights a week — cheapest in the centre.', price_per_night: 16, rating: 8.7 },
-        { name: 'Hostel Tara', neighbourhood: 'Kazimierz', vibe: 'Jewish Quarter · private rooms', description: 'A small townhouse hostel in Kazimierz — private rooms for €40, great breakfast.', price_per_night: 25, rating: 8.8 },
-        { name: 'Bonerowski Palace', neighbourhood: 'Main Square', vibe: '4-star on the Rynek', description: 'A 14th-century burgher\'s palace facing the Cloth Hall — frescoed ceilings, four-poster beds.', price_per_night: 110, rating: 9.0 },
-        { name: 'Hotel Stary', neighbourhood: 'Old Town', vibe: 'Boutique 5-star · spa', description: 'A 13th-century building with a Roman-style basement spa pool — three minutes from the Cloth Hall.', price_per_night: 195, rating: 9.2 },
-        { name: 'Pugetów Boutique', neighbourhood: 'Old Town', vibe: 'Small boutique · 6 rooms', description: 'A neo-Renaissance palace converted to six suites — Szymon\'s Restaurant in the cellar.', price_per_night: 165, rating: 9.1 },
-        { name: 'Hotel Copernicus', neighbourhood: 'Kanonicza Street', vibe: 'Heritage on the Royal Route', description: 'The street Pope John Paul II walked — frescoed ceilings, rooftop pool with Wawel view.', price_per_night: 285, rating: 9.3 },
-        { name: 'Sheraton Grand Krakow', neighbourhood: 'Wawel-adjacent', vibe: 'Riverside 5-star', description: 'A modern 5-star on the Vistula with rooftop bar — best Wawel Castle view from the rooms.', price_per_night: 175, rating: 9.0 },
-        { name: 'Hotel Pod Różą', neighbourhood: 'Floriańska', vibe: '14th-century palace', description: 'Krakow\'s oldest hotel — Liszt, Balzac and Tsar Alexander I have all slept here.', price_per_night: 215, rating: 9.2 }
-      ],
       activities: [
         { name: 'Auschwitz-Birkenau day trip', category: 'Cultural', vibe: 'The memorial · half a day', description: 'A 90-minute drive from Krakow — book the morning guided tour, English at 10:30 and 12:00.', price_per_person: 55, duration: '7 hours' },
         { name: 'Wawel Castle + dragon\'s den', category: 'Cultural', vibe: 'Royal castle · cathedral', description: 'The Polish royal castle on the hill — state rooms, cathedral, a real dragon-themed sculpture.', price_per_person: 18, duration: '3 hours' },
@@ -11670,16 +11561,6 @@
       ]
     },
     Naples: {
-      hotels: [
-        { name: 'La Controra Hostel', neighbourhood: 'Vomero', vibe: '€20 dorm · funicular ride', description: 'A relaxed Vomero hostel — funicular to the Centro Storico in 7 minutes, free breakfast.', price_per_night: 22, rating: 8.5 },
-        { name: 'Hostel of the Sun', neighbourhood: 'Centro Storico', vibe: 'Right in the alleys', description: 'Cheapest beds in the historic centre — graffiti on the walls, pizza next door.', price_per_night: 25, rating: 8.7 },
-        { name: 'Decumani Hotel de Charme', neighbourhood: 'Spaccanapoli', vibe: 'Frescoed palace · 28 rooms', description: 'A 17th-century palace on Spaccanapoli — original frescoes, marble staircase, terrace view of the dome of Gesù Nuovo.', price_per_night: 115, rating: 9.0 },
-        { name: 'B&B Cappella Vecchia 11', neighbourhood: 'Chiaia', vibe: 'Family B&B · seafront', description: 'A 6-room B&B run by the Quadrelli family — Naples\' best breakfast (sfogliatella included).', price_per_night: 95, rating: 9.2 },
-        { name: 'Atelier Inès Art Hotel', neighbourhood: 'Sanità', vibe: 'Working artists\' palace', description: 'A neighbourhood palace doubling as an art studio — local artist suites, view of Capodimonte.', price_per_night: 145, rating: 9.0 },
-        { name: 'Romeo Hotel', neighbourhood: 'Port-side', vibe: 'Design hotel · rooftop pool', description: 'Renzo Piano-designed near the cruise port — rooftop infinity pool with Vesuvius view.', price_per_night: 195, rating: 9.1 },
-        { name: 'Grand Hotel Vesuvio', neighbourhood: 'Lungomare', vibe: 'Seafront 5-star · Caruso\'s hotel', description: 'Caruso lived and died here. Sea view, the Caruso Roof Garden restaurant. Old-school grand.', price_per_night: 285, rating: 9.2 },
-        { name: 'Eurostars Excelsior', neighbourhood: 'Lungomare', vibe: 'Bay view · 5-star · classic', description: 'The most photographed sea view in Naples — every room faces the Castel dell\'Ovo and the bay.', price_per_night: 240, rating: 9.0 }
-      ],
       activities: [
         { name: 'Pompeii half-day with archaeologist', category: 'Cultural', vibe: 'The ruins · 35-min train', description: 'Circumvesuviana train + guided tour with an archaeologist — three hours on site, all included.', price_per_person: 48, duration: '6 hours' },
         { name: 'Pizza tour of Centro Storico', category: 'Food', vibe: 'Three pizzerias · three pies', description: 'Sorbillo, Di Matteo, and a hidden Margherita spot — eat standing, no reservations needed.', price_per_person: 35, duration: '3 hours' },
@@ -11704,16 +11585,6 @@
       ]
     },
     Porto: {
-      hotels: [
-        { name: 'Gallery Hostel', neighbourhood: 'Cedofeita', vibe: '€18 dorm · art-gallery hostel', description: 'A hostel with rotating art exhibitions — gallery owners run it, fancy breakfast included.', price_per_night: 20, rating: 8.7 },
-        { name: 'The House of Sandeman', neighbourhood: 'Vila Nova de Gaia', vibe: 'Hostel inside a port-wine cellar', description: 'Sleep above an active port-wine cellar across the river — port tasting at check-in.', price_per_night: 28, rating: 8.9 },
-        { name: 'Pestana Vintage Porto', neighbourhood: 'Ribeira', vibe: 'River-side · 16 historic buildings', description: 'Sixteen 17th- and 18th-century buildings on the Ribeira waterfront, all interconnected.', price_per_night: 145, rating: 9.0 },
-        { name: 'PortoBay Flores', neighbourhood: 'Rua das Flores', vibe: 'Boutique on the flower street', description: 'A 16th-century palace on Porto\'s prettiest street — original tile floors, courtyard restaurant.', price_per_night: 175, rating: 9.1 },
-        { name: 'The Yeatman', neighbourhood: 'Vila Nova de Gaia', vibe: 'Wine resort · two Michelin stars', description: 'Two-Michelin-star restaurant + 25-metre infinity pool with the Douro view — the splurge pick.', price_per_night: 365, rating: 9.4 },
-        { name: 'Torel Avantgarde', neighbourhood: 'Massarelos', vibe: 'Art-themed boutique · river view', description: 'Each room is themed around a Portuguese artist — heated outdoor pool, river panorama.', price_per_night: 215, rating: 9.2 },
-        { name: '1872 River House', neighbourhood: 'Ribeira', vibe: 'B&B · 9 rooms on the water', description: 'A nine-room B&B with windows opening directly over the Douro — breakfast is on the river.', price_per_night: 125, rating: 9.1 },
-        { name: 'Casa do Conto', neighbourhood: 'Boavista', vibe: 'Design hotel · 8 rooms', description: 'A modernist concrete-and-glass house — eight rooms, each ceiling printed with a different story.', price_per_night: 185, rating: 9.2 }
-      ],
       activities: [
         { name: 'Port wine cellar tasting', category: 'Food', vibe: 'Three cellars · five tastings', description: 'Cross Dom Luís Bridge to Gaia — Taylor\'s, Sandeman and Cálem in one afternoon.', price_per_person: 38, duration: '3 hours' },
         { name: 'Douro Valley wine day', category: 'Food', vibe: 'River cruise · vineyard lunch', description: 'Train to Pinhão, two-hour wine cruise on the Douro, lunch at a vineyard. The day everyone remembers.', price_per_person: 95, duration: '10 hours' },
@@ -11738,16 +11609,6 @@
       ]
     },
     Paris: {
-      hotels: [
-        { name: 'Generator Paris', neighbourhood: 'Canal Saint-Martin', vibe: '€35 dorm · canal terrace', description: 'A hostel with a rooftop terrace overlooking the canal — cheapest design beds in Paris.', price_per_night: 38, rating: 8.6 },
-        { name: 'Hôtel Jeanne d\'Arc', neighbourhood: 'Marais', vibe: 'Family-run budget · 35 rooms', description: 'A no-frills 2-star in the Marais — singles from €90, breakfast €10, no lift but charming.', price_per_night: 105, rating: 8.4 },
-        { name: 'Hôtel des Grands Boulevards', neighbourhood: '2nd · Montorgueil', vibe: 'Romantic boutique', description: 'Toile-de-Jouy wallpaper, a glass-roofed restaurant, the prettiest small hotel under €200.', price_per_night: 175, rating: 9.1 },
-        { name: 'Le Pigalle', neighbourhood: '9th · SoPi', vibe: 'Music-scene boutique', description: 'A music-and-art hotel in newly cool South Pigalle — DJ booth in the lobby, vinyl in the rooms.', price_per_night: 195, rating: 9.0 },
-        { name: 'Hôtel National des Arts et Métiers', neighbourhood: '3rd · Le Haut Marais', vibe: 'Design hotel · rooftop bar', description: 'Concrete-and-velvet design hotel — Herringbone restaurant, Sahbi rooftop bar with skyline view.', price_per_night: 245, rating: 9.1 },
-        { name: 'Hôtel Particulier Montmartre', neighbourhood: 'Montmartre', vibe: 'Private mansion · 5 rooms', description: 'A hidden 5-suite mansion behind iron gates — the secret garden of Montmartre.', price_per_night: 415, rating: 9.3 },
-        { name: 'Le Bristol Paris', neighbourhood: '8th · Faubourg-Saint-Honoré', vibe: 'Palace hotel · 5-star', description: 'A Palace-classified hotel — Epicure restaurant (3 Michelin stars), rooftop pool with Sacré-Cœur view.', price_per_night: 1250, rating: 9.5 },
-        { name: 'Hôtel de Crillon', neighbourhood: 'Place de la Concorde', vibe: 'Palace · river-adjacent', description: 'An 18th-century palace facing the Concorde — Karl Lagerfeld designed two suites, marble baths everywhere.', price_per_night: 1480, rating: 9.6 }
-      ],
       activities: [
         { name: 'Louvre at 18:00 (free or quiet)', category: 'Cultural', vibe: 'Wednesday/Friday late opening', description: 'The Louvre opens until 21:45 Wed/Fri — get the 18:00 slot and have the Mona Lisa nearly alone.', price_per_person: 22, duration: '3 hours' },
         { name: 'Musée d\'Orsay + Tuileries lunch', category: 'Cultural', vibe: 'Impressionists + a sandwich', description: 'Reserve a 10am slot at d\'Orsay, then a baguette + cheese in the Jardin des Tuileries.', price_per_person: 24, duration: '4 hours' },
@@ -11772,16 +11633,6 @@
       ]
     },
     Milan: {
-      hotels: [
-        { name: 'Babila Hostel', neighbourhood: 'Brera-adjacent', vibe: '€30 dorm · rooftop bar', description: 'A modern hostel five minutes from Brera — rooftop bar with a Duomo glimpse, free dinner Tuesdays.', price_per_night: 32, rating: 8.6 },
-        { name: 'Ostello Bello Grande', neighbourhood: 'Stazione Centrale', vibe: 'Hostel · social · breakfast', description: 'The flagship Ostello Bello near Centrale — chess room, free spaghetti night, courtyard.', price_per_night: 42, rating: 8.8 },
-        { name: 'Room Mate Giulia', neighbourhood: 'Duomo', vibe: 'Boutique · steps from the Galleria', description: 'A 4-star a block from the Galleria Vittorio Emanuele — bright, design-led, breakfast on the rooftop.', price_per_night: 155, rating: 9.0 },
-        { name: 'Senato Hotel Milano', neighbourhood: 'Brera', vibe: 'Boutique · courtyard pool', description: 'A 43-room boutique with a glass-and-water courtyard pool. Brera at the doorstep.', price_per_night: 195, rating: 9.2 },
-        { name: 'Hotel VIU Milan', neighbourhood: 'Porta Volta', vibe: 'Design hotel · rooftop pool', description: 'Rooftop infinity pool with full skyline view — the best non-luxury rooftop in the city.', price_per_night: 285, rating: 9.3 },
-        { name: 'Mandarin Oriental Milan', neighbourhood: 'Quadrilatero', vibe: '5-star · two Michelin stars', description: 'In the fashion quadrilateral — Seta restaurant (two Michelin stars), spa in the cellar.', price_per_night: 685, rating: 9.4 },
-        { name: 'Bulgari Hotel Milano', neighbourhood: 'Brera', vibe: '5-star · private garden', description: 'A private 4000m² garden behind a 17th-century palace — the calmest 5-star in Milan.', price_per_night: 1085, rating: 9.5 },
-        { name: 'Four Seasons Hotel Milano', neighbourhood: 'Via Gesù', vibe: 'Convent-turned-Palace', description: 'A 15th-century convent restored into a Four Seasons — the cloisters, the Stilla restaurant.', price_per_night: 825, rating: 9.5 }
-      ],
       activities: [
         { name: 'Duomo + Rooftop walk', category: 'Cultural', vibe: 'On top of the cathedral spires', description: 'The Duomo cathedral interior + a 15-minute walk between the spires on the roof. Book online.', price_per_person: 22, duration: '2 hours' },
         { name: 'Last Supper at Santa Maria delle Grazie', category: 'Cultural', vibe: '15 minutes · book 3 months ahead', description: 'Leonardo\'s fresco in a refectory. Slots are 15 minutes, sold out 90 days ahead. Worth the planning.', price_per_person: 15, duration: '1 hour' },
@@ -11806,16 +11657,6 @@
       ]
     },
     Vienna: {
-      hotels: [
-        { name: 'Wombat\'s Naschmarkt', neighbourhood: 'Naschmarkt', vibe: '€25 dorm · market-side', description: 'A bright hostel above Vienna\'s biggest food market — breakfast is a 10-step walk to a stall.', price_per_night: 28, rating: 8.7 },
-        { name: 'Hotel Beethoven', neighbourhood: '6th · Mariahilf', vibe: 'Family-run 4-star', description: 'A musical-themed hotel near Naschmarkt — antique pianos in the lobby, big breakfasts.', price_per_night: 115, rating: 9.0 },
-        { name: 'Hotel Sans Souci Wien', neighbourhood: 'MuseumsQuartier', vibe: 'Art-filled boutique 5-star', description: 'Roy Lichtenstein and Damien Hirst pieces in the lobby — small indoor pool, La Véranda restaurant.', price_per_night: 215, rating: 9.2 },
-        { name: 'The Guesthouse Vienna', neighbourhood: '1st · Albertina', vibe: 'Conran-designed boutique', description: 'A Terence Conran-designed 39-room hotel a block from the Albertina — beech wood, plush velvet.', price_per_night: 245, rating: 9.3 },
-        { name: 'Hotel Altstadt Vienna', neighbourhood: '7th · Spittelberg', vibe: 'Art-collector\'s house · 70 rooms', description: 'Otto Wagner suites, a private art collection — the calmest stay near the MuseumsQuartier.', price_per_night: 185, rating: 9.2 },
-        { name: 'Hotel Sacher Wien', neighbourhood: 'Opera', vibe: 'Heritage 5-star · the original torte', description: 'The hotel that invented the Sachertorte — opera-facing rooms, the original recipe in the café.', price_per_night: 485, rating: 9.4 },
-        { name: 'Park Hyatt Vienna', neighbourhood: 'Goldenes Quartier', vibe: 'Former bank · marble baths', description: 'A converted 1915 bank — the marble vault is now the spa, rooms have 4-metre ceilings.', price_per_night: 625, rating: 9.5 },
-        { name: 'Hotel Imperial', neighbourhood: 'Ringstrasse', vibe: '5-star palace · Ringstrasse', description: 'The Habsburg-era palace where heads of state stay — original frescoes, crystal chandeliers.', price_per_night: 685, rating: 9.4 }
-      ],
       activities: [
         { name: 'Schönbrunn Palace + Gardens', category: 'Cultural', vibe: 'The Habsburg summer palace', description: 'The Imperial Apartments (Grand Tour), then the gardens — Gloriette hill for the city panorama.', price_per_person: 28, duration: '4 hours' },
         { name: 'Belvedere · Klimt\'s The Kiss', category: 'Cultural', vibe: '24 Klimts in one museum', description: 'The Upper Belvedere has The Kiss, plus Schiele, Kokoschka. Buy the timed slot ticket.', price_per_person: 17, duration: '2.5 hours' },
@@ -11840,16 +11681,6 @@
       ]
     },
     Athens: {
-      hotels: [
-        { name: 'Athens Backpackers', neighbourhood: 'Plaka', vibe: '€22 dorm · Acropolis-side', description: 'A scrappy hostel at the foot of the Acropolis — rooftop bar with the Parthenon view at sunset.', price_per_night: 24, rating: 8.6 },
-        { name: 'City Circus Athens', neighbourhood: 'Psyrri', vibe: 'Design hostel · neoclassical', description: 'A pink-walled neoclassical building in Psyrri — cheapest design beds in the city.', price_per_night: 32, rating: 8.7 },
-        { name: 'Coco-Mat Athens BC', neighbourhood: 'Makrygianni', vibe: 'Sustainable boutique', description: 'A 41-room hotel a block from the Acropolis Museum — natural-fibre beds, rooftop sunset bar.', price_per_night: 145, rating: 9.0 },
-        { name: 'A77 Suites', neighbourhood: 'Plaka', vibe: 'Boutique · 7 suites', description: 'Seven suites in a restored 1860 mansion — Acropolis-view balconies, breakfast on the terrace.', price_per_night: 215, rating: 9.3 },
-        { name: 'Electra Metropolis', neighbourhood: 'Syntagma', vibe: 'Rooftop pool · Parthenon view', description: 'A 9-floor hotel with a roof pool aligned for the Parthenon sunset shot. Book a corner suite.', price_per_night: 225, rating: 9.2 },
-        { name: 'The Modernist Athens', neighbourhood: 'Kolonaki', vibe: 'Design hotel · 38 rooms', description: 'A converted 1959 office tower — Bauhaus interiors, Acropolis view from upper rooms.', price_per_night: 195, rating: 9.1 },
-        { name: 'Hotel Grande Bretagne', neighbourhood: 'Syntagma', vibe: 'Heritage 5-star · GB Roof Garden', description: 'The Athens grand hotel since 1874 — the GB Roof Garden restaurant has the most famous view in the city.', price_per_night: 485, rating: 9.4 },
-        { name: 'King George Athens', neighbourhood: 'Syntagma', vibe: '5-star · marble baths', description: 'Sister to the Grande Bretagne but smaller and more boutique — Tudor Hall restaurant on the roof.', price_per_night: 395, rating: 9.3 }
-      ],
       activities: [
         { name: 'Acropolis + Acropolis Museum combo', category: 'Cultural', vibe: 'The hill + the museum below', description: 'Go to the Acropolis at 8am opening, then the Acropolis Museum across the street for lunch.', price_per_person: 35, duration: '5 hours' },
         { name: 'Plaka + Anafiotika walking tour', category: 'Cultural', vibe: 'Athens\' Cycladic neighbourhood', description: 'The whitewashed Anafiotika quarter built by Cycladic islanders — feels like a Greek island, in Athens.', price_per_person: 25, duration: '2 hours' },
@@ -11874,16 +11705,6 @@
       ]
     },
     Copenhagen: {
-      hotels: [
-        { name: 'Generator Copenhagen', neighbourhood: 'Indre By', vibe: '€38 dorm · central', description: 'A hostel five minutes from Nørreport station — bar in the lobby, decent breakfast included.', price_per_night: 42, rating: 8.5 },
-        { name: 'CABINN Copenhagen', neighbourhood: 'Vesterbro', vibe: 'Compact budget hotel', description: 'Cheap private rooms (€85 for two) in tiny ship-cabin-style rooms. Five minutes from Tivoli.', price_per_night: 85, rating: 8.4 },
-        { name: 'Hotel Sanders', neighbourhood: 'Kongens Nytorv', vibe: 'Theatre-quarter boutique', description: 'A 54-room boutique by the Royal Theatre — heated palm-tree rooftop, members-only feel.', price_per_night: 285, rating: 9.3 },
-        { name: 'Hotel SP34', neighbourhood: 'Latin Quarter', vibe: 'Design hotel · 5 honesty bars', description: 'A Brøchner Hotel — five honesty bars throughout the building, free wine hour every evening.', price_per_night: 215, rating: 9.1 },
-        { name: 'Nimb Hotel', neighbourhood: 'Tivoli Gardens', vibe: 'Moorish palace · Tivoli view', description: 'A 38-room palace at the gates of Tivoli Gardens — three restaurants, a Michelin-starred dairy.', price_per_night: 395, rating: 9.3 },
-        { name: 'Hotel D\'Angleterre', neighbourhood: 'Kongens Nytorv', vibe: 'Heritage 5-star · since 1755', description: 'The most famous hotel in Scandinavia — Marchal restaurant (Michelin star), classical white facade.', price_per_night: 645, rating: 9.4 },
-        { name: 'Manon Les Suites', neighbourhood: 'Nørreport', vibe: 'Indoor jungle pool', description: 'A 5-star with an indoor pool surrounded by tropical plants — the Instagram pool of Copenhagen.', price_per_night: 285, rating: 9.2 },
-        { name: 'Villa Copenhagen', neighbourhood: 'Tietgensgade', vibe: '5-star in old post office', description: 'A 19th-century post office turned 5-star — heated rooftop pool open year-round.', price_per_night: 365, rating: 9.3 }
-      ],
       activities: [
         { name: 'Nyhavn + canal tour', category: 'Cultural', vibe: '60-min boat · the postcard harbour', description: 'An hour on the canals — Nyhavn, the Little Mermaid, the Black Diamond library.', price_per_person: 16, duration: '1.5 hours' },
         { name: 'Tivoli Gardens evening', category: 'Cultural', vibe: 'Oldest amusement park · light show', description: 'The 1843 amusement park lit up at night — the wooden Roller Coaster (1914) and the Tivoli light parade.', price_per_person: 22, duration: '4 hours' },
@@ -11908,16 +11729,6 @@
       ]
     },
     Dubrovnik: {
-      hotels: [
-        { name: 'Old Town Hostel Dubrovnik', neighbourhood: 'Old Town', vibe: '€30 dorm · inside the walls', description: 'A hostel inside the medieval walls — rooftop terrace, four-bed dorms, breakfast on the terrace.', price_per_night: 32, rating: 8.6 },
-        { name: 'Stari Grad Hotel', neighbourhood: 'Old Town', vibe: 'Boutique · 7 rooms', description: 'A seven-room boutique behind the Sponza Palace — rooftop terrace with the bell-tower view.', price_per_night: 165, rating: 9.0 },
-        { name: 'Hotel Berkeley', neighbourhood: 'Lapad', vibe: 'Family-run · pool · 30 rooms', description: 'A family-run hotel in Lapad bay (10 min bus from Old Town) — pool, cheaper than the walls.', price_per_night: 115, rating: 9.1 },
-        { name: 'Villa Dubrovnik', neighbourhood: 'St Jakov', vibe: 'Cliffside 5-star · sea view', description: 'A 56-suite cliffside hotel south of the Old Town — every room has a sea-view balcony.', price_per_night: 425, rating: 9.3 },
-        { name: 'Hotel Excelsior', neighbourhood: 'Ploče', vibe: '5-star · Old Town view · pool', description: 'A 5-star with the Old Town silhouette across the bay — sea-water pool, two restaurants.', price_per_night: 385, rating: 9.2 },
-        { name: 'Hotel More', neighbourhood: 'Lapad', vibe: 'Cave-bar 5-star', description: 'A 5-star with an underground cave bar inside the cliff — Adriatic view, infinity pool.', price_per_night: 295, rating: 9.2 },
-        { name: 'Boutique Hotel Kazbek', neighbourhood: 'Lapad', vibe: '16th-century summer villa', description: 'A 16th-century Dubrovnik nobles\' villa — eight rooms, pool, sea-view terraces.', price_per_night: 215, rating: 9.3 },
-        { name: 'Hotel Lero', neighbourhood: 'Lapad', vibe: 'Mid-range 4-star · pool', description: 'A reliable 4-star in Lapad with a pool — bus 4 to the Old Town in 10 minutes.', price_per_night: 125, rating: 8.8 }
-      ],
       activities: [
         { name: 'Walk the City Walls', category: 'Cultural', vibe: 'The 2 km medieval circuit', description: 'A 1.5-hour walk on the 25-metre-high walls — go at 8am or 17:00 to avoid heat and crowds.', price_per_person: 38, duration: '2 hours' },
         { name: 'Lokrum Island ferry', category: 'Beach', vibe: '15-min boat · botanical garden', description: 'A 15-minute ferry to a car-free island — Iron Throne replica, salt lake, peacocks roaming.', price_per_person: 28, duration: '4 hours' },
@@ -11942,16 +11753,6 @@
       ]
     },
     Amalfi: {
-      hotels: [
-        { name: 'Pensione Casa del Mare', neighbourhood: 'Praiano', vibe: 'Family pension · €80 sea view', description: 'A nine-room family-run pension in cheap-Amalfi Praiano — every room faces the sea.', price_per_night: 92, rating: 9.0 },
-        { name: 'Hotel Marincanto', neighbourhood: 'Positano', vibe: 'Cliffside 4-star · steps to the beach', description: 'A 30-room cliffside hotel — straight stairs down to Spiaggia Grande, breakfast on the terrace.', price_per_night: 245, rating: 9.1 },
-        { name: 'Hotel Santa Caterina', neighbourhood: 'Amalfi', vibe: '5-star · sea-water lift to the beach', description: 'A family-owned 5-star on the cliff — a lift cut through the rock takes you to a private beach club.', price_per_night: 685, rating: 9.4 },
-        { name: 'Le Sirenuse', neighbourhood: 'Positano', vibe: '5-star · pink Positano palazzo', description: 'The iconic pink palace of Positano — La Sponda restaurant (one Michelin star), Franco\'s Bar.', price_per_night: 1085, rating: 9.5 },
-        { name: 'Hotel Caruso', neighbourhood: 'Ravello', vibe: 'Belmond · Ravello sky-pool', description: 'A 1000-foot-up infinity pool that looks like it falls into the sea — the most photographed pool in Italy.', price_per_night: 985, rating: 9.6 },
-        { name: 'Hotel Villa Cimbrone', neighbourhood: 'Ravello', vibe: 'Historic villa · Terrace of Infinity', description: 'A 12th-century villa with the Terrazza dell\'Infinito — Greta Garbo hid here in 1938.', price_per_night: 685, rating: 9.3 },
-        { name: 'Casa Angelina', neighbourhood: 'Praiano', vibe: 'Adults-only · white design', description: 'A white-on-white design hotel in Praiano — adults-only, sea-view pool, glass-walled showers.', price_per_night: 545, rating: 9.4 },
-        { name: 'Hotel Margherita', neighbourhood: 'Praiano', vibe: 'Cheaper · 27 rooms · pool', description: 'A 27-room 4-star in the cheaper Praiano — pool, sea view, restaurant on the cliff.', price_per_night: 215, rating: 9.0 }
-      ],
       activities: [
         { name: 'Path of the Gods hike', category: 'Outdoor', vibe: '4-hour cliff hike · Bomerano to Nocelle', description: 'The famous Sentiero degli Dei — Bomerano to Nocelle, 7 km, the most beautiful coastal hike in Italy.', price_per_person: 0, duration: '5 hours' },
         { name: 'Capri private boat day', category: 'Beach', vibe: 'Skipper · 8 hours · €600 boat', description: 'A skippered gozzo boat to Capri — Blue Grotto, Faraglioni rocks, lunch in Marina Piccola.', price_per_person: 145, duration: '8 hours' },
@@ -11976,16 +11777,6 @@
       ]
     },
     Santorini: {
-      hotels: [
-        { name: 'Caveland Hostel', neighbourhood: 'Karterados', vibe: '€25 dorm · in a cave', description: 'A converted winery in Karterados — dorms in cave rooms, hammock terrace, ten minutes to Fira.', price_per_night: 28, rating: 8.7 },
-        { name: 'Hotel Anteliz Suites', neighbourhood: 'Fira', vibe: 'Cliffside suites · caldera view', description: 'A 14-suite hotel on the Fira cliff — every suite has a caldera-view jacuzzi terrace.', price_per_night: 285, rating: 9.2 },
-        { name: 'Astra Suites', neighbourhood: 'Imerovigli', vibe: 'Cycladic suites · infinity pool', description: 'A 26-suite Cycladic hotel in Imerovigli — the village with the best sunset view on the island.', price_per_night: 445, rating: 9.3 },
-        { name: 'Grace Hotel Santorini', neighbourhood: 'Imerovigli', vibe: '5-star · 21 cliffside suites', description: 'Auberge Resorts\' 21-suite cliff hotel — the most-Instagrammed infinity pool on the island.', price_per_night: 985, rating: 9.5 },
-        { name: 'Mystique', neighbourhood: 'Oia', vibe: '5-star · Luxury Collection · cave suites', description: 'A 22-suite Luxury Collection in Oia — cave bar carved into the cliff, sunset-aligned suites.', price_per_night: 1145, rating: 9.6 },
-        { name: 'Canaves Oia Suites', neighbourhood: 'Oia', vibe: 'Cliffside · jacuzzis · sunset', description: 'A 17-suite hotel in Oia — heated outdoor jacuzzis with sunset views, two restaurants.', price_per_night: 685, rating: 9.4 },
-        { name: 'Andronis Boutique Hotel', neighbourhood: 'Oia', vibe: 'Suite + cave pool', description: 'A 23-suite Oia hotel with a saltwater infinity pool — Lycabettus restaurant, the famous sunset bar.', price_per_night: 785, rating: 9.5 },
-        { name: 'Vedema, a Luxury Collection', neighbourhood: 'Megalochori', vibe: '400-year-old village · 5-star', description: 'A 5-star inside a 400-year-old winery village in Megalochori — quieter side, vineyards, two pools.', price_per_night: 545, rating: 9.3 }
-      ],
       activities: [
         { name: 'Caldera catamaran sunset cruise', category: 'Beach', vibe: 'Hot springs · Red Beach · sunset', description: 'A 5-hour catamaran from Vlychada — hot springs swim, Red Beach, Indian Rock, sunset from the water.', price_per_person: 95, duration: '5 hours' },
         { name: 'Oia sunset walk', category: 'Cultural', vibe: 'Free · arrive 90 min early', description: 'The most-photographed sunset in Greece — get to the castle ruins by 18:30, leave by 21:00.', price_per_person: 0, duration: '2 hours' },
@@ -12010,16 +11801,6 @@
       ]
     },
     Mykonos: {
-      hotels: [
-        { name: 'Paraga Beach Hostel', neighbourhood: 'Paraga', vibe: '€40 dorm · steps from Scorpios', description: 'The only proper hostel on Mykonos — minutes from Paraga and Paradise beach clubs.', price_per_night: 45, rating: 8.5 },
-        { name: 'Greco Philia', neighbourhood: 'Platis Gialos', vibe: 'Family-run · €130 sea view', description: 'A 20-room family hotel in Platis Gialos — pool, free shuttle to town, beach in walking distance.', price_per_night: 145, rating: 8.9 },
-        { name: 'Belvedere Hotel', neighbourhood: 'Mykonos Town', vibe: 'Boutique 5-star · pool · town', description: 'A 5-star a block from Little Venice — Matsuhisa restaurant, infinity pool, town nightlife at the door.', price_per_night: 425, rating: 9.2 },
-        { name: 'Cavo Tagoo Mykonos', neighbourhood: 'Tagoo', vibe: '5-star · cliff-edge infinity pool', description: 'A cliff hotel between Mykonos Town and Tourlos — infinity pool flowing into the Aegean, Tagoo restaurant.', price_per_night: 985, rating: 9.4 },
-        { name: 'Bill & Coo Suites', neighbourhood: 'Megali Ammos', vibe: 'Adults-only · 32 suites', description: 'A 32-suite, adults-only design hotel — Beefbar restaurant, sunset cocktail terrace.', price_per_night: 685, rating: 9.4 },
-        { name: 'Mykonos Grand Hotel', neighbourhood: 'Agios Ioannis', vibe: '5-star · 107 rooms · sunset side', description: 'A 5-star on the sunset side of the island — three pools, beach below, Aegean Restaurant.', price_per_night: 545, rating: 9.1 },
-        { name: 'Kivotos Mykonos', neighbourhood: 'Ornos', vibe: 'Boutique 5-star · 38 rooms', description: 'A Cycladic 5-star in Ornos bay — seven dining venues, four pools, three beaches in walking distance.', price_per_night: 785, rating: 9.3 },
-        { name: 'Mykonos Princess Hotel', neighbourhood: 'Agios Stefanos', vibe: 'Mid-range 4-star · €180', description: 'A 4-star in Agios Stefanos with a sea view — bus to town in 10 minutes, two pools.', price_per_night: 195, rating: 9.0 }
-      ],
       activities: [
         { name: 'Scorpios Saturday', category: 'Beach', vibe: 'Beach club · DJ from 16:00', description: 'Mykonos\' most famous beach club on Paraga — book a sun-bed (€100), arrive at 14:00, leave at 21:00.', price_per_person: 115, duration: '7 hours' },
         { name: 'Delos archaeological site', category: 'Cultural', vibe: 'UNESCO ruins · 30-min ferry', description: 'A 30-minute ferry to the birthplace of Apollo — the most-significant Greek archaeological island.', price_per_person: 28, duration: '4 hours' },
@@ -12047,16 +11828,6 @@
     // DESTINATION EXPANSION — full cityProfiles for 17 top-tier cities
     // ============================================================
     London: {
-      hotels: [
-        { name: 'Generator London', neighbourhood: 'Russell Square', vibe: '£28 dorm · pod beds', description: 'Pod-style hostel in Bloomsbury — bar, free walking tours, the cheapest beds in zone 1.', price_per_night: 32, rating: 8.6 },
-        { name: 'YHA London Earl\'s Court', neighbourhood: 'Earl\'s Court', vibe: '£35 dorm · classic hostel', description: 'A Victorian townhouse turned hostel, breakfast included, ten minutes from Kensington museums.', price_per_night: 38, rating: 8.4 },
-        { name: 'Z Hotel Soho', neighbourhood: 'Soho', vibe: 'Micro-room · Soho door', description: 'Tiny well-designed rooms with the front door to Soho — clubs and theatres a block away.', price_per_night: 115, rating: 8.7 },
-        { name: 'The Hoxton Holborn', neighbourhood: 'Holborn', vibe: 'Boutique · lobby café', description: 'A buzzing lobby/café/bar that locals use as a co-working spot — well-priced rooms in central.', price_per_night: 175, rating: 9.0 },
-        { name: 'citizenM Tower of London', neighbourhood: 'Tower Hill', vibe: 'Design · skyline view', description: 'Compact rooms with floor-to-ceiling Tower-of-London views — playful lobby, late breakfast.', price_per_night: 185, rating: 9.0 },
-        { name: 'The Standard London', neighbourhood: 'King\'s Cross', vibe: 'Boutique · red lift', description: 'A repurposed 1970s council building opposite St Pancras — the rooftop bar is the point.', price_per_night: 285, rating: 9.1 },
-        { name: 'The Ned', neighbourhood: 'City', vibe: '5-star · seven restaurants', description: 'A 1924 bank turned hotel-and-club — gilt-everything lobby, seven restaurants in one building.', price_per_night: 480, rating: 9.2 },
-        { name: 'Claridge\'s', neighbourhood: 'Mayfair', vibe: 'Heritage 5-star · afternoon tea', description: 'The Art Deco grand dame — checkered marble lobby, the afternoon tea, the suite Audrey Hepburn slept in.', price_per_night: 890, rating: 9.5 }
-      ],
       activities: [
         { name: 'British Museum', category: 'Cultural', vibe: 'World history · free', description: 'Free, world-class, the Rosetta Stone and the Parthenon marbles in one afternoon.', price_per_person: 0, duration: '3 hours' },
         { name: 'Camden Market food crawl', category: 'Food', vibe: 'Street food · canalside', description: 'Sixty stalls along Regent\'s Canal — bao, paella, brisket bagels, eat your way down the towpath.', price_per_person: 25, duration: '2 hours' },
@@ -12081,16 +11852,6 @@
       ]
     },
     Rome: {
-      hotels: [
-        { name: 'The Yellow Hostel', neighbourhood: 'Termini', vibe: '€25 dorm · social bar', description: 'A backpacker classic with a busy bar — the cheapest bed in walking distance of the Vatican.', price_per_night: 28, rating: 8.4 },
-        { name: 'Generator Rome', neighbourhood: 'Castro Pretorio', vibe: '€35 dorm · design hostel', description: 'A polished hostel in a quiet pocket — bar that doubles as a co-working space, ten minutes to Termini.', price_per_night: 38, rating: 8.6 },
-        { name: 'Hotel San Anselmo', neighbourhood: 'Aventine', vibe: 'Boutique · garden', description: 'A 19th-century villa with a garden on the quiet side of the Aventine — orange-blossom in spring.', price_per_night: 145, rating: 9.0 },
-        { name: 'G-Rough', neighbourhood: 'Piazza Navona', vibe: 'Design · 10 suites', description: 'A 17th-century townhouse turned 10-suite hotel — modernist furniture, ten metres from Piazza Navona.', price_per_night: 245, rating: 9.2 },
-        { name: 'Hotel Vilòn', neighbourhood: 'Centro Storico', vibe: 'Boutique · 18 rooms', description: 'A renovated palazzo a block from the Spanish Steps — green velvet, a tiny garden, no children.', price_per_night: 320, rating: 9.4 },
-        { name: 'Hotel de Russie', neighbourhood: 'Piazza del Popolo', vibe: '5-star · terraced gardens', description: 'A Rocco Forte hotel with terraced gardens between Piazza del Popolo and the Spanish Steps.', price_per_night: 580, rating: 9.5 },
-        { name: 'Hotel Eden', neighbourhood: 'Via Veneto', vibe: 'Heritage 5-star · rooftop', description: 'Dorchester Collection — the rooftop has the postcard view of the city, the bar serves the best negroni.', price_per_night: 690, rating: 9.5 },
-        { name: 'Hassler Roma', neighbourhood: 'Spanish Steps', vibe: 'Heritage · top of the steps', description: 'The grande dame at the top of the Spanish Steps — Imàgo restaurant has the best terrace in Rome.', price_per_night: 720, rating: 9.4 }
-      ],
       activities: [
         { name: 'Colosseum + Roman Forum tour', category: 'Cultural', vibe: 'Skip the line · 3h', description: 'A skip-the-line ticket plus an archaeologist guide — Forum first, then the arena floor.', price_per_person: 65, duration: '3 hours' },
         { name: 'Vatican Museums + Sistine Chapel', category: 'Cultural', vibe: 'Early-entry · two hours', description: 'Early-entry skip-the-line — twenty minutes alone with the Sistine ceiling before the crowds.', price_per_person: 75, duration: '3 hours' },
@@ -12115,16 +11876,6 @@
       ]
     },
     Amsterdam: {
-      hotels: [
-        { name: 'Generator Amsterdam', neighbourhood: 'Oosterpark', vibe: '€28 dorm · social hostel', description: 'A converted university building near Oosterpark — bar, courtyard, cheapest beds in centre.', price_per_night: 32, rating: 8.6 },
-        { name: 'ClinkNOORD', neighbourhood: 'Noord', vibe: '€25 dorm · ferry-side', description: 'Across the IJ ferry from Centraal — quieter, with the EYE film museum next door.', price_per_night: 28, rating: 8.5 },
-        { name: 'The Hoxton Amsterdam', neighbourhood: 'Herengracht', vibe: 'Boutique · five canal houses', description: 'Five 17th-century canal houses joined into one hotel — Lotti\'s café in the lobby is open from 7am.', price_per_night: 195, rating: 9.1 },
-        { name: 'Pulitzer Amsterdam', neighbourhood: 'Prinsengracht', vibe: '25 canal houses · garden', description: 'Twenty-five canal houses linked through gardens — the bar serves the city\'s most photographed gin.', price_per_night: 285, rating: 9.3 },
-        { name: 'Hotel V Nesplein', neighbourhood: 'Centre', vibe: 'Design · The Lobby café', description: 'A boutique a block off Dam Square — the lobby is also one of the city\'s best café-bars.', price_per_night: 175, rating: 9.0 },
-        { name: 'Andaz Prinsengracht', neighbourhood: 'Prinsengracht', vibe: 'Marcel Wanders interiors', description: 'A Marcel-Wanders-designed Hyatt overlooking the Prinsengracht canal — playful, opulent, central.', price_per_night: 320, rating: 9.2 },
-        { name: 'Conservatorium', neighbourhood: 'Museumkwartier', vibe: '5-star · winter garden', description: 'A neo-Gothic former music conservatory — the Akasha spa is one of the best in the country.', price_per_night: 580, rating: 9.4 },
-        { name: 'Waldorf Astoria Amsterdam', neighbourhood: 'Herengracht', vibe: 'Heritage 5-star · 6 houses', description: 'Six adjoining canal houses, Spago restaurant, the Vault Bar — the address Vermeer would have wanted.', price_per_night: 690, rating: 9.5 }
-      ],
       activities: [
         { name: 'Rijksmuseum + Van Gogh combo', category: 'Cultural', vibe: 'Both in one day · skip-line', description: 'Two timed-entry tickets in one morning — Vermeer at the Rijks, Sunflowers at the Van Gogh.', price_per_person: 45, duration: '5 hours' },
         { name: 'Anne Frank House (early)', category: 'Cultural', vibe: 'Book six weeks ahead', description: 'Tickets release exactly six weeks in advance and sell out in minutes — set a reminder, do the early slot.', price_per_person: 16, duration: '1.5 hours' },
@@ -12149,16 +11900,6 @@
       ]
     },
     Berlin: {
-      hotels: [
-        { name: 'Generator Berlin Mitte', neighbourhood: 'Mitte', vibe: '€22 dorm · pod beds', description: 'Pod-style dorms a block from Hauptbahnhof — bar, courtyard, the cheapest beds in central Mitte.', price_per_night: 25, rating: 8.5 },
-        { name: 'Wombat\'s City Hostel', neighbourhood: 'Mitte', vibe: '€25 dorm · rooftop terrace', description: 'A backpacker classic with a rooftop terrace — Alexanderplatz five minutes, free breakfast.', price_per_night: 28, rating: 8.7 },
-        { name: 'Michelberger Hotel', neighbourhood: 'Friedrichshain', vibe: 'Hipster · courtyard café', description: 'The defining Friedrichshain hotel — every room is different, the lobby courtyard café is iconic.', price_per_night: 145, rating: 9.0 },
-        { name: 'The Circus Hotel', neighbourhood: 'Mitte', vibe: 'Design boutique · Rosenthaler', description: 'A design hotel on Rosenthaler Platz — bright rooms, the bar mixes the cheapest negronis in Mitte.', price_per_night: 165, rating: 9.1 },
-        { name: '25hours Hotel Bikini', neighbourhood: 'Tiergarten', vibe: 'Concept · monkey enclosure view', description: 'A concept hotel with a rooftop terrace that overlooks the zoo — yes, you can watch the monkeys.', price_per_night: 195, rating: 9.0 },
-        { name: 'Hotel Zoo Berlin', neighbourhood: 'Charlottenburg', vibe: 'Boutique · Kurfürstendamm', description: 'A historic Charlottenburg boutique — the cheapest five-star feeling on the Ku\'damm.', price_per_night: 245, rating: 9.0 },
-        { name: 'Soho House Berlin', neighbourhood: 'Mitte', vibe: 'Members\' club rooms · rooftop pool', description: 'A 1928 Bauhaus department store turned members\' club — non-members can stay, rooftop pool, screening room.', price_per_night: 385, rating: 9.2 },
-        { name: 'Hotel Adlon Kempinski', neighbourhood: 'Mitte', vibe: 'Heritage 5-star · Brandenburg Gate', description: 'The grand dame next to the Brandenburg Gate — Lorenz Adlon for the city\'s best schnitzel.', price_per_night: 480, rating: 9.3 }
-      ],
       activities: [
         { name: 'Berlin Wall + East Side Gallery', category: 'Cultural', vibe: 'Free · 1.3km gallery', description: 'The longest remaining stretch of the Wall, now a 1.3km open-air gallery — walk from Ostbahnhof eastbound.', price_per_person: 0, duration: '2 hours' },
         { name: 'Museum Island combo ticket', category: 'Cultural', vibe: 'Five museums · one ticket', description: 'A single ticket to all five museums on the island — Pergamon altar, Nefertiti bust, Vermeer paintings.', price_per_person: 24, duration: '4 hours' },
@@ -12183,16 +11924,6 @@
       ]
     },
     Madrid: {
-      hotels: [
-        { name: 'Far Home Sol', neighbourhood: 'Sol', vibe: '€22 dorm · central', description: 'The cheapest beds within five minutes of Puerta del Sol — basic but clean, free walking tour daily.', price_per_night: 25, rating: 8.4 },
-        { name: 'OK Hostel Madrid', neighbourhood: 'La Latina', vibe: '€30 dorm · La Latina', description: 'A boutique-style hostel in La Latina — daily tapas-and-flamenco crawl included in the price.', price_per_night: 32, rating: 8.7 },
-        { name: 'Hotel Único Madrid', neighbourhood: 'Salamanca', vibe: 'Boutique · Michelin restaurant', description: 'A boutique in the smart Salamanca district with a Michelin-starred restaurant downstairs (Ramón Freixa).', price_per_night: 195, rating: 9.2 },
-        { name: 'Only YOU Atocha', neighbourhood: 'Atocha', vibe: 'Design hotel · rooftop pool', description: 'A design hotel near Atocha station with a rooftop pool and the second-best terrace bar in the city.', price_per_night: 165, rating: 9.0 },
-        { name: 'Dear Hotel Madrid', neighbourhood: 'Gran Vía', vibe: 'Boutique · Gran Vía rooftop', description: 'Modest rooms with one big draw: the rooftop sky bar overlooks the entire Gran Vía at sunset.', price_per_night: 145, rating: 8.9 },
-        { name: 'Hotel Riu Plaza España', neighbourhood: 'Plaza de España', vibe: '4-star · skybar', description: 'A 26th-floor sky bar in the iconic Edificio España — €15 cocktail with one of the best city panoramas.', price_per_night: 175, rating: 8.8 },
-        { name: 'The Westin Palace', neighbourhood: 'Prado', vibe: 'Heritage 5-star · stained glass', description: 'A 1912 grand dame opposite the Prado — La Rotonda dining room under a vast stained-glass dome.', price_per_night: 385, rating: 9.2 },
-        { name: 'Four Seasons Madrid', neighbourhood: 'Centro', vibe: 'New 5-star · rooftop pool', description: 'A 2020-opened Four Seasons in seven restored heritage buildings — the rooftop pool, the spa, all of it.', price_per_night: 720, rating: 9.5 }
-      ],
       activities: [
         { name: 'Prado Museum', category: 'Cultural', vibe: 'Goya + Velázquez + Bosch', description: 'Two hours minimum — start with Las Meninas, then the Black Paintings, then the Garden of Earthly Delights.', price_per_person: 15, duration: '3 hours' },
         { name: 'La Latina tapas crawl Sunday', category: 'Food', vibe: 'Cava Baja + Rastro', description: 'The Cava Baja street is one bar after another — start at noon with vermut, finish at the Rastro flea market.', price_per_person: 35, duration: '4 hours' },
@@ -12217,16 +11948,6 @@
       ]
     },
     Brussels: {
-      hotels: [
-        { name: 'Sleep Well Youth Hostel', neighbourhood: 'Centre', vibe: '€28 dorm · clean modern', description: 'A clean modern youth hostel a few blocks from Rogier station — breakfast included, secure lockers.', price_per_night: 32, rating: 8.4 },
-        { name: 'Hotel des Galeries', neighbourhood: 'Galeries Royales', vibe: 'Boutique · arcade', description: 'A boutique tucked inside Brussels\' most beautiful glass-roofed arcade — chocolatiers on the doorstep.', price_per_night: 145, rating: 9.0 },
-        { name: 'The Dominican', neighbourhood: 'Grand Place', vibe: 'Boutique · former monastery', description: 'A former 15th-century Dominican monastery a block from Grand Place — restored cloister courtyard.', price_per_night: 175, rating: 9.1 },
-        { name: 'Hotel Amigo', neighbourhood: 'Grand Place', vibe: 'Rocco Forte · Magritte art', description: 'Rocco Forte\'s Brussels hotel, sixty seconds from Grand Place — original Magrittes throughout the hallways.', price_per_night: 285, rating: 9.2 },
-        { name: 'Hotel Le Quinze Brussels Grand Place', neighbourhood: 'Grand Place', vibe: 'Townhouse · 7 rooms', description: 'Seven rooms in a heritage townhouse — the cheapest boutique on the Grand Place itself.', price_per_night: 165, rating: 9.0 },
-        { name: 'JAM Hotel', neighbourhood: 'Saint-Gilles', vibe: 'Design · rooftop bar', description: 'A budget-design hotel with a rooftop bar in Saint-Gilles — Belgian beers, sunset over the city.', price_per_night: 125, rating: 8.9 },
-        { name: 'Pillows Grand Hotel Reylof', neighbourhood: 'Centre', vibe: 'Heritage · spa', description: 'A restored 18th-century hotel particular in the centre — wellness floor, Belgian gastronomy downstairs.', price_per_night: 195, rating: 9.0 },
-        { name: 'Steigenberger Wiltcher\'s', neighbourhood: 'Avenue Louise', vibe: '5-star · spa', description: 'Belle-Époque grand dame on Avenue Louise — three restaurants, full spa, the bar makes the best old fashioned in town.', price_per_night: 285, rating: 9.0 }
-      ],
       activities: [
         { name: 'Grand Place + Town Hall', category: 'Cultural', vibe: 'UNESCO · free at dusk', description: 'The most beautiful main square in Europe — go at dusk when the gold leaf catches the last light.', price_per_person: 0, duration: '1 hour' },
         { name: 'Belgian beer + chocolate crawl', category: 'Food', vibe: 'Four stops · 3 hours', description: 'Two breweries, two chocolatiers, a guide who actually knows the difference between Trappist orders.', price_per_person: 55, duration: '3 hours' },
@@ -12251,16 +11972,6 @@
       ]
     },
     Dublin: {
-      hotels: [
-        { name: 'Generator Dublin', neighbourhood: 'Smithfield', vibe: '€32 dorm · social hostel', description: 'A polished hostel with a bar and a Jameson Distillery view — five minutes from Temple Bar.', price_per_night: 35, rating: 8.6 },
-        { name: 'Jacobs Inn Hostel', neighbourhood: 'Connolly', vibe: '€28 dorm · breakfast included', description: 'Around the corner from Connolly station — clean, modern, included Irish breakfast.', price_per_night: 32, rating: 8.5 },
-        { name: 'The Dean Hotel', neighbourhood: 'South William St', vibe: 'Design · rooftop Sophie\'s', description: 'A Camden boutique with the rooftop Sophie\'s — pizza, panoramic view, the city\'s most lively rooftop.', price_per_night: 175, rating: 9.0 },
-        { name: 'The Marker Hotel', neighbourhood: 'Grand Canal Dock', vibe: 'Design · rooftop bar', description: 'A Daniel Libeskind-inspired design hotel in the docklands — rooftop bar, geometric architecture.', price_per_night: 245, rating: 9.1 },
-        { name: 'The Westbury', neighbourhood: 'Grafton Street', vibe: '5-star · afternoon tea', description: 'A discreet 5-star steps from Grafton Street — Wilde restaurant, the famous Westbury afternoon tea.', price_per_night: 320, rating: 9.2 },
-        { name: 'The Merrion', neighbourhood: 'Merrion Square', vibe: 'Heritage · 5-star · 4 Georgian houses', description: 'Four restored Georgian townhouses opposite government buildings — the largest private art collection in any Irish hotel.', price_per_night: 485, rating: 9.4 },
-        { name: 'The Shelbourne', neighbourhood: 'St Stephen\'s Green', vibe: 'Heritage 5-star · 1824', description: 'The grande dame on St Stephen\'s Green since 1824 — Lord Mayor\'s Lounge for tea, Horseshoe Bar for whiskey.', price_per_night: 420, rating: 9.3 },
-        { name: 'Anantara The Marker Dublin', neighbourhood: 'Grand Canal', vibe: '5-star · rooftop pool', description: 'A new luxury rebrand at the Marker — rooftop pool with Aviva Stadium view, spa with eight treatment rooms.', price_per_night: 380, rating: 9.2 }
-      ],
       activities: [
         { name: 'Guinness Storehouse', category: 'Cultural', vibe: 'Gravity Bar pint', description: 'Seven floors ending with a free pint in the Gravity Bar — book the early slot, the city panorama is the prize.', price_per_person: 30, duration: '2 hours' },
         { name: 'Trinity College + Book of Kells', category: 'Cultural', vibe: 'Old Library · 1591', description: 'The Long Room and the 9th-century Book of Kells — go at 9:30 sharp before the bus tours arrive.', price_per_person: 18, duration: '1.5 hours' },
@@ -12285,16 +11996,6 @@
       ]
     },
     Stockholm: {
-      hotels: [
-        { name: 'Generator Stockholm', neighbourhood: 'Norrmalm', vibe: '€38 dorm · design hostel', description: 'A design-conscious hostel in Norrmalm — bar, work spaces, the cheapest beds with a Stockholm aesthetic.', price_per_night: 42, rating: 8.6 },
-        { name: 'City Backpackers Hostel', neighbourhood: 'Norrmalm', vibe: '€32 dorm · sauna', description: 'A Swedish hostel with its own sauna — the cheapest beds in walking distance of Gamla Stan.', price_per_night: 35, rating: 8.7 },
-        { name: 'Hotel Skeppsholmen', neighbourhood: 'Skeppsholmen', vibe: 'Boutique · island setting', description: 'A converted naval barracks on the small island of Skeppsholmen — peace, water views, central.', price_per_night: 185, rating: 9.0 },
-        { name: 'Hotel Diplomat', neighbourhood: 'Strandvägen', vibe: 'Heritage boutique · waterfront', description: 'A 1911 Art Nouveau building on the prestigious Strandvägen waterfront — period elegance, modern service.', price_per_night: 245, rating: 9.1 },
-        { name: 'Ett Hem', neighbourhood: 'Lärkstaden', vibe: 'Townhouse · 12 rooms', description: 'A 1910 Arts-and-Crafts townhouse turned 12-room hotel — feels like staying in a friend\'s very expensive house.', price_per_night: 485, rating: 9.5 },
-        { name: 'Bank Hotel', neighbourhood: 'Hamngatan', vibe: 'Heritage 5-star · 1910 bank', description: 'A 1910 bank turned hotel — marble lobby, the rooftop Le Hibou bar overlooks the water.', price_per_night: 385, rating: 9.3 },
-        { name: 'Grand Hôtel Stockholm', neighbourhood: 'Blasieholmen', vibe: 'Heritage 5-star · 1874', description: 'The Nobel Prize laureates stay here — opposite the Royal Palace, Mathias Dahlgren restaurants.', price_per_night: 520, rating: 9.4 },
-        { name: 'Hotel At Six', neighbourhood: 'Brunkebergstorg', vibe: 'Design · rooftop bar', description: 'A modern design hotel with a serious art collection — the rooftop TAK has the best summer view.', price_per_night: 285, rating: 9.0 }
-      ],
       activities: [
         { name: 'Vasa Museum', category: 'Cultural', vibe: 'Best-preserved 17th-c. ship', description: 'A 1628 warship that sank on its maiden voyage and was raised in 1961 — the museum is built around it.', price_per_person: 20, duration: '2 hours' },
         { name: 'Gamla Stan walking tour', category: 'Cultural', vibe: 'Old town · 13th-c. cobbles', description: 'The 13th-century old town on its own island — Royal Palace, Stortorget square, Mårten Trotzigs Gränd (the narrowest street).', price_per_person: 20, duration: '2 hours' },
@@ -12319,16 +12020,6 @@
       ]
     },
     Oslo: {
-      hotels: [
-        { name: 'Anker Hostel', neighbourhood: 'Grünerløkka', vibe: '€32 dorm · river-side', description: 'The cheapest beds in Oslo, near the Akerselva river — modest but clean, eight minutes from central.', price_per_night: 35, rating: 8.3 },
-        { name: 'Saga Poshtel Oslo Central', neighbourhood: 'Sentrum', vibe: '€42 dorm · design', description: 'A polished design hostel two blocks from the Opera House — the smartest budget option in Oslo.', price_per_night: 45, rating: 8.6 },
-        { name: 'Amerikalinjen', neighbourhood: 'Sentrum', vibe: 'Boutique · 1919 building', description: 'The former Norwegian America Line HQ, restored as a boutique hotel — jazz bar, vinyl listening rooms.', price_per_night: 195, rating: 9.2 },
-        { name: 'The Thief', neighbourhood: 'Tjuvholmen', vibe: 'Design · waterfront art', description: 'A design hotel on a man-made islet — Warhol prints in every room, rooftop spa with a fjord view.', price_per_night: 320, rating: 9.4 },
-        { name: 'Hotel Continental', neighbourhood: 'Sentrum', vibe: 'Heritage · Munch art', description: 'The Brockmann family\'s heritage hotel since 1909 — original Munch lithographs in the public spaces.', price_per_night: 285, rating: 9.2 },
-        { name: 'Sommerro', neighbourhood: 'Frogner', vibe: '5-star · 1930s renovation', description: 'A 2022 revival of Oslo\'s 1930s Norwegian Light & Power building — basement pool, two restaurants, the best rooftop in the city.', price_per_night: 365, rating: 9.3 },
-        { name: 'Grand Hotel Oslo', neighbourhood: 'Karl Johans Gate', vibe: 'Heritage 5-star · 1874', description: 'Where every Nobel Peace Prize laureate sleeps the night of the ceremony — Theatercaféen for breakfast.', price_per_night: 295, rating: 9.0 },
-        { name: 'Hotel Bristol', neighbourhood: 'Sentrum', vibe: 'Heritage · 1920 Moorish', description: 'A 1920 Moorish-revival lobby straight out of a Wes Anderson film — the bar Ristoranti is iconic.', price_per_night: 245, rating: 9.0 }
-      ],
       activities: [
         { name: 'Oslo Opera House rooftop walk', category: 'Outdoor', vibe: 'Free · architectural icon', description: 'You walk up the slope of the building itself — a Snøhetta-designed marble carpet that descends into the fjord.', price_per_person: 0, duration: '1 hour' },
         { name: 'Vigeland Sculpture Park', category: 'Cultural', vibe: 'Free · 200+ sculptures', description: 'The world\'s largest sculpture park by a single artist — 212 nude bronze and granite figures by Gustav Vigeland.', price_per_person: 0, duration: '2 hours' },
@@ -12353,16 +12044,6 @@
       ]
     },
     Ibiza: {
-      hotels: [
-        { name: 'Hostal La Torre', neighbourhood: 'San Antonio', vibe: '€85 boutique-hostel · sunset', description: 'A clifftop boutique on the west coast — the original sunset hangout, simple rooms, the bar that started café-del-Mar culture.', price_per_night: 95, rating: 8.9 },
-        { name: 'Hostal Salinas', neighbourhood: 'Ses Salines', vibe: '€95 small hotel · beach', description: 'A small family hotel two minutes from Salinas Beach — quiet, affordable, the cheapest decent stay in Salinas.', price_per_night: 105, rating: 8.7 },
-        { name: 'Hotel La Cuadra', neighbourhood: 'Cala Tarida', vibe: 'Boutique · pool · countryside', description: 'A 19th-century farmhouse turned 9-room boutique in the centre of the island — pool, vineyards, no cars.', price_per_night: 195, rating: 9.1 },
-        { name: 'OD Ocean Drive', neighbourhood: 'Ibiza Town Marina', vibe: 'Design · marina rooftop', description: 'A design hotel facing the marina with a rooftop pool — walk to Pacha and Lío in five minutes.', price_per_night: 245, rating: 9.0 },
-        { name: 'Pikes Hotel', neighbourhood: 'San Antonio interior', vibe: '21 rooms · party legend', description: 'The legendary 1978 farmhouse where Freddie Mercury threw his 41st birthday — bohemian, pool parties, peacocks.', price_per_night: 320, rating: 9.0 },
-        { name: 'Atzaró Agroturismo', neighbourhood: 'Santa Eulalia', vibe: 'Agroturismo · spa · garden', description: 'A working orange-grove farm with 24 rooms and a hammam — the most peaceful luxury on the island.', price_per_night: 485, rating: 9.4 },
-        { name: 'Six Senses Ibiza', neighbourhood: 'Cala Xarraca', vibe: '5-star · wellness · cliffside', description: 'A 2021 Six Senses on the wild north coast — cliffside pool, spa with seven treatment rooms, no children\'s clubs.', price_per_night: 720, rating: 9.5 },
-        { name: 'Hacienda Na Xamena', neighbourhood: 'North coast', vibe: 'Cliffside 5-star · iconic', description: 'The cliff-clinging white hotel from every Ibiza Instagram — the seven seawater pools cascade down the cliff.', price_per_night: 585, rating: 9.4 }
-      ],
       activities: [
         { name: 'Pacha club night', category: 'Nightlife', vibe: 'Defining Ibiza club · since 1973', description: 'The original 1973 club — every season-resident DJ in one venue, lines from midnight, the party until 6am.', price_per_person: 55, duration: '6 hours' },
         { name: 'Café del Mar sunset', category: 'Outdoor', vibe: 'San Antonio · 19:00', description: 'The west-facing terrace where chill-out music was invented — €12 cocktail, the cheapest entry to the cult.', price_per_person: 15, duration: '2 hours' },
@@ -12387,16 +12068,6 @@
       ]
     },
     'Palma de Mallorca': {
-      hotels: [
-        { name: 'Hostal Apuntadores', neighbourhood: 'Old Town', vibe: '€45 budget · old town', description: 'A modest 1-star pension on the central Carrer dels Apuntadors — five-minute walk to the Cathedral.', price_per_night: 48, rating: 8.4 },
-        { name: 'Hotel Lluna', neighbourhood: 'La Lonja', vibe: '€95 boutique · breakfast included', description: 'A small townhouse hotel in the historic La Lonja quarter — terrace, croissant breakfast, walkable to everything.', price_per_night: 105, rating: 8.8 },
-        { name: 'Hotel Cort', neighbourhood: 'Plaça Cort', vibe: 'Boutique · 16 rooms · plaza', description: 'A boutique on Palma\'s most-photographed plaza, under the famous Plaça Cort olive tree.', price_per_night: 185, rating: 9.0 },
-        { name: 'Hotel Sant Francesc', neighbourhood: 'Sant Francesc', vibe: 'Heritage · 19th-c palace', description: 'A 19th-century mansion in the quietest part of the old town — courtyard, rooftop pool, garden bar.', price_per_night: 285, rating: 9.2 },
-        { name: 'Can Bordoy', neighbourhood: 'La Llonja', vibe: 'Boutique · 24 suites', description: 'A heritage 16th-century mansion turned 24-suite boutique — orange-tree courtyard, basement garden spa.', price_per_night: 385, rating: 9.4 },
-        { name: 'Castillo Hotel Son Vida', neighbourhood: 'Son Vida hills', vibe: '5-star · castle · golf', description: 'A 13th-century castle on a hill above Palma — three golf courses, hilltop pool, fairytale terraces.', price_per_night: 420, rating: 9.3 },
-        { name: 'Cap Rocat', neighbourhood: 'Cala Blava', vibe: '5-star · sea-cliff fortress', description: 'A 19th-century military fortress turned hotel on the cliffs east of Palma — your own sea pool, no children.', price_per_night: 680, rating: 9.5 },
-        { name: 'Hotel Calatrava', neighbourhood: 'Old Town', vibe: 'Heritage boutique · Cathedral view', description: 'A small boutique built into the old city wall — most rooms see the Cathedral from the window.', price_per_night: 245, rating: 9.1 }
-      ],
       activities: [
         { name: 'Palma Cathedral + Bishop\'s Palace', category: 'Cultural', vibe: 'Gothic · Gaudí restoration', description: 'A 14th-century Gothic cathedral with a Gaudí-restored interior — go at noon when the rose-window light hits the back wall.', price_per_person: 12, duration: '1.5 hours' },
         { name: 'Calas (hidden cove) day', category: 'Beach', vibe: 'Cala Mondragó · Cala s\'Almonia', description: 'Drive south-east for two of the cheapest, prettiest coves — Mondragó for sand, S\'Almonia for cliff-jumping.', price_per_person: 0, duration: '6 hours' },
@@ -12421,16 +12092,6 @@
       ]
     },
     Valencia: {
-      hotels: [
-        { name: 'Home Youth Hostel', neighbourhood: 'Ciutat Vella', vibe: '€22 dorm · old town', description: 'A modern hostel in the centre of the historic quarter — bar, terrace, 10-minute walk to the cathedral.', price_per_night: 25, rating: 8.6 },
-        { name: 'Casual Vintage', neighbourhood: 'Carmen', vibe: '€65 budget · Carmen', description: 'A budget boutique in the trendy Barrio del Carmen — colourful, breakfast included, very affordable.', price_per_night: 72, rating: 8.7 },
-        { name: 'One Shot Mercat', neighbourhood: 'Mercado Central', vibe: 'Boutique · modernist building', description: 'A small boutique opposite the Mercado Central — design-led, café in the lobby, the most central location.', price_per_night: 145, rating: 9.0 },
-        { name: 'Caro Hotel', neighbourhood: 'Old Town', vibe: 'Heritage · Roman wall in lobby', description: 'A 14th-century palace turned 26-room boutique — original Roman wall in the lobby, a Michelin chef downstairs.', price_per_night: 245, rating: 9.3 },
-        { name: 'Westin Valencia', neighbourhood: 'Mestalla', vibe: 'Heritage 5-star · garden courtyard', description: 'A 1917 modernist cotton-trade building turned 5-star — large garden courtyard, Komori restaurant.', price_per_night: 285, rating: 9.1 },
-        { name: 'SH Valencia Palace', neighbourhood: 'Eixample', vibe: '5-star · rooftop', description: 'A central 5-star with a rooftop terrace and pool — the rooftop is open to non-guests for €25 entry.', price_per_night: 195, rating: 8.9 },
-        { name: 'Palacio Vallier', neighbourhood: 'Ciutat Vella', vibe: 'Boutique · 16-room palace', description: 'A 19th-century palace with 16 suites — opulent, restored, the suite with the bull-fighting frescoes is the order.', price_per_night: 325, rating: 9.3 },
-        { name: 'Only YOU Valencia', neighbourhood: 'Ruzafa', vibe: 'Design hotel · pool · rooftop', description: 'A new design hotel in the hipster Ruzafa district — small pool, lively bar, the lobby is also a brunch spot.', price_per_night: 175, rating: 9.0 }
-      ],
       activities: [
         { name: 'City of Arts and Sciences', category: 'Cultural', vibe: 'Calatrava · futurist · half-day', description: 'Santiago Calatrava\'s white concrete dream — the science museum, the aquarium, the planetarium, the most photographed buildings in Spain.', price_per_person: 45, duration: '4 hours' },
         { name: 'Paella + sangria cooking class', category: 'Food', vibe: 'Make your own paella · 3h', description: 'Make your own paella the proper Valencian way — rabbit, chicken, no chorizo. Eat what you cook.', price_per_person: 65, duration: '3 hours' },
@@ -12455,16 +12116,6 @@
       ]
     },
     Nice: {
-      hotels: [
-        { name: 'Hostel Meyerbeer Beach', neighbourhood: 'Carré d\'Or', vibe: '€38 dorm · beach-side', description: 'A backpacker hostel between the Promenade and the Old Town — the cheapest beds two blocks from the sea.', price_per_night: 42, rating: 8.5 },
-        { name: 'Hôtel La Pérouse', neighbourhood: 'Colline du Château', vibe: 'Boutique · pool · sea view', description: 'A cliffside boutique on the Castle Hill — a tiny pool with the bay below, terrace lemon trees.', price_per_night: 245, rating: 9.2 },
-        { name: 'Hotel Beau Rivage', neighbourhood: 'Old Nice', vibe: 'Heritage · 4-star · old town', description: 'A 19th-century building on the edge of the old town — the cheapest 4-star with both old-town and sea access.', price_per_night: 175, rating: 8.9 },
-        { name: 'Hotel Le Negresco', neighbourhood: 'Promenade des Anglais', vibe: 'Heritage 5-star · pink dome', description: 'The pink-domed 1913 Belle Époque icon on the Promenade — owned by the same family for 60 years.', price_per_night: 485, rating: 9.3 },
-        { name: 'Hyatt Regency Palais de la Méditerranée', neighbourhood: 'Promenade', vibe: '5-star · rooftop pool · 1929 façade', description: 'A 1929 art deco casino façade with a 21st-century 5-star inside — heated rooftop pool with sea view.', price_per_night: 365, rating: 9.0 },
-        { name: 'Anantara Plaza Nice', neighbourhood: 'Massena', vibe: 'Heritage 5-star · garden', description: 'A heritage Anantara opposite Massena Square — large garden, terrace bar, a quiet luxury in the centre.', price_per_night: 320, rating: 9.1 },
-        { name: 'Hotel Suisse', neighbourhood: 'Colline du Château', vibe: 'Boutique · cliffside · view', description: 'A small cliff-edge hotel with sea-view balconies on every room — the cheapest 4-star with this view.', price_per_night: 195, rating: 9.0 },
-        { name: 'Le Méridien Nice', neighbourhood: 'Promenade', vibe: '4-star · rooftop pool', description: 'A modern 4-star directly on the Promenade — rooftop pool with sea view, central, fair pricing.', price_per_night: 215, rating: 9.0 }
-      ],
       activities: [
         { name: 'Promenade des Anglais walk', category: 'Outdoor', vibe: 'Free · 7km seafront', description: 'A 7km seafront walk along Nice\'s defining promenade — rent a Vélobleu bike for €3, ride the entire bay.', price_per_person: 3, duration: '2 hours' },
         { name: 'Cours Saleya flower market', category: 'Cultural', vibe: 'Tuesday-Sunday · free', description: 'The defining Provençal market in the heart of the old town — flowers in the morning, antiques on Mondays.', price_per_person: 0, duration: '1.5 hours' },
@@ -12489,16 +12140,6 @@
       ]
     },
     Venice: {
-      hotels: [
-        { name: 'Generator Venice', neighbourhood: 'Giudecca', vibe: '€38 dorm · island · ferry', description: 'A converted granary on the Giudecca island — the cheapest beds in Venice with a Giudecca canal view.', price_per_night: 42, rating: 8.7 },
-        { name: 'A Casa di Giorgia', neighbourhood: 'Cannaregio', vibe: '€85 B&B · 4 rooms', description: 'A four-room B&B in quiet Cannaregio — locally owned, breakfast on the terrace, the cheapest non-hostel stay.', price_per_night: 95, rating: 9.0 },
-        { name: 'Hotel Flora', neighbourhood: 'San Marco', vibe: 'Boutique · garden courtyard', description: 'A hidden boutique with a tropical garden courtyard one minute from St Mark\'s — feels like a secret garden.', price_per_night: 245, rating: 9.2 },
-        { name: 'Palazzo Stern', neighbourhood: 'Dorsoduro', vibe: 'Heritage · Grand Canal', description: 'A 15th-century palazzo with a Grand Canal terrace — the ground-floor reception opens onto the water itself.', price_per_night: 320, rating: 9.3 },
-        { name: 'Ca Maria Adele', neighbourhood: 'Dorsoduro', vibe: 'Boutique · 14 themed rooms', description: '14 cinematically themed rooms in a 16th-century palazzo — opposite the Salute church, very romantic.', price_per_night: 385, rating: 9.4 },
-        { name: 'The Gritti Palace', neighbourhood: 'Grand Canal', vibe: 'Heritage 5-star · 1475', description: 'A 1475 palazzo on the Grand Canal — Hemingway slept here, the Riva Lounge terrace is the spend.', price_per_night: 720, rating: 9.5 },
-        { name: 'Hotel Cipriani', neighbourhood: 'Giudecca', vibe: '5-star · Olympic pool', description: 'The Belmond on Giudecca — the only freshwater Olympic-size pool in Venice, a private boat to St Mark\'s every 15 minutes.', price_per_night: 1280, rating: 9.6 },
-        { name: 'Aman Venice', neighbourhood: 'San Polo', vibe: 'Frescoed 5-star · Tiepolo ceilings', description: 'A 16th-century Grand Canal palace with original Tiepolo ceilings — Clooney got married here.', price_per_night: 1800, rating: 9.7 }
-      ],
       activities: [
         { name: 'St Mark\'s Basilica + Doge\'s Palace', category: 'Cultural', vibe: 'Skip the line · combo ticket', description: 'A skip-the-line combo for Venice\'s two big visits — the basilica\'s gold mosaics, the palace\'s prison tour.', price_per_person: 55, duration: '3 hours' },
         { name: 'Gondola ride at sunset', category: 'Outdoor', vibe: '30 min · €90 official rate', description: 'The official rate is €90 for 30 minutes — split with friends, do it at golden hour, sit in the back not the side.', price_per_person: 25, duration: '0.5 hours' },
@@ -12523,16 +12164,6 @@
       ]
     },
     Florence: {
-      hotels: [
-        { name: 'Plus Florence', neighbourhood: 'San Marco', vibe: '€35 dorm · pool · sauna', description: 'A massive hostel with an actual pool and sauna — twenty minutes from the Duomo, the most facilities for the money.', price_per_night: 38, rating: 8.6 },
-        { name: 'Hotel Davanzati', neighbourhood: 'Old Town', vibe: '€95 boutique · central', description: 'A family-run 11-room boutique in a 14th-century palazzo — the most affordable real boutique in the centre.', price_per_night: 105, rating: 9.2 },
-        { name: 'Hotel Brunelleschi', neighbourhood: 'Duomo', vibe: 'Heritage · 1500-year-old tower', description: 'A hotel built around the oldest standing tower in Florence — yes, 1500 years old. The Roman baths are in the basement.', price_per_night: 285, rating: 9.2 },
-        { name: 'Portrait Firenze', neighbourhood: 'Ponte Vecchio', vibe: 'Boutique · Arno river', description: 'A Ferragamo family boutique opposite the Ponte Vecchio — every room sees the river or the Duomo.', price_per_night: 485, rating: 9.4 },
-        { name: 'Il Salviatino', neighbourhood: 'Fiesole hills', vibe: '5-star · 15th-c. villa', description: 'A 15th-century Medici hunting villa on the hill of Fiesole — frescoes, gardens, the only quiet luxury in Florence.', price_per_night: 580, rating: 9.5 },
-        { name: 'Belmond Villa San Michele', neighbourhood: 'Fiesole', vibe: 'Heritage 5-star · 15th c.', description: 'A 15th-century monastery designed by Michelangelo — pool with city panorama, the most cinematic stay near Florence.', price_per_night: 980, rating: 9.6 },
-        { name: 'Four Seasons Florence', neighbourhood: 'Palazzo della Gherardesca', vibe: '5-star · biggest private garden', description: 'A 15th-century palace with the biggest private garden in central Florence — pool, frescoed lobby, two restaurants.', price_per_night: 920, rating: 9.5 },
-        { name: 'Hotel Lungarno', neighbourhood: 'Ponte Vecchio', vibe: '4-star · river-side · Picasso', description: 'A river-side Lungarno-Hotels boutique with original Picassos and Cocteaus on the walls — the Borgo San Jacopo restaurant is the address.', price_per_night: 425, rating: 9.3 }
-      ],
       activities: [
         { name: 'Uffizi Gallery', category: 'Cultural', vibe: 'Skip the line · 3 hours', description: 'Botticelli\'s Birth of Venus, Leonardo\'s Annunciation, Caravaggio\'s Medusa — all in one Florentine afternoon.', price_per_person: 28, duration: '3 hours' },
         { name: 'Duomo + Brunelleschi\'s Dome climb', category: 'Cultural', vibe: '463 steps · panorama', description: '463 steps up Brunelleschi\'s self-supporting dome — book the slot two weeks ahead. The frescoes inside are the bonus.', price_per_person: 35, duration: '2 hours' },
@@ -12557,16 +12188,6 @@
       ]
     },
     Seville: {
-      hotels: [
-        { name: 'Hostel One Catedral', neighbourhood: 'Old Town', vibe: '€22 dorm · free dinner', description: 'A backpacker classic with free Spanish dinner every night — three minutes from the cathedral.', price_per_night: 25, rating: 8.7 },
-        { name: 'Hostel Trotamundos', neighbourhood: 'Centre', vibe: '€20 dorm · social', description: 'The cheapest beds in central Seville — flamenco shows on the patio, free tapas tour Thursdays.', price_per_night: 22, rating: 8.5 },
-        { name: 'Hotel Casa 1800', neighbourhood: 'Santa Cruz', vibe: 'Boutique · old palace', description: 'A 19th-century palace turned 33-room boutique in the heart of Santa Cruz — afternoon tea in the courtyard.', price_per_night: 145, rating: 9.3 },
-        { name: 'EME Catedral Hotel', neighbourhood: 'Cathedral', vibe: 'Boutique · rooftop pool', description: 'A boutique directly opposite the cathedral — rooftop pool with the Giralda thirty metres away.', price_per_night: 195, rating: 9.1 },
-        { name: 'Hotel Mercer Sevilla', neighbourhood: 'Old Town', vibe: '5-star · palace', description: 'A 19th-century palace renovated as a small 5-star — interior courtyard, rooftop terrace, 12 rooms only.', price_per_night: 385, rating: 9.4 },
-        { name: 'Hotel Alfonso XIII', neighbourhood: 'Puerta de Jerez', vibe: 'Heritage 5-star · 1928', description: 'A 1928 Moorish-revival 5-star built for the Ibero-American Expo — Curro Romero bullfighting bar in the lobby.', price_per_night: 425, rating: 9.3 },
-        { name: 'Palacio de Villapanés', neighbourhood: 'San Bartolomé', vibe: 'Boutique · 18th-c. palace', description: 'A 1730 palace with original frescoes — interior courtyard, rooftop pool, the cheapest 5-star feeling in Seville.', price_per_night: 245, rating: 9.2 },
-        { name: 'Corral del Rey', neighbourhood: 'Alfalfa', vibe: 'Boutique · 17th-c. palace', description: 'A 17th-century townhouse with 13 rooms — small rooftop pool, full breakfast on the patio under a fig tree.', price_per_night: 225, rating: 9.3 }
-      ],
       activities: [
         { name: 'Real Alcázar', category: 'Cultural', vibe: 'Mudéjar palace · Game of Thrones', description: 'The Mudéjar royal palace where Game of Thrones filmed Dorne — book the early slot for the gardens alone.', price_per_person: 14, duration: '2.5 hours' },
         { name: 'Cathedral + Giralda climb', category: 'Cultural', vibe: 'Largest Gothic cathedral · ramp tower', description: 'The largest Gothic cathedral in the world — climb the 12th-century Giralda tower on its ramp (no stairs).', price_per_person: 12, duration: '2 hours' },
@@ -12591,16 +12212,6 @@
       ]
     },
     Granada: {
-      hotels: [
-        { name: 'Hostel Oasis Granada', neighbourhood: 'Realejo', vibe: '€20 dorm · tapas crawl', description: 'A backpacker favourite with nightly tapas crawls — the cheapest beds with the friendliest culture.', price_per_night: 22, rating: 8.8 },
-        { name: 'Mansion Lavapies', neighbourhood: 'Albaicín', vibe: '€55 boutique-hostel · view', description: 'A small boutique-hostel up in the Albaicín — Alhambra view from the terrace, the cheapest bed with a real view.', price_per_night: 62, rating: 8.9 },
-        { name: 'Palacio de Mariana Pineda', neighbourhood: 'Centre', vibe: 'Boutique · 19th-c. palace', description: 'A 19th-century palace 4-star — interior courtyard, rooftop bar, the cheapest real boutique in town.', price_per_night: 145, rating: 9.0 },
-        { name: 'Hospes Palacio de los Patos', neighbourhood: 'Centre', vibe: 'Heritage 5-star · 19th-c. palace', description: 'A 19th-century palace 5-star in the centre — spa with original Arab-bath structure, garden courtyard.', price_per_night: 245, rating: 9.2 },
-        { name: 'Carmen de la Alcubilla del Caracol', neighbourhood: 'Realejo', vibe: 'Boutique · carmen garden', description: 'A traditional Granadan carmen (walled garden house) — five rooms, hilltop garden, Alhambra view from every window.', price_per_night: 185, rating: 9.4 },
-        { name: 'Parador de Granada', neighbourhood: 'Alhambra', vibe: 'Inside the Alhambra walls', description: 'A 15th-century monastery hotel literally inside the Alhambra walls — 40 rooms, books one year in advance.', price_per_night: 385, rating: 9.3 },
-        { name: 'Alhambra Palace Hotel', neighbourhood: 'Alhambra hill', vibe: 'Heritage 4-star · 1910', description: 'A 1910 Moorish-revival hotel on the Alhambra hill — terrace with the city panorama, the bar has live flamenco.', price_per_night: 195, rating: 9.0 },
-        { name: 'Casa Morisca', neighbourhood: 'Albaicín', vibe: 'Heritage · 15th-c. house', description: 'A 15th-century Albaicín house with original Moorish tiles — 14 rooms, courtyard with the original fountain.', price_per_night: 165, rating: 9.2 }
-      ],
       activities: [
         { name: 'Alhambra + Generalife', category: 'Cultural', vibe: 'Skip the line · 4 hours', description: 'The Nasrid Palaces, Generalife gardens and Alcazaba in one ticket — book three months ahead, take the early slot.', price_per_person: 22, duration: '4 hours' },
         { name: 'Free tapas crawl', category: 'Food', vibe: 'Free tapa with every drink', description: 'Granada\'s defining magic: every bar gives a free tapa with every drink. A guided crawl shows you the best route.', price_per_person: 22, duration: '3 hours' },
@@ -14201,35 +13812,34 @@
   //     name, country, vibe, tagline, tags,           // identity
   //     coords: [lat, lng],
   //     images: [{ slug, source }],                   // wikipedia by default
-  //     hotels: [{ name, neighbourhood, vibe, description, price_per_night, rating }],
   //     activities: [{ name, category, vibe, description, price_per_person, duration }],
   //     restaurants: [{ name, cuisine, vibe, price_range, description, must_order }],
   //     guides: [{ title, category, summary, highlights }],
   //     prices: { Berlin: 89, Munich: 79, ... },      // origin → €cheapest
   //     flights: { Berlin: 2.5, ... },                // origin → hours
   //     estimatedBudget: {
-  //       flight_min,          hotel_per_night_min,
+  //       flight_min,          accommodation_per_night_min,
   //       activity_min,        weekend_2night_min,
   //       currency: 'EUR'
   //     },
-  //     source: { hotels:'curated', images:'wikipedia', prices:'estimate', ... }
+  //     source: { accommodation:'cityEconomy-research',
+  //              images:'wikipedia', prices:'estimate', ... }
   //   }
+  //
+  // NOTE — hotels: was removed from this shape. The platform doesn't
+  // recommend specific properties without a Booking Partner API.
+  // The accommodation_per_night_min figure derives from
+  // cityEconomy[city].h_min so the Compare modal still has a stay
+  // estimate, but no specific hotel objects are emitted.
   //
   // Public API:
   //   MV.cities.get(name)         → City | null
-  //   MV.cities.all()             → City[]   (16 baseline + any overrides)
-  //   MV.cities.override(n,patch) → merge a partial override (e.g. real
-  //                                 hotel inventory from Hotelbeds, or a
-  //                                 fresh price quote from Skyscanner).
+  //   MV.cities.all()             → City[]   (baseline + any overrides)
+  //   MV.cities.override(n,patch) → merge a partial override (e.g. a
+  //                                 fresh price quote from Skyscanner,
+  //                                 or future Hotelbeds inventory when
+  //                                 hotels are reintroduced).
   //                                 Pass null to remove.
-  //
-  // Example future-API usage:
-  //   const hb = await fetch('/api/hotelbeds?city=Lisbon').then(r=>r.json());
-  //   MV.cities.override('Lisbon', {
-  //     hotels: hb.hotels,
-  //     source: { hotels: 'hotelbeds' }
-  //   });
-  //   // Next call to MV.cities.get('Lisbon').hotels returns real inventory.
   // ============================================================
   const MV = window.MV || (window.MV = {});
   MV.cities = (function () {
@@ -14245,10 +13855,19 @@
       if (!sd) return null;
       const profile = cityProfiles[name] || {};
       const flightMin = minOf(Object.values(sd.prices || {}));
-      const hotelMin = minOf((profile.hotels || []).map(h => h.price_per_night));
       const activityMin = minOf((profile.activities || []).map(a => a.price_per_person));
-      const weekendMin = (flightMin != null && hotelMin != null)
-        ? flightMin + (hotelMin * 2) + (activityMin != null ? activityMin : 0)
+      // weekend_2night_min — uses cityEconomy.h_min × 2 (cheapest
+      // realistic stay × 2 nights) instead of fake-rated hotel data
+      // that no longer exists in the profile. Keeps the cities API
+      // contract intact (Compare modal reads .weekend_2night_min)
+      // while the underlying source is honest.
+      let hotelNightMin = null;
+      if (typeof getEconomy === 'function') {
+        const econ = getEconomy(name);
+        if (econ && econ.h_min) hotelNightMin = econ.h_min;
+      }
+      const weekendMin = (flightMin != null && hotelNightMin != null)
+        ? flightMin + (hotelNightMin * 2) + (activityMin != null ? activityMin : 0)
         : null;
       return {
         name: sd.key,
@@ -14261,7 +13880,8 @@
           slug,
           source: 'wikipedia'
         })),
-        hotels: profile.hotels || [],
+        // hotels field removed from the public cities API — we don't
+        // surface specific properties without a Booking Partner API.
         activities: profile.activities || [],
         restaurants: profile.restaurants || [],
         guides: profile.guides || [],
@@ -14269,7 +13889,7 @@
         flights: { ...(sd.flights || {}) },
         estimatedBudget: {
           flight_min: flightMin,
-          hotel_per_night_min: hotelMin,
+          accommodation_per_night_min: hotelNightMin,
           activity_min: activityMin,
           weekend_2night_min: weekendMin,
           currency: 'EUR'
@@ -14277,7 +13897,7 @@
         source: {
           prices: 'estimate',
           flights: 'estimate',
-          hotels: 'curated',
+          accommodation: 'cityEconomy-research',
           activities: 'curated',
           restaurants: 'curated',
           guides: 'curated',
