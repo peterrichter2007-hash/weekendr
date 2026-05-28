@@ -15951,8 +15951,26 @@
   let _sceneMarkers = [];            // markers added by the current city scene
   let _ambientMarkers = [];          // transient "near my cursor" markers
   let _ambientRaf = null;            // RAF token for mousemove coalescing
-  const AMBIENT_REVEAL_COUNT = 4;    // max ambient markers on screen at once
-  const AMBIENT_RADIUS_PX    = 260;  // only reveal cities within this radius
+  // Zoom-adaptive reveal parameters. At continent zoom we surface only
+  // a few major capitals so the canvas stays clean; at city zoom we
+  // unlock underrated destinations and increase both the radius (so
+  // they're reachable) and the count (so discovery is generous).
+  function _ambientParamsForZoom(zoom) {
+    if (zoom <= 4.5)  return { radius: 220, max: 3, popularOnly: true  };
+    if (zoom <= 6.0)  return { radius: 280, max: 5, popularOnly: false };
+    if (zoom <= 7.5)  return { radius: 340, max: 7, popularOnly: false };
+    return                  { radius: 420, max: 10, popularOnly: false };
+  }
+  // At continent zoom we only reveal these — the world-famous picks
+  // any traveller would recognise. Underrated destinations unlock as
+  // soon as the user zooms in past 4.5.
+  const _POPULAR_CITIES = new Set([
+    'Paris', 'London', 'Rome', 'Barcelona', 'Amsterdam', 'Berlin',
+    'Madrid', 'Vienna', 'Prague', 'Lisbon', 'Munich', 'Athens',
+    'Budapest', 'Florence', 'Milan', 'Venice', 'Copenhagen',
+    'Dublin', 'Stockholm', 'Brussels', 'Reykjavik', 'Krakow',
+    'Naples', 'Porto', 'Nice'
+  ]);
 
   function _clearSceneMarkers() {
     _sceneMarkers.forEach(m => { try { leafletMap.removeLayer(m); } catch(e){} });
@@ -15979,12 +15997,31 @@
   // precedence: while one is open, ambient reveal is suppressed.
   // ============================================================
   function _buildAmbientMarker(d, coords) {
-    const priceLabel = (typeof priceFromRange === 'function')
-      ? priceFromRange(d.price)
-      : ('from €' + (d.price || 99));
-    const flightLabel = (typeof fmtFlight === 'function' && d.flight != null)
-      ? fmtFlight(d.flight)
-      : '';
+    // The marker labels show "{city} · from €X · Yh flight".
+    // Price + flight come from smartDestinations if the user's origin
+    // has a row, otherwise from weekendEstimate (which falls back to
+    // tier-typical estimates so we never show NaN).
+    const origin = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
+    const fromSd = d && d.prices && d.prices[origin];
+    const fromSdFlight = d && d.flights && d.flights[origin];
+    let priceLabel = '';
+    let flightLabel = '';
+    if (fromSd && fromSd > 0) {
+      priceLabel = (typeof priceFromRange === 'function') ? priceFromRange(fromSd) : ('from €' + fromSd);
+      if (fromSdFlight != null && typeof fmtFlight === 'function') {
+        flightLabel = fmtFlight(fromSdFlight);
+      }
+    } else if (typeof weekendEstimate === 'function') {
+      // No direct flight in our matrix — show the all-in weekend
+      // estimate. Origin is the user's; nights/adults from search ctx.
+      try {
+        const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : { origin, adults: 2, nights: 2 };
+        const est = weekendEstimate(d.key, ctx);
+        priceLabel = 'from €' + est.totalPP + ' pp';
+      } catch (e) {
+        priceLabel = '—';
+      }
+    }
     const html = `
       <div class="lf-ambient">
         <span class="lf-ambient-dot" aria-hidden="true"></span>
@@ -16013,26 +16050,52 @@
     // No cursor → no ambient markers
     if (!containerPx) { _clearAmbientMarkers(); return; }
 
-    // Candidate pool: top-20 ranked destinations from the current
-    // origin so "nearest" is biased toward GENUINELY interesting
-    // weekends, not random Eastern European stops if the user lives
-    // in Madrid. Then filter by pixel distance, then sort, then cap.
-    const ranked = (typeof rankedDestinations === 'function')
-      ? rankedDestinations(mapState.from, 'value').slice(0, 22)
-      : [];
+    // PARAMS by zoom. At continent zoom we show only major capitals
+    // (popularOnly); zooming in unlocks underrated destinations AND
+    // widens the proximity radius so they're actually reachable.
+    const zoom = leafletMap.getZoom();
+    const params = _ambientParamsForZoom(zoom);
+    const radiusSq = params.radius * params.radius;
+
+    // POOL — every destination in smartDestinations that has
+    // coordinates. NOT filtered by "ranked from origin" (the previous
+    // behaviour) because that excluded everything when the origin
+    // wasn't one of the 9 metropolises with a flight-price matrix,
+    // and it clipped any destination outside the user's top-22
+    // value-score. The whole point of discovery is exposing cities
+    // the user wouldn't have searched for explicitly.
+    const pool = (typeof smartDestinations !== 'undefined') ? smartDestinations : [];
+    const origin = mapState.from;
+
     const candidates = [];
-    for (const d of ranked) {
+    const nearestUnfiltered = [];   // for fallback when in-radius is empty
+    for (const d of pool) {
+      if (!d || d.key === origin) continue;
+      if (params.popularOnly && !_POPULAR_CITIES.has(d.key)) continue;
       const coords = cityCoords[d.key];
       if (!coords) continue;
       const px = leafletMap.latLngToContainerPoint(coords);
       const dx = px.x - containerPx.x;
       const dy = px.y - containerPx.y;
       const distSq = dx * dx + dy * dy;
-      if (distSq > AMBIENT_RADIUS_PX * AMBIENT_RADIUS_PX) continue;
-      candidates.push({ d, distSq, coords });
+      const entry = { d, distSq, coords };
+      nearestUnfiltered.push(entry);
+      if (distSq <= radiusSq) candidates.push(entry);
     }
+
+    // Primary: sort in-radius by distance, take max
     candidates.sort((a, b) => a.distSq - b.distSq);
-    const wanted = candidates.slice(0, AMBIENT_REVEAL_COUNT);
+    let wanted = candidates.slice(0, params.max);
+
+    // FALLBACK — if nothing is in radius (cursor over open sea,
+    // narrow zoom, or popularOnly excluded everything in the local
+    // region), surface the 2 nearest from the unfiltered pool so the
+    // map never feels broken. Includes underrated cities so the user
+    // still discovers them at low zoom.
+    if (wanted.length === 0) {
+      nearestUnfiltered.sort((a, b) => a.distSq - b.distSq);
+      wanted = nearestUnfiltered.slice(0, 2);
+    }
     const wantedKeys = new Set(wanted.map(c => c.d.key));
 
     // Diff: remove markers no longer in set, add new ones. Keeping
