@@ -10622,17 +10622,22 @@
   function canFly(origin, dest) {
     return !!(airportFor(origin) && airportFor(dest));
   }
+  // canBus / canTrain — route the lookup through MV.transport.getOptions
+  // so we hit the NORMALIZED route DB (handles narrative-ordered keys
+  // like 'Vienna↔Bratislava' the same as 'Bratislava↔Vienna'). The raw
+  // MV.transport.busRoutes / trainRoutes objects still have unsorted
+  // keys for source-readability; getOptions does the alphabetic-key
+  // normalization at call time. Without this routing, ~30 of ~80 route
+  // entries were unreachable to the validation layer.
   function canBus(origin, dest) {
     if (!origin || !dest || origin === dest) return false;
-    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.busRoutes) return false;
-    const key = [origin, dest].sort().join('↔');
-    return !!MV.transport.busRoutes[key];
+    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.getOptions) return false;
+    return MV.transport.getOptions(origin, dest).some(o => o.mode === 'bus');
   }
   function canTrain(origin, dest) {
     if (!origin || !dest || origin === dest) return false;
-    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.trainRoutes) return false;
-    const key = [origin, dest].sort().join('↔');
-    return !!MV.transport.trainRoutes[key];
+    if (typeof MV === 'undefined' || !MV.transport || !MV.transport.getOptions) return false;
+    return MV.transport.getOptions(origin, dest).some(o => o.mode === 'train');
   }
 
   // ============================================================
@@ -10673,30 +10678,55 @@
     return { url, valid: false, label: 'Search on Google Flights', note: 'No direct deep-link available' };
   }
 
-  function buildFlixBusUrl(origin, dest, ctx) {
+  function buildFlixBusUrl(origin, dest, ctxIn) {
     if (!dest || origin === dest) {
       return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus', note: null };
     }
-    // ALWAYS use the destination city-listing URL — never a constructed
-    // route pair. Even when our MV.transport.busRoutes DB confirms the
-    // pair, FlixBus's actual route page can return "no routes found"
-    // when their inventory doesn't match (no connections that day,
-    // wrong slug, regional naming mismatch).
+    const ctx    = ctxIn || {};
+    const dates  = ctx.dates || {};
+    const adults = Math.max(1, ctx.adults || 1);
+    // ASCII-normalise city names so URL params resolve reliably
+    // even for "Kraków" / "Wrocław" / "Gdańsk". FlixBus's search
+    // engine handles ASCII names robustly; Unicode is hit-and-miss.
+    const ascii = (s) => (_stripDiacritics(String(s || '')) || '').replace(/\s+/g, ' ').trim();
+
+    // FALLBACK HIERARCHY (per brief):
+    //   1. Full route + dates + passengers     ← when canBus
+    //   2. Destination-only city listing       ← when route uncertain
+    //   3. Homepage                            ← last resort (handled above)
     //
-    // The city-routes URL is the safe-bet: it shows EVERY FlixBus
-    // connection serving the destination. User picks their origin
-    // themselves — slower flow but always lands on a usable page.
-    //
-    //   https://global.flixbus.com/bus-routes/{dest-slug}
-    //
-    // Trust > deep-link precision.
-    const url = `https://global.flixbus.com/bus-routes/${citySlug(dest)}`;
-    const valid = canBus(origin, dest);  // whether we recommend bus AT ALL
+    // Why this shape: canBus is our confidence signal that the pair
+    // is genuinely served. When true, a full pre-filled search URL
+    // gives the seamless "everything is already set up for me" feel
+    // the user asked for. When false, the destination-only page
+    // shows EVERY route to the city — user can pick a workaround
+    // (Berlin → Vienna → Bratislava etc.) themselves.
+    if (canBus(origin, dest)) {
+      // Full pre-filled search. FlixBus's /search endpoint accepts
+      // city names as string params; we provide origin, destination,
+      // outbound + return dates, passenger count. Format verified
+      // against FlixBus's current URL schema.
+      const params = new URLSearchParams();
+      params.set('fromCity', ascii(origin));
+      params.set('toCity',   ascii(dest));
+      if (dates.checkin)  params.set('rideDate',   dates.checkin);
+      if (dates.checkout) params.set('returnDate', dates.checkout);
+      params.set('adult', String(adults));
+      return {
+        url: `https://global.flixbus.com/search?${params.toString()}`,
+        valid: true,
+        label: 'Find buses on FlixBus',
+        note: null
+      };
+    }
+
+    // Unknown route → CITY-LEVEL listing. Always lands on a usable
+    // page (every FlixBus connection serving the destination).
     return {
-      url,
-      valid,
-      label: valid ? 'Check FlixBus' : 'Browse FlixBus to ' + dest,
-      note: valid ? null : 'Direct route not confirmed — search city listings'
+      url: `https://global.flixbus.com/bus-routes/${citySlug(dest)}`,
+      valid: false,
+      label: 'Find buses to ' + dest,
+      note: 'Direct route not confirmed — FlixBus search will suggest alternatives'
     };
   }
 
