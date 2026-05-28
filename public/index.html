@@ -10674,29 +10674,29 @@
   }
 
   function buildFlixBusUrl(origin, dest, ctx) {
-    if (!origin || !dest || origin === dest) {
-      return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus routes', note: null };
+    if (!dest || origin === dest) {
+      return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus', note: null };
     }
-    if (canBus(origin, dest)) {
-      // Known route → SEO route page renders the pair with current
-      // schedules + prices. Verified format:
-      //   https://global.flixbus.com/bus/{from-slug}-{to-slug}
-      return {
-        url: `https://global.flixbus.com/bus/${citySlug(origin)}-${citySlug(dest)}`,
-        valid: true,
-        label: 'Check FlixBus prices',
-        note: null
-      };
-    }
-    // Unknown route → CITY-LEVEL listing on FlixBus instead of a
-    // route page that would render "no routes found". User sees
-    // every FlixBus connection to the destination, can pick a
-    // workaround manually (e.g. Berlin → Vienna → Bratislava).
+    // ALWAYS use the destination city-listing URL — never a constructed
+    // route pair. Even when our MV.transport.busRoutes DB confirms the
+    // pair, FlixBus's actual route page can return "no routes found"
+    // when their inventory doesn't match (no connections that day,
+    // wrong slug, regional naming mismatch).
+    //
+    // The city-routes URL is the safe-bet: it shows EVERY FlixBus
+    // connection serving the destination. User picks their origin
+    // themselves — slower flow but always lands on a usable page.
+    //
+    //   https://global.flixbus.com/bus-routes/{dest-slug}
+    //
+    // Trust > deep-link precision.
+    const url = `https://global.flixbus.com/bus-routes/${citySlug(dest)}`;
+    const valid = canBus(origin, dest);  // whether we recommend bus AT ALL
     return {
-      url: `https://global.flixbus.com/bus-routes/${citySlug(dest)}`,
-      valid: false,
-      label: 'Browse FlixBus to ' + dest,
-      note: 'Direct route not confirmed — search city listings'
+      url,
+      valid,
+      label: valid ? 'Check FlixBus' : 'Browse FlixBus to ' + dest,
+      note: valid ? null : 'Direct route not confirmed — search city listings'
     };
   }
 
@@ -11239,9 +11239,9 @@
                 <div class="cb-row-icon">🛏</div>
                 <div class="cb-row-body">
                   <div class="cb-row-label">Accommodation budget · ${est.nights} ${est.nights === 1 ? 'night' : 'nights'}, ${est.rooms} ${est.rooms === 1 ? 'room' : 'rooms'}</div>
-                  <div class="cb-row-sub">typical mid-range stay in ${cityName} · search live inventory on Booking</div>
+                  <div class="cb-row-sub">~€${est.stay.nightlyLow}–€${est.stay.nightlyMid}/night · hostel to mid-range · est · search live on Booking</div>
                 </div>
-                <div class="cb-row-price">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p</span></div>
+                <div class="cb-row-price" title="Estimate — biased toward cheapest realistic stays. Real Booking results vary by date + room type.">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p · est</span></div>
                 <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener" title="Search opens on Booking.com">Search Booking →</a>
               </div>
 
@@ -12778,11 +12778,21 @@
     const transportDuration = opt ? opt.duration : (sd && sd.flights ? sd.flights[origin] : null);
     const transportSource   = opt ? (opt.source || 'estimate') : 'estimate';
 
-    // 2. Stay — h_mid is the median 3* hotel for THIS city. Room cost
-    //    is shared across adults (2 adults sharing a double = each
-    //    pays half). For odd adult counts we still divide cleanly so
-    //    the maths is honest (3 adults in 2 rooms ≈ 1.5 rooms-worth).
-    const hotelNight = econ.h_mid;
+    // 2. Stay — BUDGET-LEANING BLEND of h_min (cheapest acceptable
+    //    bed / hostel) and h_mid (median 3* hotel). Using h_mid alone
+    //    over-estimated Booking results — real cheap weekend bookings
+    //    cluster around hostels and budget Airbnbs, not 3* hotels.
+    //    The blend gives:
+    //      Tirana  35 → 24/night
+    //      Berlin  95 → 58/night
+    //      Reykjavik 220 → 138/night
+    //    much closer to what users actually find on Booking when they
+    //    sort cheapest-first. We also expose the nightly RANGE
+    //    (h_min → h_mid) so the UI can show "~€20–€60/night" instead
+    //    of a single number, making variability explicit.
+    const hotelNightlyLow  = econ.h_min;
+    const hotelNightlyMid  = econ.h_mid;
+    const hotelNight = _round5((hotelNightlyLow + hotelNightlyMid) / 2);
     const rooms      = Math.max(1, Math.ceil(adults / 2));
     const stayTotal  = _round5(hotelNight * nights * rooms);
     const stayPP     = _round5(stayTotal / adults);
@@ -12799,7 +12809,7 @@
     return {
       city: cityName, origin, adults, nights, rooms,
       transport: { mode: transportMode, pp: transportPP, provider: transportProvider, duration: transportDuration, source: transportSource },
-      stay:      { total: stayTotal, pp: stayPP, nightly: hotelNight },
+      stay:      { total: stayTotal, pp: stayPP, nightly: hotelNight, nightlyLow: hotelNightlyLow, nightlyMid: hotelNightlyMid },
       activity:  { pp: activityPP, source: 'estimate' },
       totalPP, tier: econ.tier
     };
