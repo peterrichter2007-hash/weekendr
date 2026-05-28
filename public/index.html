@@ -8590,33 +8590,12 @@
   }
   
   // ============================================================
-  // GENERATE — instant-first search, AI enrichment in background
+  // GENERATE — deterministic search, no AI, no network
   //
-  // Why this is a two-stage flow:
-  //   /api/generate-trips proxies Anthropic; latency is 8–25s
-  //   on a long prompt. The first commit of this flow waited for
-  //   the AI to return before rendering anything — search felt
-  //   broken on slow connections.
-  //
-  // Now: we synthesise 5 results from smartDestinations within
-  // ~50ms, render the drawer immediately, then fire the AI in
-  // the background. When AI returns we MERGE its editorial copy
-  // into the cards already on screen — they pulse-update in
-  // place rather than the user staring at a spinner.
+  // Search is entirely client-side. We rank smartDestinations by
+  // budget / vibe / distance and render the drawer immediately.
+  // No external API call, no waiting, no enrichment layer.
   // ============================================================
-
-  // Honest loading STAGES — each maps to a real bit of work, not
-  // random magazine copy. The cycle adjusts pace so users on slow
-  // connections see "Almost there…" rather than running off the
-  // end of the list. Used by the legacy loading overlay if it
-  // surfaces during AI enrichment.
-  const loadingMessages = [
-    { t: 'Finding cheapest routes…',    s: 'Checking flight, bus and train pairs from your origin.' },
-    { t: 'Checking destinations…',      s: 'Filtering 67 European weekends to the ones in your budget.' },
-    { t: 'Building weekend plans…',     s: 'Stay, one paid experience, the cheapest realistic flight.' },
-    { t: 'Asking the editors…',         s: 'Adding the editorial layer — the one neighbourhood, the one bar.' },
-    { t: 'Almost there…',               s: 'Final pass — the moments that will become memories.' }
-  ];
 
   // ============================================================
   // INSTANT TRIP SYNTHESIS — no AI, no network
@@ -8678,9 +8657,8 @@
     });
     candidates.sort((a, b) => a.score - b.score);
     const picks = candidates.slice(0, 5);
-    // Map to trip-shape — same fields openTripDetail consumes from
-    // the AI output. Copy comes from curated sources; the AI will
-    // overwrite description/highlights once it returns.
+    // Map to trip-shape consumed by openTripDetail. All copy comes
+    // from curated sources (cityProfiles + cityEconomy + d.vibe).
     return picks.map((c, i) => {
       const d = c.d;
       const prof = (typeof cityProfiles !== 'undefined' && cityProfiles[d.key]) || null;
@@ -8715,215 +8693,25 @@
         price: 'from €' + c.totalPP + ' per person all-in',
         best_for: vibes.length ? vibes.join(' · ') + ' weekends' : 'Weekend escapes from ' + origin,
         image_keywords: d.key,
-        _synthesised: true,
         _estTotalPP: c.totalPP
       };
     });
   }
 
-  // Trip-search cache — TTL 30min. Avoids hammering the AI when
-  // the user toggles vibes / changes budget by a tick and re-fires.
-  const _TRIP_CACHE_TTL_MS = 30 * 60 * 1000;
-  function _tripCacheKey(ctx) {
-    const v = (ctx.vibes || []).slice().sort().join(',');
-    return 'mv_trips_' + (ctx.from || '') + '_' + (ctx.budget || '') + '_' + v;
-  }
-  function _tripCacheGet(ctx) {
-    try {
-      const raw = localStorage.getItem(_tripCacheKey(ctx));
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.t || !parsed.trips) return null;
-      if (Date.now() - parsed.t > _TRIP_CACHE_TTL_MS) return null;
-      return parsed.trips;
-    } catch (e) { return null; }
-  }
-  function _tripCacheSet(ctx, trips) {
-    try {
-      localStorage.setItem(_tripCacheKey(ctx), JSON.stringify({ t: Date.now(), trips }));
-    } catch (e) {}
-  }
-
-  // Merge AI editorial fields into already-rendered cards. We
-  // ONLY overwrite descriptive/text fields — keep our pricing
-  // (the AI's prices are unreliable), our tags, our internal
-  // shape. The visual update is silent so the user just sees
-  // the description text refine on next render.
-  function _mergeAiIntoTrips(synthTrips, aiTrips) {
-    if (!Array.isArray(aiTrips) || !aiTrips.length) return synthTrips;
-    return synthTrips.map((t, i) => {
-      // Match by place name first, then by index. AI may return
-      // a different ordering or even different cities — that's
-      // OK, we only enrich what we can match.
-      const ai = aiTrips.find(a => a.place && t.place && a.place.toLowerCase() === t.place.toLowerCase()) || aiTrips[i];
-      if (!ai) return t;
-      return {
-        ...t,
-        title:       ai.title       || t.title,
-        vibe:        ai.vibe        || t.vibe,
-        description: ai.description || t.description,
-        highlights:  (Array.isArray(ai.highlights) && ai.highlights.length) ? ai.highlights : t.highlights,
-        tags:        (Array.isArray(ai.tags)       && ai.tags.length)       ? ai.tags       : t.tags,
-        best_for:    ai.best_for    || t.best_for,
-        _synthesised: false
-      };
-    });
-  }
-  
-  async function generate() {
+  function generate() {
     const from = document.getElementById('i-from').value.trim() || 'Berlin';
-    const when = document.getElementById('i-when').value;
-    const group = document.getElementById('i-group').value;
-    const len = document.getElementById('i-length').value;
     const sliderEl = document.getElementById('budgetSlider');
     const budgetPPRaw = sliderEl ? parseInt(sliderEl.value) : 500;
-    const budget = sliderEl ? budgetLabelFromValue(budgetPPRaw) : 'Open budget';
     const vibes = [...document.querySelectorAll('.vibe-pill.on')].map(p => p.dataset.vibe);
     const ctx = getSearchContext();
-    const cacheCtx = { from, budget: budgetPPRaw, vibes };
 
-    // --- STAGE 1: INSTANT RESULTS ---------------------------------
-    // Synthesise 5 results from our own data in <50ms. The user sees
-    // a populated drawer before they have time to register any
-    // loading state — feels almost instant.
+    // Deterministic synthesis from smartDestinations + cityEconomy +
+    // weekendEstimate. Renders in <50ms — no network, no AI.
     const synthTrips = synthesizeInstantTrips({
       from, adults: ctx.adults, nights: ctx.nights, budgetPP: budgetPPRaw, vibes
     });
     if (synthTrips.length) {
       renderResults(synthTrips, { from, vibes });
-    }
-
-    // If cache has fresh AI results for this exact (origin, budget,
-    // vibes) tuple — merge them in immediately, skip the AI call.
-    const cached = _tripCacheGet(cacheCtx);
-    if (cached && cached.length) {
-      renderResults(_mergeAiIntoTrips(synthTrips, cached), { from, vibes });
-      return;   // ✓ instant + enriched, zero network
-    }
-
-    // No AI key → we're done. The synthesised results are honest;
-    // they just don't have editorial copy. Don't pester the user.
-    const key = getKey();
-    if (!key) return;
-
-    // --- STAGE 2: AI ENRICHMENT (background) ----------------------
-    // From here on the user can scroll the (already-populated) drawer
-    // while the AI grinds. We don't show a blocking veil any more —
-    // a small button-state on the concierge CTA tells them we're
-    // still polishing.
-    const btn = document.getElementById('genBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div><span class="btxt">Refining</span>';
-  
-    const prompt = `You are Maison Voyage — the smartest tool for finding CHEAP, beautiful European weekend trips. Target user: young adults, students, couples, friend groups who want aesthetic destinations at the LOWEST possible budget.
-  
-  Travel brief:
-  - Departing from: ${from}
-  - When: ${when}
-  - Group: ${group}
-  - Length: ${len}
-  - Budget per person (FLIGHT + 2 NIGHTS + ACTIVITIES — be strict): ${budget}
-  - Mood / vibes: ${vibes.length ? vibes.join(', ') : 'Open'}
-  
-  Return EXACTLY 5 European weekend escapes as a JSON array (no prose, no markdown). RANK BY VALUE — cheapest realistic option first. Each item:
-  {
-  "place": "City name (Europe only, e.g. Lisbon)",
-  "country": "Country",
-  "title": "Editorial title (max 4 words, evocative, not generic)",
-  "vibe": "1-line emotional hook — specific to this city",
-  "description": "2-3 sentences. Voice: young, aesthetic, honest. Mention ONE concrete reason it's cheap (low-cost carrier hub / cheap hostels / strong euro etc.) and ONE specific aesthetic moment.",
-  "highlights": ["cheapest neighbourhood to stay", "best cheap food spot (specific)", "best free/cheap thing to do", "best cheap nightlife or beach moment"],
-  "tags": ["3-5 short tags — must include 'Cheap flight' or 'Best value' for top 2 picks"],
-  "price": "from €XXX per person all-in (flight + 2 nights + 1 activity, REALISTIC)",
-  "best_for": "Who this is perfect for (young adults / friends / couples / students)",
-  "image_keywords": "2-3 words for sourcing imagery"
-  }
-  
-  CRITICAL:
-  - Europe ONLY. No Marrakech, Istanbul outside Europe, no transatlantic.
-  - Cheapest first. Most expensive option should not exceed budget × 1.3.
-  - "price" must be HONEST (Skyscanner-level realistic) — flight €40-€150 + 2 nights hostel/Airbnb €60-€200 + 1 activity €30-€80.
-  - Names like "Lisbon", "Krakow", "Naples", "Porto", "Budapest", "Sofia", "Tallinn", "Valencia" should appear before Mykonos/Santorini/Amalfi.
-  - TRANSPORT INTELLIGENCE: for short-haul nearby routes, RECOMMEND bus or
-    train when it beats flying. The platform's route DB confirms FlixBus
-    wins on pairs like Berlin↔Prague (€16, 4.5h), Vienna↔Bratislava (€6, 1h),
-    Munich↔Salzburg (€9, 1.8h), Zurich↔Milan (bus €19 or SBB train €35),
-    Berlin↔Hamburg (€12 / Deutsche Bahn €19), Vienna↔Budapest (€14, 3h),
-    Krakow↔Wrocław (€14), Prague↔Krakow (€22), Madrid↔Barcelona (AVE €35),
-    Rome↔Florence (Italo €19), Milan↔Venice (€14-€19), London↔Paris
-    (Eurostar €65), Amsterdam↔Brussels (Thalys €35), Paris↔Brussels (€11
-    bus or €35 Thalys). For these pairs, mention in description: "skip
-    flying — FlixBus is €X / Italo is €X". For islands (Reykjavik,
-    Mykonos, Santorini, Ibiza, Mallorca, Bergen, Catania, Sicily) NEVER
-    suggest bus/train — flight only.
-  - No generic AI fluff. Write like Suitcase Magazine on a backpacker's budget.
-  Return ONLY valid JSON array.`;
-  
-    // Cancel any in-flight previous request before issuing a new one —
-    // user spam-clicking the concierge button no longer fights itself.
-    if (window.__mvTripsCtrl) {
-      try { window.__mvTripsCtrl.abort(); } catch (e) {}
-    }
-    const ctrl = new AbortController();
-    window.__mvTripsCtrl = ctrl;
-    try {
-      const res = await fetch('/api/generate-trips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey: key }),
-        signal: ctrl.signal
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Network error' }));
-        if (res.status === 401 || /invalid|unauthorised|unauthorized|ungültig/i.test(err.error || '')) {
-          localStorage.removeItem(KEY_STORAGE);
-          openKey();
-          document.getElementById('keyErr').textContent = 'That key didn\'t work. Please check it and try again.';
-          document.getElementById('keyErr').classList.add('show');
-        }
-        // Non-key errors stay silent — the synthesised results are
-        // already on screen, no reason to interrupt with an alert.
-        resetBtn();
-        return;
-      }
-
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '';
-      const aiTrips = parseTrips(text);
-      if (aiTrips && aiTrips.length) {
-        // Merge AI editorial copy into the already-rendered cards.
-        const merged = _mergeAiIntoTrips(synthTrips, aiTrips);
-        renderResults(merged, { from, vibes });
-        _tripCacheSet(cacheCtx, aiTrips);
-      }
-      resetBtn();
-    } catch (e) {
-      // AbortError = user (or our own re-submit) cancelled — stay silent.
-      // Network errors also stay silent — synthesised results remain
-      // useful even without AI enrichment, no need to alert the user.
-      resetBtn();
-      if (e.name !== 'AbortError') console.warn('AI enrichment failed silently:', e.message);
-    } finally {
-      if (window.__mvTripsCtrl === ctrl) window.__mvTripsCtrl = null;
-    }
-  }
-  
-  function resetBtn() {
-    const btn = document.getElementById('genBtn');
-    btn.disabled = false;
-    btn.innerHTML = `<span class="cg-cta-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4L2 9.4h7.6L12 2z"/></svg><span class="btxt">Find my cheapest weekend</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>`;
-  }
-  
-  function parseTrips(text) {
-    try {
-      const cleaned = text.replace(/```json|```/g, '').trim();
-      const match = cleaned.match(/\[[\s\S]*\]/);
-      if (match) return JSON.parse(match[0]);
-      return JSON.parse(cleaned);
-    } catch (e) {
-      console.error('Parse error', e, text);
-      return null;
     }
   }
   
