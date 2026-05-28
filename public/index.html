@@ -10639,111 +10639,11 @@
   }
   
   // ============================================================
-  // AI-POWERED CITY DATA FETCH
-  // Calls /api/generate-trips with a structured prompt asking for
-  // hotels, activities and restaurants for a specific European city.
-  // Caches results per (city + date) in localStorage.
-  // ============================================================
-  function cityCacheKey(city) {
-    return `mv_city_${city}_${new Date().toDateString().replace(/\s/g, '')}`;
-  }
-  
-  async function fetchCityData(city, origin) {
-    const cached = localStorage.getItem(cityCacheKey(city));
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) {}
-    }
-    const apiKey = localStorage.getItem('mv_api_key');
-    if (!apiKey) return null;
-  
-    const d = smartDestinations.find(x => x.key === city);
-    const price = d ? d.prices[origin] : null;
-    const flight = d ? d.flights[origin] : null;
-  
-    const prompt = `You are Maison Voyage — a senior European travel editor curating a weekend in ${city} (flight from ${origin}, ~${flight ? flight.toFixed(1) + 'h' : 'short'}, return ~€${price || 100}). Write like Cereal Magazine, Suitcase, Condé Nast Traveller — short, specific, evocative.
-  
-  Return ONLY valid JSON (no prose, no markdown):
-  {
-  "summary": "2 elegant sentences on what makes ${city} unmissable this weekend — specific to its identity, not generic city talk",
-  "vibe_tags": ["3 short, distinctive vibe tags"],
-  "best_season": "Realistic window (e.g. 'May – October')",
-  "currency": "EUR",
-  "activities": [
-    {
-      "name": "Specific, named activity in ${city}",
-      "category": "Tour | Food | Nightlife | Wellness | Cultural | Outdoor | Beach",
-      "vibe": "Short editorial hook (5-9 words, evocative)",
-      "description": "1 specific sentence — what you'll actually do. No 'great experience' or 'fun activity'.",
-      "price_per_person": 45,
-      "duration": "2 hours"
-    }
-    // RETURN 8 ACTIVITIES — must reflect what ${city} is famous for, not generic tours.
-    // Examples by city:
-    //   Barcelona → tapas crawl El Born, Gaudí dawn walk, Bunkers del Carmel sunset, beach club Salt Beach
-    //   Ibiza → Es Vedrà boat trip, Hï closing party, Cala Salada sunset, San Joan hippy market
-    //   Paris → Musée d'Orsay private tour, Marais food walk, Seine evening cruise, croissant masterclass
-    //   Lisbon → Alfama fado night, LX Factory wander, Cabo da Roca day trip, ginjinha bar crawl
-    // Spread categories — not all food, not all tours.
-  ],
-  "restaurants": [
-    {
-      "name": "Real, named restaurant in ${city}",
-      "cuisine": "Cuisine type",
-      "vibe": "Short vibe (e.g. 'Tiny family trattoria, no menu')",
-      "price_range": "€€ or €€€ or €€€€",
-      "description": "1 specific sentence",
-      "must_order": "Specific dish"
-    }
-    // RETURN 4 RESTAURANTS — one casual, two mid, one fine.
-  ],
-  "guides": [
-    {
-      "title": "Editorial guide title (e.g. 'Where to drink in ${city}')",
-      "category": "Nightlife | Food | Beaches | Hidden gems | Luxury",
-      "summary": "1 specific sentence — what makes this guide useful",
-      "highlights": ["3 short bullet items, each a specific place or moment"]
-    }
-    // RETURN 4 GUIDES, themes tailored to ${city}'s identity.
-  ]
-  }
-  
-  CRITICAL:
-  - Use REAL place names (hotels, attractions, restaurants) that actually exist in ${city}
-  - Activities MUST match the city's identity (no generic "city walking tour" — use what the city is FAMOUS for)
-  - All prices in EUR, realistic for current European weekend pricing
-  - All descriptions concise, specific, EDITORIAL — never robotic
-  - Europe only`;
-  
-    // Hard timeout — if AI hangs we never block the page. The curated
-    // baseline is already on screen by the time this returns.
-    const ctrl = new AbortController();
-    const timeoutId = setTimeout(() => ctrl.abort(), 12000);
-    try {
-      const res = await fetch('/api/generate-trips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey }),
-        signal: ctrl.signal
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) return null;
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '';
-      const cleaned = text.replace(/```json|```/g, '').trim();
-      const match = cleaned.match(/\{[\s\S]*\}/);
-      if (!match) return null;
-      const parsed = JSON.parse(match[0]);
-      try { localStorage.setItem(cityCacheKey(city), JSON.stringify(parsed)); } catch (e) {}
-      return parsed;
-    } catch (e) {
-      clearTimeout(timeoutId);
-      // Silent — baseline already on screen
-      return null;
-    }
-  }
-  
-  // ============================================================
   // OPEN CITY DETAIL — premium structured city page
+  //
+  // Renders entirely from curated sources: cityProfiles (activities,
+  // restaurants, guides), cityEconomy (price tiers), cityCoords,
+  // cityGallery (images). No external API call.
   // ============================================================
   function openTripDetail(trip, idx, imgOverride) {
     const detail = document.getElementById('detail');
@@ -11018,7 +10918,7 @@
               </div>
 
               <p class="cb-disclaimer">
-                <span class="ai-pill">AI-assisted · estimates</span>
+                <span class="ai-pill">Estimates</span>
                 Prices on this page are <strong>estimates</strong> shown as ranges (e.g. "€30–€70") because real partner results vary by day-of-week, advance window and demand. They're directionally honest, never live partner inventory. Click any <strong>Search live</strong> button to see the actual current price at checkout. <a href="#" data-legal="privacy">Privacy</a>
               </p>
             </div>
@@ -12393,12 +12293,12 @@
     ];
   }
   
-  async function populateCityListings(city, origin, links) {
-    // 1. Render the curated dataset IMMEDIATELY so the page never sits
-    //    on skeletons. Hotels removed — we don't have a Booking Partner
-    //    API and shouldn't pretend to recommend specific properties.
-    //    The cost-breakdown already gives an honest accommodation
-    //    budget, and the Booking.com CTA lets users see live inventory.
+  function populateCityListings(city, origin, links) {
+    // Renders the curated dataset for this city. Hotels removed — we
+    // don't have a Booking Partner API and shouldn't pretend to
+    // recommend specific properties. The cost-breakdown already gives
+    // an honest accommodation budget, and the Booking.com CTA lets
+    // users see live inventory.
     const baseline = {
       activities: fallbackActivities(city),
       restaurants: fallbackRestaurants(city),
@@ -12407,20 +12307,6 @@
     renderActivities(baseline.activities, city, links);
     renderRestaurants(baseline.restaurants, city, links);
     renderGuides(baseline.guides, city, links);
-
-    // 2. Optionally enhance with AI in the background. If the user has
-    //    no key, or the AI is slow / errors / times out — the curated
-    //    data above stays. The user always sees content. We ignore any
-    //    `hotels` field the AI returns — that section no longer exists.
-    try {
-      const enhanced = await fetchCityData(city, origin);
-      if (!enhanced) return;
-      if (Array.isArray(enhanced.activities) && enhanced.activities.length) renderActivities(enhanced.activities, city, links);
-      if (Array.isArray(enhanced.restaurants) && enhanced.restaurants.length) renderRestaurants(enhanced.restaurants, city, links);
-      if (Array.isArray(enhanced.guides) && enhanced.guides.length) renderGuides(enhanced.guides, city, links);
-    } catch (e) {
-      // Silent — baseline already on screen
-    }
   }
   
   function fallbackGuides(city) {
