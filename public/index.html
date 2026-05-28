@@ -5017,8 +5017,163 @@
     }
     
     /* ============================================================
-       BUDGET SLIDER — Apple-style range
+       BUDGET PANEL — redesigned four-tier slider with live breakdown
+       The panel replaces the old slider-only field. Reads top-to-
+       bottom: label → big amount → tier word → slider → tier tags
+       → breakdown row → footnote. Each layer adds context without
+       requiring the user to compute anything mentally.
        ============================================================ */
+    .bp-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .bp-display {
+      display: flex;
+      align-items: baseline;
+      gap: 0.7rem;
+      margin-top: 0.2rem;
+    }
+    .bp-amount {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 3.5vw, 2.6rem);
+      font-weight: 300;
+      letter-spacing: -0.028em;
+      line-height: 1;
+      color: var(--ink);
+      font-variation-settings: "opsz" 96;
+    }
+    .bp-tier-label {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: -0.005em;
+      line-height: 1;
+    }
+    .bp-slider-wrap {
+      /* Inherits .cg-slider-wrap below — just extra vertical breathing */
+      margin-top: 0.4rem;
+    }
+    .bp-tier-row {
+      display: grid;
+      grid-template-columns: 10.7% 14.3% 25% 50%;  /* matches BUDGET_TIERS breakpoints */
+      margin-top: 0.7rem;
+      padding: 0 4px;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .bp-tier-tag {
+      padding-left: 4px;
+      transition: color 0.3s var(--ease-out);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Active tier reads in ink + bronze accent dot before it. */
+    .bp-tier-tag.on {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .bp-tier-tag.on::before {
+      content: '●';
+      font-size: 0.5rem;
+      margin-right: 0.3em;
+      vertical-align: middle;
+      color: var(--accent);
+    }
+
+    /* Live breakdown — three component cells + a highlighted total.
+       Cells share a glass treatment that's lighter than the field's
+       border so the breakdown reads as the panel's data summary, not
+       as a separate UI block. */
+    .bp-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 1.35fr;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .bp-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.18rem;
+      padding: 0.7rem 0.85rem;
+      background: rgba(252, 248, 240, 0.55);
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      transition: background 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+    }
+    .bp-cell-icon {
+      font-size: 1rem;
+      line-height: 1;
+      margin-bottom: 0.15rem;
+      opacity: 0.85;
+    }
+    .bp-cell-value {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.012em;
+      line-height: 1.1;
+    }
+    .bp-cell-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .bp-cell-sub {
+      font-size: 0.62rem;
+      color: var(--muted-2);
+      letter-spacing: 0.04em;
+    }
+    /* Total cell — same shape, premium ink-on-cream feel + accent border */
+    .bp-cell-total {
+      background: linear-gradient(135deg, rgba(126, 98, 48, 0.06) 0%, rgba(252, 248, 240, 0.65) 100%);
+      border-color: rgba(126, 98, 48, 0.22);
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .bp-cell-total .bp-cell-value {
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    .bp-cell-total .bp-cell-label {
+      color: var(--accent);
+      opacity: 0.85;
+    }
+
+    /* Mobile: stack the breakdown as 2×2 so the total still reads as
+       a distinct card without horizontal squeeze on small screens. */
+    @media (max-width: 720px) {
+      .bp-amount { font-size: 1.75rem; }
+      .bp-tier-label { font-size: 0.95rem; }
+      .bp-breakdown {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+      }
+      .bp-cell-total { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+      .bp-cell-total .bp-cell-label { order: 1; }
+      .bp-cell-total .bp-cell-value { order: 2; margin-left: auto; }
+      .bp-cell-total .bp-cell-sub   { display: none; }
+      .bp-tier-row { font-size: 0.6rem; letter-spacing: 0.08em; }
+    }
+    /* Even-narrower: single column for tier tags so they don't overlap */
+    @media (max-width: 460px) {
+      .bp-tier-row {
+        grid-template-columns: 1fr 1fr 1fr 1fr;  /* equal split, lose proportional matching for legibility */
+      }
+    }
+
+    /* Legacy slider-head block kept below so the existing styles
+       remain available for any other slider instance (the mobile
+       step-wizard sw-slider reuses .cg-slider). */
     .cg-slider-head {
       display: flex; justify-content: space-between; align-items: baseline;
       margin-bottom: 0.7rem;
@@ -5180,6 +5335,42 @@
       transition: opacity 0.3s var(--ease-out);
       min-height: 1.4em;
     }
+    /* Compact mobile breakdown — three component pills + total.
+       Sits between the slider track and the sub-label so the user
+       sees what their budget buys without scrolling. */
+    .sw-budget-mini {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.85rem;
+      padding: 0.55rem 0.7rem;
+      background: rgba(252, 248, 240, 0.55);
+      border: 1px solid var(--hairline);
+      border-radius: 100px;
+      font-size: 0.74rem;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+      flex-wrap: wrap;
+    }
+    .sw-budget-mini strong {
+      color: var(--ink);
+      font-weight: 600;
+      font-family: var(--serif);
+      letter-spacing: -0.005em;
+    }
+    .sw-budget-mini-total {
+      padding-left: 0.65rem;
+      margin-left: auto;
+      border-left: 1px solid var(--hairline);
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .sw-budget-mini-total strong {
+      color: var(--accent);
+      font-size: 0.96rem;
+    }
+
     /* Mobile sub-label parallel — same logic, sw skin */
     .sw-budget-sub {
       margin-top: 0.6rem;
@@ -7377,29 +7568,63 @@
               </div>
             </div>
 
-            <div class="cg-field cg-field-wide">
-              <div class="cg-slider-head">
-                <span class="cg-lbl">Your weekend budget · per person</span>
-                <span class="cg-slider-value" id="budgetValue">€500 — Sweet spot</span>
+            <div class="cg-field cg-field-wide bp-panel">
+              <span class="cg-lbl">Your weekend budget · per person</span>
+
+              <!-- Big amount + tier label — the value reads as a single
+                   editorial unit at the top of the panel. -->
+              <div class="bp-display">
+                <span class="bp-amount" id="budgetValueAmount">€500</span>
+                <span class="bp-tier-label" id="budgetValueTier">Premium Escape</span>
               </div>
-              <div class="cg-slider-wrap" data-tier="sweet">
-                <input type="range" id="budgetSlider" class="cg-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person, total weekend" />
+
+              <div class="cg-slider-wrap bp-slider-wrap" data-tier="premium">
+                <input type="range" id="budgetSlider" class="cg-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person, all-in weekend" />
                 <div class="cg-slider-track" aria-hidden="true">
-                  <!-- Tier-boundary hairlines so the user senses where
-                       Shoestring ends and Sweet spot begins. Positioned
-                       at the same breakpoints as BUDGET_TIERS (200/350/
-                       600/1000) scaled to 100-1500 = 7.1%/17.9%/35.7%/64.3%. -->
-                  <span class="cg-slider-tier-mark" style="left: 7.1%"></span>
-                  <span class="cg-slider-tier-mark" style="left: 17.9%"></span>
-                  <span class="cg-slider-tier-mark" style="left: 35.7%"></span>
-                  <span class="cg-slider-tier-mark" style="left: 64.3%"></span>
+                  <!-- Tier boundaries on the 100→1500 scale:
+                       €250 = 10.7%, €450 = 25.0%, €800 = 50.0%
+                       Four tiers split clearly across the track. -->
+                  <span class="cg-slider-tier-mark" style="left: 10.7%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 25%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 50%"></span>
                   <div class="cg-slider-fill" id="budgetFill"></div>
                 </div>
-                <div class="cg-slider-ticks">
-                  <span>€100</span><span>€350</span><span>€600</span><span>€1000</span><span>€1500+</span>
+                <div class="bp-tier-row" aria-hidden="true">
+                  <span class="bp-tier-tag" data-tier="budget">Budget</span>
+                  <span class="bp-tier-tag" data-tier="smart">Smart</span>
+                  <span class="bp-tier-tag" data-tier="premium">Premium</span>
+                  <span class="bp-tier-tag" data-tier="luxury">Luxury</span>
                 </div>
               </div>
-              <div class="cg-slider-sub" id="budgetSub" aria-live="polite">estimates per person — flight + stay + 1 experience</div>
+
+              <!-- Live breakdown — updates as the slider drags.
+                   Sourced from the AVERAGE of in-budget destinations
+                   via weekendEstimate so the numbers always agree
+                   with what each city detail page will show. -->
+              <div class="bp-breakdown" id="budgetBreakdown" aria-live="polite">
+                <div class="bp-cell">
+                  <span class="bp-cell-icon">✈</span>
+                  <span class="bp-cell-value" id="bpVTransport">~€95</span>
+                  <span class="bp-cell-label">transport</span>
+                </div>
+                <div class="bp-cell">
+                  <span class="bp-cell-icon">🛏</span>
+                  <span class="bp-cell-value" id="bpVStay">~€140</span>
+                  <span class="bp-cell-label" id="bpLStay">2-night stay</span>
+                </div>
+                <div class="bp-cell">
+                  <span class="bp-cell-icon">🎟</span>
+                  <span class="bp-cell-value" id="bpVActivity">~€22</span>
+                  <span class="bp-cell-label">experience</span>
+                </div>
+                <div class="bp-cell bp-cell-total">
+                  <span class="bp-cell-label">Typical total</span>
+                  <span class="bp-cell-value" id="bpVTotal">≈ €260</span>
+                  <span class="bp-cell-sub">per person</span>
+                </div>
+              </div>
+
+              <div class="cg-slider-sub" id="budgetSub" aria-live="polite">flight + stay + 1 experience · per person</div>
             </div>
           </div>
 
@@ -8006,12 +8231,20 @@
         <p class="sw-help">Total per-person for the whole weekend — flight, stay, the lot.</p>
         <div class="sw-budget">
           <div class="sw-budget-display" id="swBudgetDisplay">€500</div>
-          <div class="sw-budget-label" id="swBudgetLabel">Sweet spot · mid + select premium</div>
+          <div class="sw-budget-label" id="swBudgetLabel">Premium Escape</div>
           <input type="range" id="swBudgetSlider" class="cg-slider sw-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person" />
           <div class="sw-budget-ticks">
-            <span>€100</span><span>€350</span><span>€600</span><span>€1500+</span>
+            <span>Budget</span><span>Smart</span><span>Premium</span><span>Luxury</span>
           </div>
-          <div class="sw-budget-sub" id="swBudgetSub" aria-live="polite">estimates per person — all-in weekend</div>
+          <!-- Compact mobile breakdown — three component values in a
+               single row + total. Updated live by swUpdateBudgetDisplay. -->
+          <div class="sw-budget-mini" id="swBudgetMini" aria-live="polite">
+            <span>✈ <strong id="swMiniT">~€95</strong></span>
+            <span>🛏 <strong id="swMiniS">~€140</strong></span>
+            <span>🎟 <strong id="swMiniA">~€22</strong></span>
+            <span class="sw-budget-mini-total">Total <strong id="swMiniTotal">≈ €260</strong></span>
+          </div>
+          <div class="sw-budget-sub" id="swBudgetSub" aria-live="polite">flight + stay + 1 experience · per person</div>
         </div>
       </div>
 
@@ -16524,50 +16757,43 @@
   
   // ====== BUDGET SLIDER ======
   // ============================================================
-  // BUDGET TIERS — single source of truth for the slider
+  // BUDGET TIERS — four-band model, the redesigned budget system
   //
-  // Every budget surface (desktop slider value + microcopy, mobile
-  // step-wizard label, AI-prompt budget hint, sidebar's
-  // "in-budget" annotations) routes through these definitions.
-  // Tiers are aligned with cityEconomy tiers so the slider's
-  // "Shoestring" range matches the destinations that are actually
-  // affordable in that range.
+  // Single source of truth for everything budget-related: the
+  // slider value display, the live breakdown panel, the AI-prompt
+  // budget hint, the mobile step-wizard label, the "destinations
+  // in range" counter.
   //
-  //   shoestring (≤ €200)  → budget-tier cities only
-  //   cheap      (≤ €350)  → budget + mid-tier
-  //   sweet      (≤ €600)  → mid + premium
-  //   comfortable(≤ €1000) → all premium
-  //   splurge    (≤ €1500) → luxury unlocked
-  //   open       (>  €1500) → no cap
+  //   Budget Escape    — €100–250   cheap cities, hostels, FlixBus
+  //   Smart Weekend    — €250–450   mid cities, boutique, mix of modes
+  //   Premium Escape   — €450–800   premium cities, design hotel
+  //   Luxury Weekend   — €800+      luxury cities, no cap
   //
-  // maxCityTier is informational — used by the in-range counter
-  // to set a sensible expectation for which destinations belong
-  // at this tier.
+  // Tier breakpoints (250 / 450 / 800) align with real city-economy
+  // ranges so a Budget pick really reaches Krakow / Sofia / Tirana
+  // and a Luxury pick really reaches Reykjavik / Zurich / Santorini.
   // ============================================================
   const BUDGET_TIERS = [
-    { key: 'shoestring', max: 200,  label: 'Shoestring',   micro: 'Hostels + budget airlines · cheapest cities only',         maxCityTier: 'budget' },
-    { key: 'cheap',      max: 350,  label: 'Cheap weekend',micro: 'Budget airline + shared apartment',                        maxCityTier: 'mid' },
-    { key: 'sweet',      max: 600,  label: 'Sweet spot',   micro: 'Mid + select premium · boutique stay + a paid experience', maxCityTier: 'premium' },
-    { key: 'comfortable',max: 1000, label: 'Comfortable',  micro: 'Premium cities · design hotel + curated experiences',      maxCityTier: 'premium' },
-    { key: 'splurge',    max: 1500, label: 'Splurge',      micro: 'Luxury unlocked · Swiss Alps, Greek islands, Riviera',     maxCityTier: 'luxury' },
-    { key: 'open',       max: Infinity, label: 'Open budget', micro: 'No cap · every destination in range',                   maxCityTier: 'luxury' }
+    { key: 'budget',  max: 250,      label: 'Budget Escape',   micro: 'Cheap cities · hostels + FlixBus or budget airline',         maxCityTier: 'budget' },
+    { key: 'smart',   max: 450,      label: 'Smart Weekend',   micro: 'Mid-tier cities · boutique stay + a paid experience',         maxCityTier: 'mid' },
+    { key: 'premium', max: 800,      label: 'Premium Escape',  label_short: 'Premium', micro: 'Premium cities · design hotel + curated experiences', maxCityTier: 'premium' },
+    { key: 'luxury',  max: Infinity, label: 'Luxury Weekend',  micro: 'Swiss Alps · Greek islands · Riviera · Reykjavik · Zurich',  maxCityTier: 'luxury' }
   ];
   function budgetTier(v) {
     return BUDGET_TIERS.find(t => v <= t.max) || BUDGET_TIERS[BUDGET_TIERS.length - 1];
   }
   function fmtBudget(v) {
     const t = budgetTier(v);
-    return (t.key === 'open' ? `€${v}+ — ${t.label}` : `€${v} — ${t.label}`);
+    return (t.key === 'luxury' && v >= 800 ? `€${v}+ — ${t.label}` : `€${v} — ${t.label}`);
   }
   function budgetLabelFromValue(v) {
     const t = budgetTier(v);
-    return (t.key === 'open' ? `€${v}+` : `€${v}`) + ` per person — ${t.label} · ${t.micro}`;
+    return (t.key === 'luxury' && v >= 800 ? `€${v}+` : `€${v}`) + ` per person — ${t.label} · ${t.micro}`;
   }
 
-  // Live counter — how many of our 67 destinations have a
+  // Live counter — how many of our destinations have a
   // weekendEstimate.totalPP ≤ the user's budget, given current
-  // origin/adults/nights. Returns { count, total, samples }
-  // so the UI can show "23 of 67 weekends fit · cheapest Krakow".
+  // origin/adults/nights. Returns { count, total, samples }.
   function countDestinationsInRange(budget, ctxIn) {
     if (typeof smartDestinations === 'undefined' || typeof weekendEstimate !== 'function') {
       return { count: 0, total: 0, samples: [] };
@@ -16590,9 +16816,63 @@
     return { count, total, samples: fits.slice(0, 3) };
   }
 
+  // ============================================================
+  // BUDGET BREAKDOWN — what does this budget typically buy?
+  //
+  // For the live breakdown panel below the slider. Computes the
+  // AVERAGE transport / stay / activity p/p across every
+  // destination whose totalPP ≤ budget. So the panel says
+  // "at €450, expect ~€95 transport, ~€280 stay, ~€32 activity"
+  // — coherent with what the user will see on each city detail.
+  //
+  // If no destinations fit (very low budget from an expensive
+  // origin), falls back to a tier-based synthetic estimate so
+  // the panel still shows something honest.
+  // ============================================================
+  function budgetBreakdown(budget, ctxIn) {
+    const ctx = ctxIn || (typeof getSearchContext === 'function' ? getSearchContext() : { origin: 'Berlin', adults: 2, nights: 2 });
+    const nights = Math.max(1, ctx.nights || 2);
+    if (typeof smartDestinations === 'undefined' || typeof weekendEstimate !== 'function') {
+      return { transport: 0, stay: 0, activity: 0, total: 0, sampleSize: 0, nights };
+    }
+    let tSum = 0, sSum = 0, aSum = 0, n = 0;
+    smartDestinations.forEach(d => {
+      if (!d || d.key === ctx.origin) return;
+      try {
+        const est = weekendEstimate(d.key, ctx);
+        if (!est || est.totalPP > budget) return;
+        tSum += est.transport.pp;
+        sSum += est.stay.pp;
+        aSum += est.activity.pp;
+        n++;
+      } catch (e) {}
+    });
+    if (n === 0) {
+      // Synthetic fall-back — pick the tier's typical breakdown.
+      const tier = budgetTier(budget);
+      const synthetic = {
+        budget:  { t: 60,  s: 60,  a: 16 },
+        smart:   { t: 95,  s: 130, a: 22 },
+        premium: { t: 130, s: 210, a: 32 },
+        luxury:  { t: 180, s: 320, a: 55 }
+      }[tier.key];
+      return { transport: synthetic.t, stay: synthetic.s, activity: synthetic.a,
+               total: synthetic.t + synthetic.s + synthetic.a, sampleSize: 0, nights };
+    }
+    const round5 = (x) => Math.max(5, Math.round(x / 5) * 5);
+    return {
+      transport: round5(tSum / n),
+      stay:      round5(sSum / n),
+      activity:  round5(aSum / n),
+      total:     round5((tSum + sSum + aSum) / n),
+      sampleSize: n,
+      nights
+    };
+  }
+
   function _budgetCounterText(budget) {
     const r = countDestinationsInRange(budget);
-    if (!r.total) return 'estimates per person — flight + stay + 1 experience';
+    if (!r.total) return 'flight + stay + 1 experience · per person';
     if (r.count === 0) {
       return 'No weekends fit this budget yet — try raising it or picking a closer origin.';
     }
@@ -16602,34 +16882,53 @@
   }
 
   (function bindBudgetSlider() {
-    const slider = document.getElementById('budgetSlider');
-    const val    = document.getElementById('budgetValue');
-    const fill   = document.getElementById('budgetFill');
-    const wrap   = document.querySelector('.cg-slider-wrap');
-    const sub    = document.getElementById('budgetSub');
-    if (!slider || !val || !fill) return;
+    const slider     = document.getElementById('budgetSlider');
+    const amountEl   = document.getElementById('budgetValueAmount');
+    const tierEl     = document.getElementById('budgetValueTier');
+    const fill       = document.getElementById('budgetFill');
+    const wrap       = document.querySelector('.bp-slider-wrap');
+    const sub        = document.getElementById('budgetSub');
+    // Breakdown cells
+    const bpTransport = document.getElementById('bpVTransport');
+    const bpStay      = document.getElementById('bpVStay');
+    const bpStayLabel = document.getElementById('bpLStay');
+    const bpActivity  = document.getElementById('bpVActivity');
+    const bpTotal     = document.getElementById('bpVTotal');
+    // Tier-tag pills (highlight the active one)
+    const tierTags    = document.querySelectorAll('.bp-tier-tag');
+    if (!slider || !amountEl || !fill) return;
     const update = () => {
       const v = parseInt(slider.value);
-      val.textContent = fmtBudget(v);
+      const t = budgetTier(v);
+      // Amount + tier copy
+      amountEl.textContent = (t.key === 'luxury' && v >= 800) ? ('€' + v + '+') : ('€' + v);
+      if (tierEl) tierEl.textContent = t.label;
+      // Track fill + active-zone hue
       const min = parseInt(slider.min);
       const max = parseInt(slider.max);
       const pct = Math.max(0, Math.min(100, (v - min) / (max - min) * 100));
       fill.style.width = pct + '%';
-      // Tier class drives the active-zone colour + sub-label tone
-      const t = budgetTier(v);
       if (wrap) wrap.dataset.tier = t.key;
-      if (sub)  sub.textContent  = _budgetCounterText(v);
+      // Highlight the active tier label
+      tierTags.forEach(tag => tag.classList.toggle('on', tag.dataset.tier === t.key));
+      // Breakdown — averages of in-budget destinations
+      const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : null;
+      const b   = budgetBreakdown(v, ctx);
+      if (bpTransport) bpTransport.textContent = '~€' + b.transport;
+      if (bpStay)      bpStay.textContent      = '~€' + b.stay;
+      if (bpStayLabel) bpStayLabel.textContent = (b.nights || 2) + '-night stay';
+      if (bpActivity)  bpActivity.textContent  = '~€' + b.activity;
+      if (bpTotal)     bpTotal.textContent     = '≈ €' + b.total;
+      if (sub)         sub.textContent         = _budgetCounterText(v);
     };
     slider.addEventListener('input', update);
-    // Recompute the counter when origin / nights / group change —
-    // changing the user's departure city moves which destinations
-    // fit (Berlin → Prague costs €120 p/p; Madrid → Prague is €260).
+    // Recompute when origin / nights / group change — those move
+    // which destinations fit AND what the typical breakdown looks
+    // like (Berlin → Prague costs €120 p/p; Madrid → Prague is €260).
     ['i-from', 'i-when', 'i-length', 'i-group'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', update);
     });
-    // Also recompute when the user blurs the origin input (autocomplete
-    // commit) so we don't wait for explicit change events.
     const fromInput = document.getElementById('i-from');
     if (fromInput) fromInput.addEventListener('blur', update);
     update();
@@ -17441,17 +17740,32 @@
     });
   });
 
-  // Budget — drag slider, update display + microcopy + counter.
-  // Routes through the same BUDGET_TIERS used by the desktop slider
-  // so the labels stay coherent between mobile + desktop.
+  // Budget — drag slider, update display + microcopy + counter +
+  // the compact mobile breakdown row. Routes through the same
+  // BUDGET_TIERS and budgetBreakdown helpers used by the desktop
+  // panel so the labels and component prices stay coherent
+  // between mobile + desktop.
   function swUpdateBudgetDisplay(v) {
     const disp = document.getElementById('swBudgetDisplay');
     const lbl  = document.getElementById('swBudgetLabel');
     const sub  = document.getElementById('swBudgetSub');
-    if (disp) disp.textContent = (v >= 1500) ? ('€' + v + '+') : ('€' + v);
+    if (disp) disp.textContent = (v >= 800 ? ('€' + v + '+') : ('€' + v));
     if (typeof budgetTier === 'function' && lbl) {
       const t = budgetTier(v);
-      lbl.textContent = t.label + ' · ' + t.micro;
+      lbl.textContent = t.label;
+    }
+    // Compact breakdown — same numbers as the desktop panel
+    if (typeof budgetBreakdown === 'function') {
+      const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : null;
+      const b   = budgetBreakdown(v, ctx);
+      const t   = document.getElementById('swMiniT');
+      const s   = document.getElementById('swMiniS');
+      const a   = document.getElementById('swMiniA');
+      const tot = document.getElementById('swMiniTotal');
+      if (t)   t.textContent   = '~€' + b.transport;
+      if (s)   s.textContent   = '~€' + b.stay;
+      if (a)   a.textContent   = '~€' + b.activity;
+      if (tot) tot.textContent = '≈ €' + b.total;
     }
     if (sub && typeof _budgetCounterText === 'function') {
       sub.textContent = _budgetCounterText(v);
