@@ -8520,11 +8520,15 @@
       const prof = (typeof cityProfiles !== 'undefined' && cityProfiles[d.key]) || null;
       const guide = prof && prof.guides && prof.guides[0];
       const summary = (guide && guide.summary) || d.tagline || '';
+      // Highlights pull from activities + restaurants + guides only —
+      // hotel recommendations were removed platform-wide (we don't
+      // have a Booking Partner API; the accommodation budget is now
+      // shown as a generic city-tier estimate, not specific properties).
       const highlightsFromProf = prof && [
-        prof.hotels && prof.hotels[0] && prof.hotels[0].name && ('Stay at ' + prof.hotels[0].name),
         prof.activities && prof.activities[0] && prof.activities[0].name,
         prof.restaurants && prof.restaurants[0] && prof.restaurants[0].name && ('Eat at ' + prof.restaurants[0].name),
-        guide && guide.title
+        guide && guide.title,
+        prof.activities && prof.activities[1] && prof.activities[1].name
       ].filter(Boolean);
       const fallbackHighlights = [
         d.vibe || 'A long walk through the old quarter',
@@ -10670,18 +10674,6 @@
   "vibe_tags": ["3 short, distinctive vibe tags"],
   "best_season": "Realistic window (e.g. 'May – October')",
   "currency": "EUR",
-  "hotels": [
-    {
-      "name": "REAL named hotel in ${city}",
-      "neighbourhood": "Specific neighbourhood name",
-      "vibe": "Specific 4-6 word vibe (e.g. 'Rooftop pool in El Born')",
-      "description": "1 specific sentence — what makes THIS stay different. No 'beautiful' or 'modern amenities' — use the actual neighbourhood, an architectural detail, or a real perk.",
-      "price_per_night": 220,
-      "rating": 9.0
-    }
-    // RETURN 8 HOTELS: 2 budget (€70-130), 4 mid (€140-320), 2 luxury (€400+).
-    // All must be real, named, current. Sort cheapest first.
-  ],
   "activities": [
     {
       "name": "Specific, named activity in ${city}",
@@ -10996,11 +10988,11 @@
               <div class="cb-row">
                 <div class="cb-row-icon">🛏</div>
                 <div class="cb-row-body">
-                  <div class="cb-row-label">${est.nights}-night stay · ${est.rooms} ${est.rooms === 1 ? 'room' : 'rooms'} · ~€${est.stay.nightly}/night</div>
-                  <div class="cb-row-sub">cheapest-sorted on Booking · within budget</div>
+                  <div class="cb-row-label">Accommodation budget · ${est.nights} ${est.nights === 1 ? 'night' : 'nights'}, ${est.rooms} ${est.rooms === 1 ? 'room' : 'rooms'}</div>
+                  <div class="cb-row-sub">typical mid-range stay in ${cityName} · search live inventory on Booking</div>
                 </div>
                 <div class="cb-row-price">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p</span></div>
-                <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener" title="Search opens on Booking.com">Search live →</a>
+                <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener" title="Search opens on Booking.com">Search Booking →</a>
               </div>
 
               <div class="cb-row">
@@ -11034,20 +11026,16 @@
           `;
         })()}
   
+        <!-- "Where to stay" section removed.
+             We don't have a Booking Partner API → we shouldn't pretend
+             to recommend specific properties. The cost-breakdown above
+             gives an HONEST accommodation budget for this city's tier,
+             and the Booking.com CTA in that row lets users see live
+             inventory on the actual partner site. -->
+
         <div class="detail-section">
           <div class="head">
             <span class="num">02</span>
-            <h2>Where to stay</h2>
-          </div>
-          <div class="city-deals">
-            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Hand-ranked by value — our suggestions for cheapest realistic options plus a few indulgent rooms. Click any card to search live on Booking.com.</p>
-            <div class="listing-grid" id="cityHotels">${skeletonListings(6)}</div>
-          </div>
-        </div>
-  
-        <div class="detail-section">
-          <div class="head">
-            <span class="num">03</span>
             <h2>What to do</h2>
           </div>
           <div class="city-deals">
@@ -11055,20 +11043,20 @@
             <div class="listing-grid" id="cityActivities">${skeletonListings(8)}</div>
           </div>
         </div>
-  
+
         <div class="detail-section">
           <div class="head">
-            <span class="num">04</span>
+            <span class="num">03</span>
             <h2>Where to eat</h2>
           </div>
           <div class="city-deals">
             <div class="listing-grid" id="cityRestaurants">${skeletonListings(3)}</div>
           </div>
         </div>
-  
+
         <div class="detail-section">
           <div class="head">
-            <span class="num">05</span>
+            <span class="num">04</span>
             <h2>Editor's guides</h2>
           </div>
           <div class="city-deals">
@@ -12358,11 +12346,11 @@
     }
   };
 
-  function fallbackHotels(city) {
-    return (cityProfiles[city] && cityProfiles[city].hotels)
-      ? cityProfiles[city].hotels.slice()
-      : genericHotels(city);
-  }
+  // fallbackHotels — DELETED. No code path renders hotels any more.
+  // The platform doesn't recommend specific properties without a
+  // Booking Partner API. cityProfiles[city].hotels arrays still exist
+  // in data for now (removed in a follow-up pass) but no UI reads them.
+
   function fallbackActivities(city) {
     return (cityProfiles[city] && cityProfiles[city].activities)
       ? cityProfiles[city].activities.slice()
@@ -12694,17 +12682,13 @@
   //  • Adds price_source field so the UI can show "Estimate · research"
   //    instead of pretending these are partner-quoted
   // ============================================================
-  function genericHotels(city) {
-    const econ = getEconomy(city);
-    const v = _vocab(_country(city));
-    const SRC = 'estimate-research';
-    return [
-      { name: city + ' Central Hostel', neighbourhood: v.quarter, vibe: 'Cheapest dorm in town', description: 'A clean budget hostel close to the main square — best for weekend trips on a small budget.',          price_per_night: _round5(econ.h_min * 1.0),  rating: 8.4, price_source: SRC },
-      { name: city + ' Old Town Boutique', neighbourhood: v.quarter, vibe: 'Boutique · breakfast included', description: 'A small boutique in a heritage building, walkable to all the central sights.',                   price_per_night: _round5(econ.h_mid * 0.6),  rating: 8.8, price_source: SRC },
-      { name: city + ' Design Hotel', neighbourhood: 'Modern district', vibe: 'Design-led 4-star · rooftop', description: 'A design-led 4-star with rooftop bar and serious breakfast — the sweet-spot mid-range pick.', price_per_night: _round5(econ.h_mid * 1.2),  rating: 9.0, price_source: SRC },
-      { name: 'Grand ' + city, neighbourhood: 'Best address', vibe: '5-star · heritage', description: 'The city\'s heritage 5-star — marble baths, spa, fine dining downstairs.',                                            price_per_night: _round5(econ.h_max * 0.85), rating: 9.3, price_source: SRC }
-    ];
-  }
+  // genericHotels — DELETED. This function used to template-generate
+  // fake hotel names ("Tirana Central Hostel", "Grand Zurich") which
+  // is exactly the "fake hotel recommendations" the user asked us
+  // to remove. cityEconomy still drives the accommodation budget
+  // estimate in the cost-breakdown, but we no longer fabricate
+  // specific properties.
+
   function genericActivities(city) {
     const econ = getEconomy(city);
     const v = _vocab(_country(city));
@@ -12730,26 +12714,26 @@
   
   async function populateCityListings(city, origin, links) {
     // 1. Render the curated dataset IMMEDIATELY so the page never sits
-    //    on skeletons. This is the honest default — real-world entries
-    //    we've researched, not random AI output.
+    //    on skeletons. Hotels removed — we don't have a Booking Partner
+    //    API and shouldn't pretend to recommend specific properties.
+    //    The cost-breakdown already gives an honest accommodation
+    //    budget, and the Booking.com CTA lets users see live inventory.
     const baseline = {
-      hotels: fallbackHotels(city),
       activities: fallbackActivities(city),
       restaurants: fallbackRestaurants(city),
       guides: fallbackGuides(city)
     };
-    renderHotels(baseline.hotels, city, links);
     renderActivities(baseline.activities, city, links);
     renderRestaurants(baseline.restaurants, city, links);
     renderGuides(baseline.guides, city, links);
 
     // 2. Optionally enhance with AI in the background. If the user has
     //    no key, or the AI is slow / errors / times out — the curated
-    //    data above stays. The user always sees content.
+    //    data above stays. The user always sees content. We ignore any
+    //    `hotels` field the AI returns — that section no longer exists.
     try {
       const enhanced = await fetchCityData(city, origin);
       if (!enhanced) return;
-      if (Array.isArray(enhanced.hotels) && enhanced.hotels.length) renderHotels(enhanced.hotels, city, links);
       if (Array.isArray(enhanced.activities) && enhanced.activities.length) renderActivities(enhanced.activities, city, links);
       if (Array.isArray(enhanced.restaurants) && enhanced.restaurants.length) renderRestaurants(enhanced.restaurants, city, links);
       if (Array.isArray(enhanced.guides) && enhanced.guides.length) renderGuides(enhanced.guides, city, links);
@@ -12813,46 +12797,11 @@
     `).join('');
   }
   
-  function renderHotels(hotels, city, links) {
-    const el = document.getElementById('cityHotels');
-    if (!el) return;
-    // sort by price ascending — cheapest first is the platform's identity
-    hotels.sort((a, b) => (a.price_per_night || 0) - (b.price_per_night || 0));
-    // Use typographic placeholders for hotels — we can't verify a hotel's
-    // actual photo without a Booking partner integration, and a mismatched
-    // stock photo would erode trust. Hotels.com/Hopper does the same.
-    const tagByRank = ['Cheapest', 'Best value', 'Top pick', 'Top pick', 'Top pick', 'Top pick', 'Splurge', 'Splurge'];
-    el.innerHTML = hotels.map((h, i) => {
-      const badge = valueBadge(i);
-      const rank = i === 0 ? 'Cheapest stay' : i === 1 ? 'Best value' : i === hotels.length - 1 ? 'Splurge' : 'Top pick';
-      const placeholderTag = tagByRank[i] || 'Stay';
-      const initial = (h.name || '').trim().charAt(0).toUpperCase() || 'H';
-      return `
-        <a class="listing" href="${links.bookingHotel(h.name)}" target="_blank" rel="noopener">
-          <div class="listing-img has-placeholder">
-            <div class="img-placeholder">
-              <div class="ip-mark">
-                <span class="ip-emoji">🛏</span>
-                <span class="ip-init">${initial}</span>
-                <span class="ip-tag">${placeholderTag}</span>
-              </div>
-            </div>
-          </div>
-          <div class="listing-body">
-            <span class="listing-rank">${rank}</span>
-            ${badge ? `<span class="avail-chip ${badge.status}"><span class="av-dot"></span>${badge.label}</span>` : ''}
-            <div class="listing-title">${h.name}</div>
-            <div class="listing-desc">${h.description || h.vibe || ''}${h.neighbourhood ? ' · ' + h.neighbourhood : ''}</div>
-            <div class="listing-foot">
-              <div class="listing-price">${priceRange(h.price_per_night || 120)}<span class="per">approx · per night</span></div>
-              <span class="listing-cta">Search on Booking <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7M7 7h10v10"/></svg></span>
-            </div>
-          </div>
-        </a>
-      `;
-    }).join('');
-  }
-  
+  // renderHotels — DELETED. We have no Booking Partner API and won't
+  // pretend to recommend specific properties. The cost-breakdown
+  // shows an honest accommodation estimate; users search inventory
+  // on Booking directly via the existing CTA.
+
   function renderActivities(activities, city, links) {
     const el = document.getElementById('cityActivities');
     if (!el) return;
@@ -13251,7 +13200,7 @@
 
         <div class="sr-end">
           <h3>Ready for <em>${s.city}</em>?</h3>
-          <p>See live flight prices, hand-ranked stays and what to actually do — all in one place.</p>
+          <p>See cheapest flights and overland routes, what to actually do, where to eat — all in one place.</p>
           <button class="sr-end-cta" onclick="closeStory(); setTimeout(()=>openSmartDetail('${s.city}'), 600);">
             Plan ${s.city} for real
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -15966,10 +15915,12 @@
   // ============================================================
   const SCENE_OFFSETS = {
     // Tiny lat/lng deltas — about 700m at European latitudes. Positioned
-    // around the city centre clockwise: stays NW, eats NE, things-to-do S.
-    stays:      { dLat:  0.0055, dLng: -0.0070 },
-    eats:       { dLat:  0.0055, dLng:  0.0070 },
-    activities: { dLat: -0.0070, dLng:  0.0000 }
+    // around the city centre. "stays" removed (we don't recommend
+    // specific hotels — the map shouldn't tease a category we don't
+    // surface). Eats W, activities E so the hero pin stays the focal
+    // anchor between them.
+    eats:       { dLat:  0.0055, dLng: -0.0070 },
+    activities: { dLat: -0.0040, dLng:  0.0070 }
   };
 
   function _updateMapHint(mode, opts) {
@@ -16031,7 +15982,7 @@
   }
 
   function _scenePopupHtml(city, kind, entries) {
-    const heading = { stays: 'Where to stay', eats: 'Where to eat', activities: 'Things to do' }[kind];
+    const heading = { eats: 'Where to eat', activities: 'Things to do' }[kind] || 'Explore';
     const items = (entries || []).slice(0, 3).map(it => {
       const name  = it.name || '';
       const sub   = it.neighbourhood || it.cuisine || it.category || it.vibe || '';
@@ -16062,16 +16013,14 @@
     const off = SCENE_OFFSETS[kind];
     if (!off) return;
     const meta = {
-      stays:      { emoji: '🛏', label: 'Stays' },
       eats:       { emoji: '🍴', label: 'Where to eat' },
       activities: { emoji: '🎟', label: 'Things to do' }
     }[kind];
+    if (!meta) return;
     const pool = (cityProfiles[city] || {});
-    const entries = kind === 'stays'
-        ? (pool.hotels || (typeof fallbackHotels === 'function' ? fallbackHotels(city) : []))
-        : kind === 'eats'
-            ? (pool.restaurants || (typeof fallbackRestaurants === 'function' ? fallbackRestaurants(city) : []))
-            : (pool.activities || (typeof fallbackActivities === 'function' ? fallbackActivities(city) : []));
+    const entries = kind === 'eats'
+        ? (pool.restaurants || (typeof fallbackRestaurants === 'function' ? fallbackRestaurants(city) : []))
+        : (pool.activities || (typeof fallbackActivities === 'function' ? fallbackActivities(city) : []));
     const count = entries.length;
     const icon = _buildSceneChip(meta.emoji, meta.label, count, delayMs);
     const latLng = [baseLatLng[0] + off.dLat, baseLatLng[1] + off.dLng];
@@ -16140,9 +16089,10 @@
       hero.addTo(leafletMap);
       _sceneMarkers.push(hero);
 
-      _addSceneChip(cityName, 'stays',      coords, 180);
-      _addSceneChip(cityName, 'eats',       coords, 340);
-      _addSceneChip(cityName, 'activities', coords, 500);
+      // Stays chip removed — no fake hotel inventory. The scene now
+      // surfaces only the two categories we genuinely curate.
+      _addSceneChip(cityName, 'eats',       coords, 200);
+      _addSceneChip(cityName, 'activities', coords, 360);
 
       _updateMapHint('scene', { city: cityName });
     };
