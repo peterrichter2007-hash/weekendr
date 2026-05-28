@@ -7331,7 +7331,7 @@
     </div>
     <div class="fullmenu-footer">
       <div>© 2026 Maison Voyage</div>
-      <div>hello@maisonvoyage.com</div>
+      <div><a href="mailto:peter.richter2007@gmail.com">peter.richter2007@gmail.com</a></div>
     </div>
   </div>
 
@@ -8033,7 +8033,7 @@
             <li><a href="#" data-legal="impressum">Impressum</a></li>
             <li><a href="#" data-legal="privacy">Privacy Policy</a></li>
             <li><a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();">Cookie Settings</a></li>
-            <li><a href="mailto:hello@maisonvoyage.com">Contact</a></li>
+            <li><a href="mailto:peter.richter2007@gmail.com">Contact</a></li>
           </ul>
         </div>
         <div>
@@ -14783,74 +14783,65 @@
   })();
 
   // ============================================================
-  // LEGAL CONTENT — Impressum (step 4/12)
+  // LEGAL CONTENT — Impressum
   //
-  // Swiss operator template. Placeholders are visually marked with
-  // <span class="placeholder">…</span> (golden dashed border) so it
-  // is obvious which fields the operator must fill in before launch.
+  // Swiss operator notice. Real operator data is filled in.
   //
   // Why these fields exist (Swiss + reachability for DE/AT traffic):
   // - Full name + postal address: required for an identifiable
   //   responsible party (UWG / OR Art. 956 for sole proprietorships,
   //   and § 5 TMG for any DE/AT visitors).
   // - E-mail: required for direct electronic contact.
-  // - V.i.S.d.P.: responsible for editorial content (relevant the
-  //   moment we publish editorial pieces like the Journal).
+  // - V.i.S.d.P.: responsible for editorial content.
   // - VAT / UID: only required once turnover exceeds CHF 100'000.
-  //   Until then, an honest "below threshold" line is correct.
-  // - Liability / external-link / copyright clauses: standard,
-  //   matching a deep-link recommendation platform without active
-  //   affiliate programs.
-  // - "AI-assisted content" disclosure: matches the rest of the
-  //   site's honesty rules.
-  //
-  // No legal advice — this is a template. The operator should have
-  // a lawyer review before launch, especially for cross-border DE/AT
-  // traffic claims and any future GDPR contracts.
+  // - Liability / external-link / copyright clauses: standard for a
+  //   deep-link recommendation platform without active affiliate
+  //   programs.
+  // - "AI-assisted content" note: matches the site's honesty rules.
   // ============================================================
   MV.legal.register('impressum', {
     title: 'Impressum',
     sub: 'Operator details & responsibility',
     html: `
-      <p>This page identifies the natural person operating Maison Voyage and the responsibilities they accept under Swiss and European law. We keep it short and honest — the moment any of these details change, this page is updated.</p>
+      <p>This page identifies the natural person operating Maison Voyage and the responsibilities they accept under Swiss law.</p>
 
       <h3>Operator</h3>
       <div class="lm-card">
-        <div class="lm-meta-row"><span class="k">Full name</span><span class="v"><span class="placeholder">YOUR_FULL_NAME</span></span></div>
-        <div class="lm-meta-row"><span class="k">Postal address</span><span class="v"><span class="placeholder">STREET_AND_NUMBER</span></span></div>
-        <div class="lm-meta-row"><span class="k">Postcode &amp; city</span><span class="v"><span class="placeholder">POSTCODE</span> <span class="placeholder">CITY</span></span></div>
+        <div class="lm-meta-row"><span class="k">Full name</span><span class="v">Peter Vitus Richter</span></div>
+        <div class="lm-meta-row"><span class="k">Postal address</span><span class="v">Usterstrasse 141</span></div>
+        <div class="lm-meta-row"><span class="k">Postcode &amp; city</span><span class="v">8620 Wetzikon ZH</span></div>
         <div class="lm-meta-row"><span class="k">Country</span><span class="v">Switzerland</span></div>
-        <div class="lm-meta-row"><span class="k">E-mail</span><span class="v"><span class="placeholder">YOUR_EMAIL</span></span></div>
-        <div class="lm-meta-row"><span class="k">Phone</span><span class="v"><span class="placeholder">OPTIONAL_PHONE</span></span></div>
+        <div class="lm-meta-row"><span class="k">E-mail</span><span class="v"><a href="mailto:peter.richter2007@gmail.com">peter.richter2007@gmail.com</a></span></div>
+        <div class="lm-meta-row"><span class="k">Phone</span><span class="v">+41 77 500 05 47</span></div>
       </div>
 
       <h4>Responsible for content (V.i.S.d.P.)</h4>
-      <p>Same as the operator above, unless otherwise stated on a specific editorial piece.</p>
+      <p>Same as the operator above.</p>
 
       <h4>VAT / UID number</h4>
-      <p>Maison Voyage is currently operated by a single natural person and stays below the Swiss VAT registration threshold of <strong>CHF 100'000</strong> annual turnover. A Swiss UID number will be added here once VAT registration becomes mandatory. No invoices with VAT are issued in the meantime.</p>
+      <p>Maison Voyage is operated by a single natural person below the Swiss VAT registration threshold of <strong>CHF 100'000</strong> annual turnover. A Swiss UID number will be added here once VAT registration becomes mandatory.</p>
 
       <h3>Business model</h3>
-      <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. We do not sell flights, accommodation, activities or ground transport. Every "Search live" button opens an external partner — such as Skyscanner, Booking.com, FlixBus or GetYourGuide — and the booking takes place there, under that partner's terms and conditions. No affiliate programs are currently active; if this changes, the <a href="#" data-legal="privacy">Privacy Policy</a> will be updated accordingly.</p>
+      <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. No affiliate programs are currently operated. External links lead to third-party providers (such as Skyscanner, Booking.com, FlixBus or GetYourGuide) and the booking takes place on their own websites, under their terms and conditions.</p>
 
       <div class="lm-note">
-        <strong>AI-assisted content.</strong> Some hotel names, activity descriptions and city-detail copy may be partially generated or refined by AI. Prices shown on this site are <em>estimates</em>, never live partner inventory. Always confirm the final price, availability and conditions on the partner site before paying.
+        <strong>AI-assisted content.</strong> Some content (such as travel descriptions and recommendations) may be AI-assisted or refined. Prices shown on this site are estimates — please confirm the final price on the partner site before booking.
       </div>
 
       <h3>Liability</h3>
-      <p>We curate the content of this site carefully but accept no liability for the accuracy, completeness or up-to-dateness of the prices and information shown. All prices are estimates intended to help you compare destinations — the binding price is the one the partner shows you at checkout.</p>
-      <p>External links open third-party websites. The moment you click one, you leave the Maison Voyage domain and become subject to that website's privacy policy and terms. We are not responsible for the content of external sites we link to.</p>
+      <p>The content on this site is curated with care, but no liability is accepted for the accuracy, completeness or up-to-dateness of the information or estimates shown.</p>
+      <p>External links open third-party websites. As soon as you click one, you leave Maison Voyage and the linked site's own privacy policy and terms apply. We are not responsible for the content of external sites.</p>
 
       <h3>Copyright</h3>
-      <p>Photography on this site is sourced primarily from <strong>Wikipedia</strong> under CC&nbsp;BY-SA and similar open licences — authors are credited on each Wikipedia article we link to. Editorial text, code and design: © 2026 Maison Voyage. All rights reserved.</p>
+      <p>Photography on this site is sourced primarily from <strong>Wikipedia</strong> under CC&nbsp;BY-SA and similar open licences — authors are credited on the corresponding Wikipedia article. Editorial text, code and design: © 2026 Maison Voyage. All rights reserved.</p>
 
       <h3>Applicable law &amp; jurisdiction</h3>
-      <p>Swiss substantive law applies. Place of jurisdiction is the residence of the operator unless mandatory consumer-protection rules of the visitor's country provide otherwise.</p>
+      <p>Swiss substantive law applies. Place of jurisdiction is the residence of the operator, unless mandatory consumer-protection rules of the visitor's country provide otherwise.</p>
 
       <h4>Contact</h4>
-      <p>Reach the operator directly at <span class="placeholder">YOUR_EMAIL</span>. We aim to reply within five working days.</p>
+      <p>Reach the operator directly at <a href="mailto:peter.richter2007@gmail.com">peter.richter2007@gmail.com</a>.</p>
 
-      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
+      <time datetime="2026-05-28">Last updated · 2026-05-28</time>
     `
   });
 
@@ -14915,7 +14906,7 @@
       <h3>Changes to this page</h3>
       <p>This page is updated when the underlying data flows change. The version date is shown below.</p>
 
-      <time datetime="2026-05-18">Last updated · <span class="placeholder">YYYY-MM-DD</span></time>
+      <time datetime="2026-05-28">Last updated · 2026-05-28</time>
     `
   });
 

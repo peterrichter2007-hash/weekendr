@@ -546,22 +546,16 @@ tuple in localStorage, 30min TTL via `_tripCacheGet` / `_tripCacheSet`.
 
 ## Pending placeholders (operator must fill before public launch)
 
-Search the inline script for `<span class="placeholder">`. Currently
-12 occurrences, 7 unique values:
+Impressum operator data is filled in (Peter Vitus Richter, Usterstrasse
+141, 8620 Wetzikon ZH, peter.richter2007@gmail.com, +41 77 500 05 47).
+Privacy + Impressum "Last updated" set to 2026-05-28. Footer `Contact`
++ fullscreen-menu email updated to the real address.
 
-| Field | Where | Action |
-|---|---|---|
-| `YOUR_FULL_NAME` | Impressum, operator card | Real legal name |
-| `STREET_AND_NUMBER` | Impressum, operator card | Postal address |
-| `POSTCODE` | Impressum, operator card | Swiss postcode |
-| `CITY` | Impressum, operator card | Swiss city |
-| `OPTIONAL_PHONE` | Impressum, operator card | Phone or blank |
-| `YOUR_EMAIL` ×4 | Impressum (2×), Privacy, Affiliate | Same email everywhere |
-| `YYYY-MM-DD` ×3 | All three legal pages — "Last updated" | Real date |
-
-Also pending operator changes:
-- `hello@maisonvoyage.com` in footer `Contact` link → real email
+Still pending operator changes:
 - `aid=304142` Booking affiliate placeholder → real ID when approved
+  (only the URL parameter — no user-facing claim of an active affiliate
+  program; see Privacy Policy "no affiliate programs are currently
+  active")
 - `weekendr.vercel.app` in `robots.txt` + `sitemap.xml` → custom domain
 
 ---
