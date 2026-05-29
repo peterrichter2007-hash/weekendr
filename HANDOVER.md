@@ -8,9 +8,10 @@
 ## Briefing prompt — paste this into a fresh chat
 
 > I'm continuing work on **Maison Voyage** — a cheap-European-weekend-trip
-> optimiser. The whole frontend lives in **`public/index.html`** (~15,500 lines,
-> inline CSS + JS, organised in clearly-commented sections). Backend is a
-> tiny Express AI proxy in `server.js`.
+> optimiser. The whole frontend lives in **`public/index.html`** (inline CSS +
+> JS, organised in clearly-commented sections). Backend is a tiny static
+> Express server in `server.js` — no AI proxy, no external content API.
+> Search + city detail render entirely client-side from a curated dataset.
 >
 > Before changing anything, read **`HANDOVER.md`** in the repo root. It has
 > the architecture, the `MV.*` modules with their public APIs, the honesty
@@ -40,9 +41,10 @@ What the site shows today:
 - **67 destinations** across 28 European countries (Tirana → Reykjavik)
 - Interactive Leaflet **satellite map** — empty default, ambient hover-reveal
   surfaces ~3–10 nearby cities, click enters a single-city "scene mode"
-- **AI Concierge** — desktop form / 4-step mobile wizard with a redesigned
+- **Concierge** — desktop form / 4-step mobile wizard with a redesigned
   4-tier budget panel (Budget Escape / Smart Weekend / Premium Escape /
-  Luxury Weekend) and a live transport+stay+activity+total breakdown
+  Luxury Weekend) and a live transport+stay+activity+total breakdown.
+  Search is 100% deterministic, client-side, no external API call.
 - **Best Deals** section — top 4 cheapest from current origin, rotating,
   shows all-in per-person + the chosen transport mode with savings vs flight
 - **City detail pages** — cinematic Wikipedia gallery hero, transparent
@@ -74,7 +76,7 @@ These are real product decisions, not stylistic preferences.
 | **Restaurants** use the 8-step priority chain in `pickRestaurantWiki`: own Wikipedia → must_order dish → atmosphere keyword (rooftop, market hall, brown café…) → cuisine descriptor (Catalan, Neapolitan, New Nordic…) → cityFoodCulture (Spaccanapoli, Naschmarkt…) → cuisine field dish → vibe/desc dish → country fallback. | Real and verifiable. |
 | **Partner integration is "deep-link to"** — never "via" or "powered by". Affiliate IDs are placeholders today (`aid=304142`). | We don't pull inventory; we just open the partner site with pre-filled params. |
 | **Per-image attribution chips are OFF.** Use `.section-attribution` on rotating heroes only. Trust Strip in footer covers global attribution. | Per-image chips flickered on rotation and cluttered grids. |
-| **AI-assisted content disclosed** on every detail page below the cost-breakdown. | Some activity copy + restaurant prose are AI-curated. |
+| **No AI in search or city detail.** Everything renders from curated `cityProfiles` + `cityEconomy` + `smartDestinations`. The cost-breakdown pill says "Estimates", not "AI-assisted". | No external content-generation API is called. |
 | **No fake social proof.** No star ratings, no testimonials, no engagement counters, no fabricated avatars. | Removed in commit `feaf941` — entire `cg-trust` block + all hotel `rating:` data deleted. |
 
 ---
@@ -376,7 +378,7 @@ don't surface.
 **HTML body — top-to-bottom:**
 - Nav + fullscreen mobile menu (7 items, no Villas)
 - **Hero** — 5 rotating Wikipedia slides + `.section-attribution`
-- **AI Concierge form** with redesigned **bp-panel** (4-tier budget
+- **Concierge form** with redesigned **bp-panel** (4-tier budget
   + live breakdown pills) / **Step wizard** target for mobile
 - **Best Deals section** — top 4 cheapest from current origin, all-in
   per-person + transport-mode chip with savings vs flight, rotates 9s
@@ -389,10 +391,11 @@ don't surface.
 - CTA band
 - **Footer** — brand + 5 columns (Discover, Experience, Legal & Trust,
   Newsletter) + **Trust Strip** + copyright + legal bottom-strip
-- **Modals**: API key, results drawer, **city detail page** (no
-  hotels section), story reader, loading veil, **step wizard**,
-  **legal modal**, **compare modal**, **cookie banner**,
-  sticky-bottom-CTA, **compare tray**
+- **Modals**: results drawer, **city detail page** (no hotels
+  section), story reader, **step wizard**, **legal modal**,
+  **compare modal**, **cookie banner**, sticky-bottom-CTA,
+  **compare tray**. (API-key modal + loading veil removed when AI
+  was deprecated.)
 
 **CSS sections (in `<style>`, in order):**
 - `:root` design tokens — `--muted-2: #6E665C` (WCAG AA), `--accent-2:
@@ -456,8 +459,9 @@ don't surface.
   `_ambientParamsForZoom`, `_POPULAR_CITIES`, fallback to 2-nearest
 - **Map hint pill** — idle / ambient / scene / transitioning modes
 - `CONCIERGE` — form, slider, autocomplete with typo tolerance,
-  **two-stage search**: `synthesizeInstantTrips` renders <200ms +
-  AI enrichment merges into rendered cards in background
+  **deterministic search**: `synthesizeInstantTrips` renders <50ms
+  from `smartDestinations` + `cityProfiles` + `weekendEstimate`.
+  No AI, no network.
 - `RAILS` — collection rendering (Villas array gone)
 - **`BEST DEALS`** — `computeBestDeals`, `renderBestDeals` (rotates 9s)
 - `CITY DETAIL` — `openTripDetail`, `populateCityListings`
@@ -473,7 +477,7 @@ don't surface.
 
 - `public/robots.txt` — allow all, disallow `/api/*`
 - `public/sitemap.xml` — 67 city URLs + homepage
-- `server.js` — Express AI proxy for `/api/generate-trips`
+- `server.js` — tiny static Express server (serves `public/` + `/api/health`)
 - `.claude/launch.json` — preview tool config (`node server.js` on :3000)
 
 ---
@@ -482,7 +486,6 @@ don't surface.
 
 | Source | Powers | Auth |
 |---|---|---|
-| **Anthropic Claude** | AI editorial enrichment (descriptions, highlights), city-detail prose | User's own API key (browser-only — `mv_api_key` in localStorage) |
 | **Wikipedia REST API** | City heroes, landmarks, dishes, restaurants — all verified | None |
 | **Open-Meteo** | Live weather per city + 4-day forecast | None |
 | **Esri World Imagery + Carto** | Map tiles | None |
@@ -494,26 +497,28 @@ We don't show their data inline.
 
 ---
 
-## Two-stage search flow (commit `7781866`)
+## Search flow — deterministic, no AI
 
-Search performance was the biggest UX regression (8–25s waiting for
-AI). The new flow:
+Search is 100% client-side, no external API call.
 
-**STAGE 1 — INSTANT (`<200ms`)**
 `synthesizeInstantTrips({ from, adults, nights, budgetPP, vibes })`
-picks 5 best matches from `smartDestinations` using vibeTag overlap
-score (×28 weighting), `weekendEstimate.totalPP` filter (1.15× budget
-tolerance), tier bonus (budget −22, luxury +18). Renders the drawer
-immediately with curated copy from `cityProfiles`.
+picks 5 best matches from `smartDestinations`:
+- `weekendEstimate(city, ctx).totalPP` filter (1.15× budget tolerance)
+- vibeTag overlap score (×28 weighting)
+- short flights slightly favoured (×6)
+- tier bonus (budget −22, luxury +18)
 
-**STAGE 2 — AI ENRICHMENT (background)**
-AI request fires AFTER drawer is rendered. On return, merges
-editorial copy (title, description, highlights, tags, best_for) into
-on-screen cards. **Pricing stays ours** — AI numbers are unreliable.
-On failure: silent (synthesised cards stay).
+Renders the drawer immediately with curated copy from `cityProfiles`
+(activities, restaurants, guides) — or economy-aware generated copy
+from `cityEconomy` for cities without an explicit profile. Total time
+to render: <50ms.
 
-**CACHE**: AI-enriched results cached per `(origin, budget, vibes)`
-tuple in localStorage, 30min TTL via `_tripCacheGet` / `_tripCacheSet`.
+The previous two-stage flow (instant synth → AI enrichment) was
+removed in the AI-removal pass: AI added no data the user couldn't
+already trust (pricing was always ours), only text polish on top of
+already-rendered cards. Removing the AI layer simplifies the data
+model and makes the platform's claim of "no fake data, no
+fabricated content" verifiable by inspection.
 
 ---
 
@@ -541,6 +546,11 @@ tuple in localStorage, 30min TTL via `_tripCacheGet` / `_tripCacheSet`.
 - **No hotel reintroductions without real partner data.** If the user
   asks for a hotels feature back, require Hotelbeds/Booking Partner
   API connection first. Don't fabricate.
+- **No AI reintroductions in search or city detail.** Search and the
+  city-detail page render entirely from `smartDestinations` /
+  `cityProfiles` / `cityEconomy`. If a future task asks for AI text
+  polish, it must be opt-in, additive, render AFTER the deterministic
+  baseline is on screen, and never affect pricing or recommendations.
 
 ---
 
@@ -585,9 +595,9 @@ npm start
 # → http://localhost:3000/
 ```
 
-The Anthropic key is **never** in the repo or server. User pastes it in
-the browser modal and it's stored in `localStorage['mv_api_key']`. The
-Express proxy just forwards the key from the request body to Anthropic.
+No API keys needed — search and city detail render entirely from the
+curated dataset. The Express server just serves `public/` and a
+`/api/health` ping for Vercel.
 
 ---
 
@@ -616,7 +626,7 @@ Express proxy just forwards the key from the request body to Anthropic.
 | Price helpers | `function priceRange`, `function priceFromRange`, `function priceRangeTransport`, `function getEconomy` |
 | Trip pricing core | `function weekendEstimate`, `function transportSummary` |
 | Budget breakdown | `function budgetBreakdown`, `function budgetTier`, `function countDestinationsInRange` |
-| Instant search synthesis | `function synthesizeInstantTrips`, `function _mergeAiIntoTrips` |
+| Instant search synthesis | `function synthesizeInstantTrips` |
 | Best deals renderer | `function renderBestDeals`, `function computeBestDeals` |
 | Map scene mode | `function enterCityScene`, `function exitCityScene`, `function _addSceneChip` |
 | Ambient reveal | `function _updateAmbientReveal`, `_ambientParamsForZoom`, `_POPULAR_CITIES` |
@@ -655,8 +665,28 @@ git push origin HEAD:main
 
 ## Recent session highlights (latest work, chronological — mid-2026)
 
-The last continuous session was a comprehensive trust + pricing
-refactor. The shape of the platform today reflects these commits:
+**AI-removal pass** (latest, three staged commits):
+- **Search-AI enrichment removed.** `_mergeAiIntoTrips`, `_tripCache*`,
+  `parseTrips`, `resetBtn`, `loadingMessages`, and the entire Stage-2
+  AI block in `generate()` are gone. Search renders entirely from
+  `synthesizeInstantTrips()` — deterministic ranking over
+  `smartDestinations`, no network call.
+- **City-detail AI removed.** `fetchCityData`, `cityCacheKey`, and the
+  AI-enhance block in `populateCityListings()` deleted. Detail page
+  renders from `cityProfiles` + `cityEconomy`. Cost-breakdown pill
+  changed from "AI-assisted · estimates" to just "Estimates".
+- **Server + modal + branding cleanup.** `/api/generate-trips`
+  endpoint removed from `server.js` (now just static + `/api/health`).
+  API-key modal HTML + `KEY_STORAGE` / `getKey` / `openKey` / `closeKey`
+  / `saveKey` JS deleted. Loading veil HTML deleted. "AI Concierge"
+  renamed to "Concierge" in nav + footer. Privacy Policy lost its
+  `mv_api_key` entry + "External APIs for content generation" section.
+  README + HANDOVER + package.json description updated. Anthropic
+  removed from the live-data-sources table — only Wikipedia,
+  Open-Meteo, Esri, Carto remain.
+
+Old session highlights (the trust + pricing refactor that preceded
+the AI-removal pass):
 
 - **Realistic price engine** — `weekendEstimate(city, ctx)` as the
   single source of truth. Coherent total = transport + stay + activity,

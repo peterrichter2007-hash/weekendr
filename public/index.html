@@ -7326,7 +7326,7 @@
       <a href="#beaches"><span>Beach Retreats</span><span class="num">03</span></a>
       <a href="#hidden"><span>Hidden Gems</span><span class="num">04</span></a>
       <a href="#map"><span>The Map</span><span class="num">05</span></a>
-      <a href="#concierge"><span>AI Concierge</span><span class="num">06</span></a>
+      <a href="#concierge"><span>Concierge</span><span class="num">06</span></a>
       <a href="#stories"><span>The Journal</span><span class="num">07</span></a>
     </div>
     <div class="fullmenu-footer">
@@ -8020,7 +8020,7 @@
         <div>
           <h4>Experience</h4>
           <ul>
-            <li><a href="#concierge">AI Concierge</a></li>
+            <li><a href="#concierge">Concierge</a></li>
             <li><a href="#map">The Atlas</a></li>
             <li><a href="#stories">The Journal</a></li>
             <li><a href="#">Membership</a></li>
@@ -8065,37 +8065,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- ============================================================
-       MODAL — API KEY
-       ============================================================ -->
-  <div class="modal-veil" id="keyModal">
-    <div class="modal">
-      <h3>Your Concierge needs a <em style="font-style: italic; color: var(--accent);">key</em>.</h3>
-      <p>Maison Voyage uses Anthropic's Claude to curate your escape. Add your API key — it stays in your browser only.</p>
-      <label>Anthropic API Key</label>
-      <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" />
-      <div class="modal-err" id="keyErr">That key didn't work. Please check it and try again.</div>
-      <div class="modal-row">
-        <button class="btn-secondary" onclick="closeKey()">Cancel</button>
-        <button class="btn-primary" onclick="saveKey()">
-          Save & Continue
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-      <p class="small">Don't have one? Create a key at <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>. Your key is stored locally.</p>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       LOADING VEIL
-       ============================================================ -->
-  <div class="loading-veil" id="loadingVeil">
-    <div class="orbit"></div>
-    <h3 id="loadingTitle">Composing your escape…</h3>
-    <p id="loadingSub">The concierge is checking the cheapest flight, the smartest stay and the one thing actually worth doing.</p>
-    <div class="tick" id="loadingTick">Curating</div>
-  </div>
 
   <!-- ============================================================
        RESULTS DRAWER
@@ -8556,37 +8525,6 @@
   // ============================================================
   function scrollToConcierge() {
     document.getElementById('concierge').scrollIntoView({ behavior: 'smooth' });
-  }
-  
-  // ============================================================
-  // API KEY MODAL
-  // ============================================================
-  const KEY_STORAGE = 'mv_api_key';
-  function getKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
-  function openKey() {
-    const m = document.getElementById('keyModal');
-    document.getElementById('apiKey').value = getKey();
-    document.getElementById('keyErr').classList.remove('show');
-    m.classList.add('show');
-    requestAnimationFrame(() => m.classList.add('in'));
-    setTimeout(() => document.getElementById('apiKey').focus(), 100);
-  }
-  function closeKey() {
-    const m = document.getElementById('keyModal');
-    m.classList.remove('in');
-    setTimeout(() => m.classList.remove('show'), 400);
-  }
-  function saveKey() {
-    const v = document.getElementById('apiKey').value.trim();
-    if (!v.startsWith('sk-ant-')) {
-      const err = document.getElementById('keyErr');
-      err.textContent = 'Please paste a valid Anthropic key (starts with sk-ant-).';
-      err.classList.add('show');
-      return;
-    }
-    localStorage.setItem(KEY_STORAGE, v);
-    closeKey();
-    setTimeout(generate, 400);
   }
   
   // ============================================================
@@ -12851,7 +12789,6 @@
     else if (document.getElementById('storyReader')?.classList.contains('show')) closeStory();
     else if (document.getElementById('detail').classList.contains('show')) closeDetail();
     else if (document.getElementById('results').classList.contains('show')) closeResults();
-    else if (document.getElementById('keyModal').classList.contains('show')) closeKey();
     else if (document.getElementById('stepWizard')?.classList.contains('show')) closeStepWizard();
     else if (MV.consent && MV.consent.isOpen && MV.consent.isOpen()) MV.consent.close();
     else if (fullmenu.classList.contains('open')) menuBtn.click();
@@ -14533,7 +14470,7 @@
     title: 'Privacy Policy',
     sub: 'What is stored locally, what is sent where',
     html: `
-      <p>Maison Voyage collects as little personal data as possible. The site runs primarily in your browser — there is no user account and no login. Below is a description of what is stored locally on your device, what is sent to third parties, and what passes through external APIs we use for content generation.</p>
+      <p>Maison Voyage collects as little personal data as possible. The site runs primarily in your browser — there is no user account and no login. Search and city pages render from a curated dataset on the client; no external content-generation API is called.</p>
 
       <h3>What is stored on your device</h3>
       <p>The site uses your browser's <strong>localStorage</strong> rather than cookies to remember a small set of preferences and to cache content for performance:</p>
@@ -14541,9 +14478,7 @@
         <li><strong>mv_favs_v1</strong> — cities you saved (city name + a timestamp).</li>
         <li><strong>mv_compare_v1</strong> — cities you added to the comparison tray.</li>
         <li><strong>mv_consent_v1</strong> — your choice on the consent banner.</li>
-        <li><strong>mv_api_key</strong> — present only if you choose to paste an Anthropic API key into the AI Concierge modal. The key is stored locally in your browser.</li>
         <li><strong>mv_wiki_*</strong> — cached Wikipedia image URLs and article summaries so the site stays fast on repeat visits.</li>
-        <li><strong>city_cache_*</strong> — the last AI-generated detail page per city.</li>
       </ul>
       <p>You can view and delete any of these at any time via your browser's DevTools → <em>Application</em> → <em>Local Storage</em>. Clearing your browser storage will reset saved trips, comparisons and cached content.</p>
 
@@ -14556,10 +14491,6 @@
         <li><strong>Google Fonts</strong> — for typography.</li>
         <li><strong>unpkg.com</strong> — content delivery for the Leaflet map library, loaded on demand when you scroll to the map.</li>
       </ul>
-
-      <h3>External APIs for content generation</h3>
-      <p>The website may use external APIs to generate or enrich editorial content (such as city descriptions and activity suggestions). Where this is the case, only the parameters needed to fulfil the request are transmitted, and only technically necessary data is processed. No long-term user profile is created on our side.</p>
-      <p>If you choose to use the AI Concierge with your own Anthropic API key, the key and your search parameters are forwarded to Anthropic to fulfil the request. Anthropic processes the request under their own privacy policy.</p>
 
       <h3>Hosting</h3>
       <p>The site is hosted by <strong>Vercel</strong>. As with any web host, standard HTTP request metadata (IP address, User-Agent, status code, response time) may be processed for security, reliability and abuse-prevention purposes.</p>
@@ -16918,7 +16849,7 @@
       w.classList.remove('show');
       document.body.classList.remove('modal-open');
       // restore scroll only if no other modal is open
-      const otherOpen = ['detail', 'results', 'keyModal', 'storyReader']
+      const otherOpen = ['detail', 'results', 'storyReader']
         .some(id => document.getElementById(id)?.classList.contains('show'));
       if (!otherOpen) document.body.style.overflow = '';
     }, 500);
@@ -16955,19 +16886,12 @@
       return;
     }
     // Final step → write all values into the concierge form, then call
-    // the existing generate() pipeline. The wizard stays open and shows
-    // a loading state; generate() opens the results drawer on success.
+    // the existing generate() pipeline. generate() is synchronous and
+    // renders instantly from the curated dataset.
     swSyncToForm();
     const next = document.getElementById('swNext');
     next.classList.add('loading');
     next.textContent = 'Searching';
-    // generate() handles missing API key by opening the key modal —
-    // close the wizard first so the modal isn't blocked behind it.
-    if (!localStorage.getItem('mv_api_key')) {
-      closeStepWizard();
-      setTimeout(() => generate(), 450);
-      return;
-    }
     setTimeout(() => {
       closeStepWizard();
       setTimeout(() => generate(), 350);
@@ -17152,14 +17076,14 @@
 
   // Track which modals are open so the sticky CTA hides itself
   const swModalObserver = new MutationObserver(() => {
-    const anyOpen = ['detail', 'results', 'keyModal', 'storyReader', 'stepWizard', 'fullmenu']
+    const anyOpen = ['detail', 'results', 'storyReader', 'stepWizard', 'fullmenu']
       .some(id => {
         const el = document.getElementById(id);
         return el && (el.classList.contains('show') || el.classList.contains('open'));
       });
     document.body.classList.toggle('modal-open', anyOpen);
   });
-  ['detail', 'results', 'keyModal', 'storyReader', 'stepWizard', 'fullmenu']
+  ['detail', 'results', 'storyReader', 'stepWizard', 'fullmenu']
     .forEach(id => {
       const el = document.getElementById(id);
       if (el) swModalObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
