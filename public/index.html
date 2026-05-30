@@ -8375,7 +8375,7 @@
         try {
           const est = weekendEstimate(it.place, { origin: fromCity, adults: 2, nights: 2 });
           it._dynamicAllIn = est.totalPP;
-          it._displayPrice = 'from €' + est.totalPP + ' pp';
+          it._displayPrice = priceFromRange(est.totalPP) + ' pp';
         } catch (e) { /* keep static */ }
       }
     });
@@ -8628,7 +8628,7 @@
                       ? highlightsFromProf.slice(0, 4)
                       : fallbackHighlights,
         tags: (d.vibeTags || []).slice(0, 3).concat(i === 0 ? ['Best value'] : i === 1 ? ['Cheap flight'] : []),
-        price: 'from €' + c.totalPP + ' per person all-in',
+        price: priceFromRange(c.totalPP) + ' per person all-in',
         best_for: vibes.length ? vibes.join(' · ') + ' weekends' : 'Weekend escapes from ' + origin,
         image_keywords: d.key,
         _estTotalPP: c.totalPP
@@ -10689,11 +10689,11 @@
              room cost = per person" incoherence. -->
         ${(() => {
           const est = weekendEstimate(cityName, ctx);
-          // Prefer the smartDestinations flight number for the row label so
-          // the visible "return flight" still says "Skyscanner" even when
-          // an overland route is cheaper — we surface overland as a separate
-          // row below.
-          const flightPP   = (flightPrice != null && flightPrice > 0) ? flightPrice : est.transport.pp;
+          // Number consistency: every weekend total on this page uses
+          // est.transport.pp (the actual chosen mode — flight, bus or
+          // train, whichever is cheapest for this pair) — never the
+          // raw smartDestinations flight price. Eyebrow, cost-breakdown
+          // total and bottom CTA all reconcile against est.totalPP.
           return `
         <div class="detail-section">
           <div class="head">
@@ -10738,7 +10738,7 @@
                         <div class="cb-row-label">Return flight</div>
                         <div class="cb-row-sub">${subBits.join(' · ')}</div>
                       </div>
-                      <div class="cb-row-price">${priceFromRange(flightPP)}<span class="cb-row-unit">p/p</span></div>
+                      <div class="cb-row-price">${priceFromRange(est.transport.pp)}<span class="cb-row-unit">p/p</span></div>
                       <a class="cb-row-cta" href="${flightInfo.url}" target="_blank" rel="noopener" title="Search opens on Skyscanner">${flightInfo.valid ? 'Search live →' : 'Search Google Flights →'}</a>
                     </div>
                   `;
@@ -10846,8 +10846,8 @@
 
               <div class="cb-total">
                 <div>
-                  <div class="cb-total-eyebrow">All-in estimate · per person · ~€${flightPP} transport + ~€${est.stay.pp} stay + ~€${est.activity.pp} activity</div>
-                  <div class="cb-total-num">${priceFromRange(flightPP + est.stay.pp + est.activity.pp)}<span class="cb-row-unit" style="display:inline; margin-left: 0.45em; font-size: 0.55em; vertical-align: middle;">EST</span></div>
+                  <div class="cb-total-eyebrow">All-in estimate · per person · ~€${est.transport.pp} ${est.transport.mode === 'bus' ? 'bus' : est.transport.mode === 'train' ? 'train' : 'flight'} + ~€${est.stay.pp} stay + ~€${est.activity.pp} activity</div>
+                  <div class="cb-total-num">${priceFromRange(est.totalPP)}<span class="cb-row-unit" style="display:inline; margin-left: 0.45em; font-size: 0.55em; vertical-align: middle;">EST</span></div>
                 </div>
                 <a class="cb-total-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve weekend
@@ -13459,11 +13459,12 @@
       const profile = cityProfiles[name] || {};
       const flightMin = minOf(Object.values(sd.prices || {}));
       const activityMin = minOf((profile.activities || []).map(a => a.price_per_person));
-      // weekend_2night_min — uses cityEconomy.h_min × 2 (cheapest
-      // realistic stay × 2 nights) instead of fake-rated hotel data
-      // that no longer exists in the profile. Keeps the cities API
-      // contract intact (Compare modal reads .weekend_2night_min)
-      // while the underlying source is honest.
+      // weekend_2night_min — published as part of the MV.cities API
+      // contract. Computed from cheapest-flight-from-any-origin +
+      // cityEconomy.h_min × 2 + activity_min. NOT a per-origin number,
+      // so the Compare modal no longer reads this field — it calls
+      // weekendEstimate() with the user's selected origin instead, to
+      // stay consistent with search drawer / best deals / city detail.
       let hotelNightMin = null;
       if (typeof getEconomy === 'function') {
         const econ = getEconomy(name);
@@ -14654,9 +14655,11 @@
     if (cta) cta.addEventListener('click', openCompareModal);
   }
 
-  // Build one comparison column. Pulls everything from MV.cities.get(),
-  // so when AI / Hotelbeds overlays exist, the comparison reflects them
-  // automatically via MV.cities.override().
+  // Build one comparison column. Pulls baseline data from
+  // MV.cities.get(), then computes the all-in weekend total from the
+  // user's selected origin via weekendEstimate() — same single source
+  // of truth the search drawer, best deals and city detail use, so the
+  // numbers in the Compare modal reconcile with everything else.
   function buildCompareColumn(id, origin) {
     const c = MV.cities.get(id);
     if (!c) return '';
@@ -14665,7 +14668,24 @@
     const flightStr = flight
       ? `${Math.floor(flight)}h ${Math.round((flight % 1) * 60)}m`.replace(' 0m', '')
       : '—';
-    const weekendMin = c.estimatedBudget && c.estimatedBudget.weekend_2night_min;
+    // Weekend total — same number the search drawer / best deals / city
+    // detail show for this city + this origin. Replaces the old
+    // weekend_2night_min field which used the cheapest flight from ANY
+    // origin (not the user's selected one) plus h_min × 2 — different
+    // floor, different mode-mix, divergent numbers.
+    let weekendAllIn = null;
+    if (typeof weekendEstimate === 'function') {
+      try {
+        const est = weekendEstimate(id, { origin, adults: 2, nights: 2 });
+        weekendAllIn = est && est.totalPP != null ? est.totalPP : null;
+      } catch (e) { weekendAllIn = null; }
+    }
+    const flightDisplay = (priceOrigin != null && typeof priceRangeTransport === 'function')
+      ? priceRangeTransport(priceOrigin, 'flight')
+      : (priceOrigin != null ? '€' + priceOrigin : '—');
+    const totalDisplay = (weekendAllIn != null && typeof priceFromRange === 'function')
+      ? priceFromRange(weekendAllIn)
+      : (weekendAllIn != null ? 'from €' + weekendAllIn : '—');
     const tags = (c.tags || []).slice(0, 3).join(' · ') || '—';
     return `
       <div class="cm-col" data-id="${id}">
@@ -14676,9 +14696,9 @@
         <h3>${c.name}</h3>
         <div class="cm-vibe">${c.vibe || ''}</div>
         <div class="cm-rows">
-          <div class="cm-row"><span class="cm-k">Flight from ${origin}</span><span class="cm-v">${priceOrigin != null ? '<strong>€' + priceOrigin + '</strong>' : '—'}</span></div>
+          <div class="cm-row"><span class="cm-k">Flight from ${origin}</span><span class="cm-v">${priceOrigin != null ? '<strong>' + flightDisplay + '</strong>' : '—'}</span></div>
           <div class="cm-row"><span class="cm-k">Flight time</span><span class="cm-v">${flightStr}</span></div>
-          <div class="cm-row"><span class="cm-k">Weekend min</span><span class="cm-v">${weekendMin != null ? '<strong>€' + weekendMin + '</strong>' : '—'}</span></div>
+          <div class="cm-row"><span class="cm-k">Weekend all-in p/p</span><span class="cm-v">${weekendAllIn != null ? '<strong>' + totalDisplay + '</strong>' : '—'}</span></div>
           <div class="cm-row"><span class="cm-k">Vibe tags</span><span class="cm-v">${tags}</span></div>
           <div class="cm-row cm-row-wx"><span class="cm-k">Weather</span><span class="cm-v" data-wx="${id}">Loading…</span></div>
         </div>
@@ -15205,31 +15225,25 @@
   // precedence: while one is open, ambient reveal is suppressed.
   // ============================================================
   function _buildAmbientMarker(d, coords) {
-    // The marker labels show "{city} · from €X · Yh flight".
-    // Price + flight come from smartDestinations if the user's origin
-    // has a row, otherwise from weekendEstimate (which falls back to
-    // tier-typical estimates so we never show NaN).
+    // The marker labels show "{city} · from €X–€Y · Yh flight".
+    // Every marker shows the all-in weekend estimate for the user's
+    // origin (same number as the search drawer, best deals and city
+    // detail) — never a raw smartDestinations flight number, so units
+    // never mix across markers in the same view.
     const origin = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
-    const fromSd = d && d.prices && d.prices[origin];
     const fromSdFlight = d && d.flights && d.flights[origin];
     let priceLabel = '';
-    let flightLabel = '';
-    if (fromSd && fromSd > 0) {
-      priceLabel = (typeof priceFromRange === 'function') ? priceFromRange(fromSd) : ('from €' + fromSd);
-      if (fromSdFlight != null && typeof fmtFlight === 'function') {
-        flightLabel = fmtFlight(fromSdFlight);
-      }
-    } else if (typeof weekendEstimate === 'function') {
-      // No direct flight in our matrix — show the all-in weekend
-      // estimate. Origin is the user's; nights/adults from search ctx.
-      try {
+    const flightLabel = (fromSdFlight != null && typeof fmtFlight === 'function') ? fmtFlight(fromSdFlight) : '';
+    try {
+      if (typeof weekendEstimate === 'function') {
         const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : { origin, adults: 2, nights: 2 };
         const est = weekendEstimate(d.key, ctx);
-        priceLabel = 'from €' + est.totalPP + ' pp';
-      } catch (e) {
-        priceLabel = '—';
+        priceLabel = priceFromRange(est.totalPP) + ' pp';
       }
+    } catch (e) {
+      priceLabel = '—';
     }
+    if (!priceLabel) priceLabel = '—';
     const html = `
       <div class="lf-ambient">
         <span class="lf-ambient-dot" aria-hidden="true"></span>
@@ -15775,7 +15789,7 @@
             <h3 class="deal-name">${d.city.name}</h3>
             <div class="deal-foot">
               <div class="deal-price">
-                <span class="deal-price-amount">from €${allIn}</span>
+                <span class="deal-price-amount">${priceFromRange(allIn)}</span>
                 <span class="deal-price-meta">all-in p/p · 2 nights · estimate</span>
               </div>
               <span class="deal-cta" aria-label="Open ${d.city.name}">
@@ -15868,7 +15882,9 @@
                                       ranked.find(d => d.allIn != null) || ranked[0]);
     const shortest = ranked.reduce((a, b) => a.flight < b.flight ? a : b, ranked[0]);
     if (document.getElementById('ms-from')) {
-      const v = (cheapestWk && cheapestWk.allIn) ? '€' + cheapestWk.allIn : priceFromRange(ranked[0]?.price || 89);
+      const v = (cheapestWk && cheapestWk.allIn)
+        ? priceFromRange(cheapestWk.allIn)
+        : priceFromRange(ranked[0]?.price || 89);
       document.getElementById('ms-from').textContent = v;
       document.getElementById('ms-flight').textContent = fmtFlight(shortest.flight);
       document.getElementById('ms-count').textContent = ranked.length;
@@ -15880,7 +15896,7 @@
       items.innerHTML = ranked.slice(0, 10).map((d, i) => {
         const isBest = i === 0;
         const isCheap = (d.allIn != null) ? d.allIn < 250 : d.price < 80;
-        const priceLabel = (d.allIn != null) ? ('from €' + d.allIn) : priceFromRange(d.price);
+        const priceLabel = (d.allIn != null) ? priceFromRange(d.allIn) : priceFromRange(d.price);
         return `
           <div class="ml-item ${isBest ? 'best' : ''}" data-key="${d.key}">
             <div class="ml-img has-placeholder" data-label="${d.key}" data-wiki="${d.key}"><img alt="${d.key}" loading="lazy" /></div>
@@ -15928,11 +15944,11 @@
     // page will then show. "from €49 return" reads as a complete weekend
     // even though it's just the flight, which causes the credibility
     // problem we're fixing.
-    let priceLabel = `from €${d.prices[from] ?? 99} flight · ${fmtFlight(d.flights[from] ?? 2)}`;
+    let priceLabel = `${priceRangeTransport(d.prices[from] ?? 99, 'flight')} flight · ${fmtFlight(d.flights[from] ?? 2)}`;
     try {
       if (typeof weekendEstimate === 'function') {
         const est = weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 });
-        priceLabel = `from €${est.totalPP} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
+        priceLabel = `${priceFromRange(est.totalPP)} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
       }
     } catch (e) { /* keep fallback label */ }
     const trip = {
@@ -15975,10 +15991,10 @@
       const est = (typeof weekendEstimate === 'function')
         ? weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 })
         : null;
-      price.textContent = est ? `from €${est.totalPP} pp · all-in` : `from €${d.prices[from]} flight`;
+      price.textContent = est ? `${priceFromRange(est.totalPP)} pp · all-in` : `${priceRangeTransport(d.prices[from], 'flight')} flight`;
     }
     const flight = document.getElementById('cgPreviewFlight');
-    if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight · €${d.prices[from]}`;
+    if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight · ${priceRangeTransport(d.prices[from], 'flight')}`;
     const vibe = document.getElementById('cgPreviewVibe');
     if (vibe) vibe.textContent = d.vibe;
     const eyebrow = document.querySelector('.cg-pg-eyebrow');
@@ -16156,7 +16172,7 @@
       return 'No weekends fit this budget yet — try raising it or picking a closer origin.';
     }
     const cheapest = r.samples[0];
-    const cheap = cheapest ? ` · cheapest ${cheapest.name} from €${cheapest.totalPP}` : '';
+    const cheap = cheapest ? ` · cheapest ${cheapest.name} ${priceFromRange(cheapest.totalPP)}` : '';
     return `${r.count} of ${r.total} weekends fit${cheap}`;
   }
 
