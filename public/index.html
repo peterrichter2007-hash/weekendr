@@ -7371,7 +7371,7 @@
           Cheap, beautiful weekends · Europe
         </div>
         <div class="hero-meta">
-          <div class="place">Lisbon, Portugal · from €49</div>
+          <div class="place">Lisbon, Portugal</div>
           <div>38°43′N&nbsp;&nbsp;9°08′W</div>
         </div>
       </div>
@@ -7385,7 +7385,7 @@
         </h1>
         <p class="hero-sub">
           We find the cheapest flight, the smartest stay and the best three things to do —
-          for a full weekend in Europe under €400. No filler.
+          for a full weekend in Europe from around €200 all-in. No filler.
         </p>
         <div class="hero-actions">
           <button class="btn-primary btn-primary-hero" onclick="openStepWizard()">
@@ -7394,7 +7394,7 @@
           </button>
           <div class="hero-trust">
             <span class="hero-trust-dot"></span>
-            <span>From <strong>€189</strong> all-in · 16 cities · no signup</span>
+            <span id="heroTrustLine">All-in estimates · 67 cities · no signup</span>
           </div>
         </div>
       </div>
@@ -7603,10 +7603,10 @@
               <img alt="Suggested cheapest weekend" loading="lazy" decoding="async" />
             </div>
             <div class="cg-preview-glass">
-              <div class="cg-pg-eyebrow">Suggested for Berlin · Couple · €600–1200</div>
+              <div class="cg-pg-eyebrow" id="cgPreviewEyebrow">Suggested from Berlin</div>
               <div class="cg-pg-title" id="cgPreviewTitle">The Amalfi Affair</div>
               <div class="cg-pg-row">
-                <span class="cg-pg-chip" id="cgPreviewPrice">from €840 pp</span>
+                <span class="cg-pg-chip" id="cgPreviewPrice">estimating…</span>
                 <span class="cg-pg-chip light" id="cgPreviewFlight">2h 15m flight</span>
                 <span class="cg-pg-chip light" id="cgPreviewVibe">Romantic · Coastal</span>
               </div>
@@ -7670,11 +7670,11 @@
       <div class="manifesto-meta reveal d2">
         <div>
           <span class="label">Cheapest weekend now</span>
-          <span class="value" id="manifestoMinPrice">€189 all-in</span>
+          <span class="value" id="manifestoMinPrice">from ~€200 all-in</span>
         </div>
         <div>
           <span class="label">Cities tracked</span>
-          <span class="value">66+ · Europe only</span>
+          <span class="value">67 · Europe only</span>
         </div>
         <div>
           <span class="label">Routes via</span>
@@ -7804,7 +7804,7 @@
             <img alt="Lisbon" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Portugal · from €49</span>
+            <span class="tag">City · Portugal</span>
             <h3 class="title">Lisbon by <em style="font-style: italic;">candlelight</em></h3>
             <p class="sub">Tiled facades, fado nights and the cheapest €4 wine in Europe.</p>
           </div>
@@ -7816,7 +7816,7 @@
             <img alt="Budapest" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Hungary · from €39</span>
+            <span class="tag">City · Hungary</span>
             <h3 class="title">Budapest, <em style="font-style: italic;">steam</em></h3>
             <p class="sub">Thermal baths, ruin bars and pasta-cheap dinners.</p>
           </div>
@@ -7828,7 +7828,7 @@
             <img alt="Krakow" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Poland · from €39</span>
+            <span class="tag">City · Poland</span>
             <h3 class="title">Krakow, <em style="font-style: italic;">honest</em></h3>
             <p class="sub">Cobbles, milk bars, the cheapest weekend in the EU.</p>
           </div>
@@ -7840,7 +7840,7 @@
             <img alt="Naples" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Italy · from €79</span>
+            <span class="tag">City · Italy</span>
             <h3 class="title">Naples, <em style="font-style: italic;">loud</em></h3>
             <p class="sub">Pulse, pizza, Vesuvius behind the alleys.</p>
           </div>
@@ -7852,7 +7852,7 @@
             <img alt="Porto" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Portugal · from €39</span>
+            <span class="tag">City · Portugal</span>
             <h3 class="title">Porto by <em style="font-style: italic;">the river</em></h3>
             <p class="sub">Wine cellars, river light and a flight cheaper than your dinner.</p>
           </div>
@@ -7864,7 +7864,7 @@
             <img alt="Prague" loading="lazy" decoding="async" />
           </div>
           <div class="body">
-            <span class="tag">City · Czechia · from €39</span>
+            <span class="tag">City · Czechia</span>
             <h3 class="title">Prague, <em style="font-style: italic;">cobbled</em></h3>
             <p class="sub">Gothic spires, the cheapest beer in Europe, and the best 48 hours.</p>
           </div>
@@ -8357,16 +8357,15 @@
   
   function renderRail(key) {
     const items = [...collections[key]]; // copy
-    // For "Weekends" rail — recompute the per-card "from €X" using the
-    // real per-city economy + current origin so the displayed weekend
-    // price reflects reality (Lisbon from Berlin is genuinely cheaper
-    // than Paris from Madrid, and the rail now shows that). The static
-    // strings remain as fallback for cities outside cityEconomy and
-    // for non-weekend rails (hidden/beach lists
-    // include place names we don't have economy entries for).
+    // Per-card price: ONLY shown when we can compute a real estimate
+    // (place has a cityEconomy entry → weekendEstimate → range via
+    // priceFromRange, from the current origin). Places without an
+    // economy entry (most hidden/beach spots) show NO price badge —
+    // the static `price` strings in the collections data are never
+    // displayed; they only serve as a relative sort heuristic below.
     const fromCity = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
     items.forEach(it => {
-      it._displayPrice = it.price;
+      it._displayPrice = null;
       if (typeof weekendEstimate === 'function'
           && typeof cityEconomy !== 'undefined'
           && it.place && cityEconomy[it.place]
@@ -8375,7 +8374,7 @@
           const est = weekendEstimate(it.place, { origin: fromCity, adults: 2, nights: 2 });
           it._dynamicAllIn = est.totalPP;
           it._displayPrice = priceFromRange(est.totalPP) + ' pp';
-        } catch (e) { /* keep static */ }
+        } catch (e) { /* no price badge */ }
       }
     });
     // Smart sort: 'weekends' and 'hidden' favour cheaper picks. Sort by the
@@ -8388,7 +8387,9 @@
     if (!rail) return;
     rail.innerHTML = items.map((it, i) => {
       const num = it._dynamicAllIn ?? priceNum(it.price);
-      const isDeal = num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches');
+      // "Best value" badge only when a real computed estimate backs it —
+      // never on a card whose price we can't honestly state.
+      const isDeal = it._dynamicAllIn != null && num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches');
       const flight = flightForPlace(it.place);
       const flightStr = (function () {
         const h = Math.floor(flight);
@@ -8400,7 +8401,7 @@
           <div class="img-wrap has-placeholder" data-label="${it.place}" data-wiki="${it.place}">
             <img alt="${it.place}" loading="lazy" />
             ${isDeal ? `<span class="deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Best value</span>` : ''}
-            <span class="price">${it._displayPrice}</span>
+            ${it._displayPrice ? `<span class="price">${it._displayPrice}</span>` : ''}
             <button class="save" data-fav-toggle="${it.place}" aria-label="Save trip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
           </div>
           <div class="meta">
@@ -8477,11 +8478,11 @@
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-dots button');
   const places = [
-    { name: 'Lisbon, Portugal · from €49',  coord: '38°43′N 9°08′W' },
-    { name: 'Barcelona, Spain · from €59',  coord: '41°23′N 2°10′E' },
-    { name: 'Budapest, Hungary · from €39', coord: '47°30′N 19°02′E' },
-    { name: 'Naples, Italy · from €79',     coord: '40°51′N 14°16′E' },
-    { name: 'Prague, Czechia · from €39',   coord: '50°05′N 14°25′E' }
+    { name: 'Lisbon, Portugal',  coord: '38°43′N 9°08′W' },
+    { name: 'Barcelona, Spain',  coord: '41°23′N 2°10′E' },
+    { name: 'Budapest, Hungary', coord: '47°30′N 19°02′E' },
+    { name: 'Naples, Italy',     coord: '40°51′N 14°16′E' },
+    { name: 'Prague, Czechia',   coord: '50°05′N 14°25′E' }
   ];
   let heroIdx = 0;
   function setHero(i) {
@@ -15814,19 +15815,25 @@
     bestDealsCursor = 0;
     renderBestDealsCards(pool.slice(0, 4));
 
-    // Update manifesto's "cheapest weekend now" tile to reflect reality.
-    // Uses the same weekendEstimate() as the cost-breakdown so the number
-    // a visitor sees on the homepage matches what they see after clicking
-    // through. No more hardcoded "€18 × 2 nights" — actual h_mid per city.
+    // Update the manifesto "cheapest weekend now" tile + the hero trust
+    // line to reflect reality. Uses the same weekendEstimate() as the
+    // cost-breakdown so the number a visitor sees on the homepage
+    // matches what they see after clicking through — shown as a range
+    // via priceFromRange, never an exact figure.
     const cheap = pool[0];
     if (cheap) {
+      const est = (typeof weekendEstimate === 'function')
+        ? weekendEstimate(cheap.city.name, { origin: from, adults: 2, nights: 2 })
+        : null;
+      const allIn = est ? est.totalPP : (cheap.opt.price + 36);
       const mp = document.getElementById('manifestoMinPrice');
       if (mp) {
-        const est = (typeof weekendEstimate === 'function')
-          ? weekendEstimate(cheap.city.name, { origin: from, adults: 2, nights: 2 })
-          : null;
-        const allIn = est ? est.totalPP : (cheap.opt.price + 36);
-        mp.textContent = '€' + allIn + ' all-in · ' + cheap.city.name;
+        mp.textContent = priceFromRange(allIn) + ' all-in · ' + cheap.city.name;
+      }
+      const ht = document.getElementById('heroTrustLine');
+      if (ht) {
+        const n = (typeof smartDestinations !== 'undefined') ? smartDestinations.length : 67;
+        ht.textContent = priceFromRange(allIn) + ' all-in · ' + n + ' cities · no signup';
       }
     }
 
@@ -15982,6 +15989,8 @@
     }
     const title = document.getElementById('cgPreviewTitle');
     if (title) title.textContent = `${d.key}, this weekend`;
+    const eyebrow = document.getElementById('cgPreviewEyebrow');
+    if (eyebrow) eyebrow.textContent = `Suggested from ${from}`;
     const price = document.getElementById('cgPreviewPrice');
     // All-in p/p — coherent with the city detail page's cost-breakdown.
     // "from €X return" was just the flight cost and read as a complete
