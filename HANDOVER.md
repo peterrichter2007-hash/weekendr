@@ -74,7 +74,7 @@ These are real product decisions, not stylistic preferences.
 | **Accommodation = budget estimate** via `cityEconomy[city]` blend `(h_min + h_mid) / 2`, biased toward cheapest realistic stays. Cost-breakdown shows nightly RANGE ("~€20–€60/night · hostel to mid-range · est"). | Honest budget signal without specific inventory. |
 | **Activities use Wikipedia landmark images** when possible. Else placeholder. | Real and verifiable. |
 | **Restaurants** use the 8-step priority chain in `pickRestaurantWiki`: own Wikipedia → must_order dish → atmosphere keyword (rooftop, market hall, brown café…) → cuisine descriptor (Catalan, Neapolitan, New Nordic…) → cityFoodCulture (Spaccanapoli, Naschmarkt…) → cuisine field dish → vibe/desc dish → country fallback. | Real and verifiable. |
-| **Partner integration is "deep-link to"** — never "via" or "powered by". Affiliate IDs are placeholders today (`aid=304142`). | We don't pull inventory; we just open the partner site with pre-filled params. |
+| **Partner integration is "deep-link to"** — never "via" or "powered by". No affiliate IDs in any URL — the Booking `aid` param was removed until a real approved account exists. | We don't pull inventory; we just open the partner site with pre-filled params. |
 | **Per-image attribution chips are OFF.** Use `.section-attribution` on rotating heroes only. Trust Strip in footer covers global attribution. | Per-image chips flickered on rotation and cluttered grids. |
 | **No AI in search or city detail.** Everything renders from curated `cityProfiles` + `cityEconomy` + `smartDestinations`. The cost-breakdown pill says "Estimates", not "AI-assisted". | No external content-generation API is called. |
 | **No fake social proof.** No star ratings, no testimonials, no engagement counters, no fabricated avatars. | Removed in commit `feaf941` — entire `cg-trust` block + all hotel `rating:` data deleted. |
@@ -562,10 +562,10 @@ Privacy + Impressum "Last updated" set to 2026-05-28. Footer `Contact`
 + fullscreen-menu email updated to the real address.
 
 Still pending operator changes:
-- `aid=304142` Booking affiliate placeholder → real ID when approved
-  (only the URL parameter — no user-facing claim of an active affiliate
-  program; see Privacy Policy "no affiliate programs are currently
-  active")
+- Booking affiliate: no `aid` param in URLs today (removed in the
+  honesty pass — Privacy Policy says "no affiliate programs are
+  currently active"). When a real approved ID exists, add the param
+  back in `bookingURL()` in `partnerLinks`.
 - `weekendr.vercel.app` in `robots.txt` + `sitemap.xml` → custom domain
 
 ---
@@ -574,7 +574,7 @@ Still pending operator changes:
 
 | Status | Task |
 |---|---|
-| Pending — depends on access | **Booking Affiliate ID** approval. Replace `aid=304142` everywhere. |
+| Pending — depends on access | **Booking Affiliate ID** approval. Add the `aid` param to `bookingURL()` once approved (currently no aid param is sent). |
 | **Re-introduce hotels** only when **Hotelbeds API** or **Booking Partner API** lands. Currently the platform deliberately doesn't recommend specific properties — bring back the hotel section + `cityProfiles[*].hotels` only with real inventory. Add `/api/hotels?city=X` route, call `MV.cities.override(city, {hotels: ..., source:{hotels:'hotelbeds'}})`. |
 | Pending — bigger | **GetYourGuide Partner API**: real activity inventory + booking. |
 | Pending — bigger | **Skyscanner Travel API**: real flight prices via `MV.transport.override(...)`. |

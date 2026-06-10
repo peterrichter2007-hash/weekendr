@@ -106,7 +106,7 @@ git push origin main
 
 - **Real flight prices**: requires Skyscanner Travel API partner access. `MV.transport.override(...)` is the integration point.
 - **Real hotel inventory**: requires Hotelbeds or Booking Partner API. `MV.cities.override(city, { hotels: [...] })` is the integration point.
-- **Affiliate IDs**: Booking / Skyscanner / GetYourGuide / FlixBus approvals. Replace `aid=304142` placeholder once approved.
+- **Affiliate IDs**: Booking / Skyscanner / GetYourGuide / FlixBus approvals. No affiliate params are sent today; add the Booking `aid` param to `bookingURL()` once a real approved ID exists.
 - **Authentication + saved trips**: needs a backend. Current storage is `localStorage` only.
 - **Translations** (`de`, `fr`, `es`, `it`): plug into `MV.i18n.t(key)`.
 - **Server-side rendering per city** (`/city/Lisbon` real path): for SEO indexing.

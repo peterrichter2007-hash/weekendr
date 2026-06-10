@@ -4596,7 +4596,7 @@
       border-top: 1px solid var(--hairline);
     }
     .cb-disclaimer strong { color: var(--ink); font-weight: 600; }
-    /* AI-assisted pill at the head of the disclaimer — small, calm,
+    /* "Estimates" pill at the head of the disclaimer — small, calm,
        premium feel. Sits inline with the first sentence. */
     .cb-disclaimer .ai-pill {
       display: inline-flex;
@@ -7419,7 +7419,7 @@
        MANIFESTO
        ============================================================ -->
   <!-- ============================================================
-       AI CONCIERGE — moved up for usability, light glass
+       CONCIERGE — moved up for usability, light glass
        (manifesto relocated below Best Deals — see "Why we built this")
        ============================================================ -->
   <section class="concierge-light" id="concierge">
@@ -7431,10 +7431,10 @@
     <div class="wrap">
       <div class="section-head" style="margin-bottom: 3.5rem;">
         <div class="left reveal">
-          <div class="eyebrow"><span class="dot"></span>The Concierge · live</div>
+          <div class="eyebrow"><span class="dot"></span>The Concierge · instant</div>
           <h2 class="h-1" style="margin-top: 1.2rem;">Tell us your budget.<br><em class="italic-accent">We'll find the weekend.</em></h2>
           <p class="lede" style="max-width: 580px; margin-top: 1.4rem;">
-            An AI that ranks Europe's cheapest beautiful weekends by what you actually have — flight + stay + the three things worth doing. No filler, no upsell.
+            Instant search that ranks Europe's cheapest beautiful weekends by what you actually have — flight + stay + the three things worth doing. No filler, no upsell.
           </p>
         </div>
         <!-- cg-trust block removed — the previous version implied fake
@@ -7451,8 +7451,8 @@
           <div class="cg-panel-head">
             <div class="cg-ai">
               <span class="cg-ai-dot"></span>
-              <span class="cg-ai-name">Maison AI</span>
-              <span class="cg-ai-status">composing</span>
+              <span class="cg-ai-name">Concierge</span>
+              <span class="cg-ai-status">instant</span>
             </div>
             <div class="cg-tabs">
               <button class="cg-tab on">Weekend</button>
@@ -7638,7 +7638,7 @@
         <div class="left">
           <div class="deals-eyebrow"><span class="dot"></span>Today's value picks</div>
           <h2 class="deals-title">Best cheap weekend <em>escapes</em> right now.</h2>
-          <p class="deals-sub">Live-checked routes (flight · bus · train) from your departure city. Prices update as you change origin.</p>
+          <p class="deals-sub">Curated routes (flight · bus · train) from your departure city. Estimates update as you change origin.</p>
         </div>
         <div class="deals-origin-pill" id="dealsOriginPill">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>
@@ -7775,7 +7775,7 @@
           <div class="ml-items" id="ml-items"></div>
           <div class="ml-foot">
             <span class="ml-foot-dot"></span>
-            <span>Prices update on selection · powered by Skyscanner</span>
+            <span>Estimates update on selection · book on Skyscanner</span>
           </div>
         </aside>
       </div>
@@ -8052,7 +8052,6 @@
           <span class="trust-item"><span class="trust-cat">Weather</span><strong>Open-Meteo</strong></span>
           <span class="trust-item"><span class="trust-cat">Map</span><strong>Esri · Carto</strong></span>
           <span class="trust-item"><span class="trust-cat">Deep links</span><strong>Skyscanner · Booking.com · FlixBus · GetYourGuide</strong></span>
-          <span class="trust-item"><span class="trust-cat">AI</span><strong>Anthropic Claude</strong></span>
         </div>
       </div>
       <div class="foot-bottom">
@@ -8074,7 +8073,7 @@
     <div class="results-head">
       <div>
         <h3 id="resTitle">Curated for you</h3>
-        <div class="meta" id="resMeta">5 escapes · curated by Maison AI</div>
+        <div class="meta" id="resMeta">5 escapes · ranked by value</div>
       </div>
       <button class="results-close" onclick="closeResults()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -9540,7 +9539,7 @@
     Florence:  ['Florence', 'Florence_Cathedral', 'Ponte_Vecchio', 'Uffizi', 'Palazzo_Vecchio', 'Piazzale_Michelangelo', 'Boboli_Gardens'],
     Seville:   ['Seville', 'Seville_Cathedral', 'Royal_Alcázar_of_Seville', 'Plaza_de_España,_Seville', 'Giralda', 'Metropol_Parasol'],
     Granada:   ['Granada', 'Alhambra', 'Albaicín', 'Granada_Cathedral', 'Sacromonte', 'Generalife'],
-    // Basic-tier expansion (4-5 slug galleries; detail page enhanced by AI fallback)
+    // Basic-tier expansion (4-5 slug galleries; detail copy from economy-aware fallbacks)
     Benidorm:  ['Benidorm', 'Levante_Beach_(Benidorm)', 'Poniente_Beach', 'Benidorm_Island'],
     Malaga:    ['Málaga', 'Alcazaba_of_Málaga', 'Picasso_Museum,_Málaga', 'Caminito_del_Rey', 'Castillo_de_Gibralfaro'],
     Cannes:    ['Cannes', 'La_Croisette', 'Le_Suquet,_Cannes', 'Lérins_Islands'],
@@ -10521,8 +10520,10 @@
         no_rooms: String(ctx.rooms || 1),
         order: 'price',
         selected_currency: 'EUR',
-        lang: 'en-gb',
-        aid: '304142'   // operator: replace with real affiliate ID once approved
+        lang: 'en-gb'
+        // No affiliate `aid` param — no affiliate programs are active
+        // (Privacy Policy + Impressum say so). Add the param back only
+        // once a real approved Booking affiliate ID exists.
       });
       // Budget-derived max-per-night — ~50% of total budget to accommodation,
       // divided by nights, then clamped to a realistic [€40 – €500] range.
@@ -10878,7 +10879,7 @@
             <h2>What to do</h2>
           </div>
           <div class="city-deals">
-            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Personalised for ${cityName} — what this city is truly famous for. Click any card to search live on GetYourGuide.</p>
+            <p class="lede" style="max-width: 640px; margin-bottom: 2rem;">Curated for ${cityName} — what this city is truly famous for. Click any card to search live on GetYourGuide.</p>
             <div class="listing-grid" id="cityActivities">${skeletonListings(8)}</div>
           </div>
         </div>
@@ -10935,7 +10936,7 @@
     detail.scrollTop = 0;
     document.body.style.overflow = 'hidden';
   
-    // Kick off the AI fetch for hotels / activities / restaurants
+    // Render the curated listings (activities / restaurants / guides)
     populateCityListings(cityName, origin, links);
     // Fire-and-forget: live weather
     renderWeatherInto(document.getElementById('cityWeather'), cityName);
@@ -13104,7 +13105,8 @@
       vibeTags: ['Cultural', 'Cheap luxe', 'Hidden']
     },
     // ============================================================
-    // DESTINATION EXPANSION — basic-tier (detail page via AI fallback)
+    // DESTINATION EXPANSION — basic-tier (detail page via
+    // economy-aware fallback copy from cityEconomy)
     // ============================================================
     {
       key: 'Benidorm', country: 'Spain',
@@ -13375,7 +13377,7 @@
     Ibiza: [38.907, 1.428], 'Palma de Mallorca': [39.570, 2.650], Valencia: [39.470, -0.376],
     Nice: [43.710, 7.262], Venice: [45.440, 12.316], Florence: [43.770, 11.255],
     Seville: [37.389, -5.984], Granada: [37.177, -3.598],
-    // Basic-tier destinations (gallery + smartDestinations only, AI-generated detail page)
+    // Basic-tier destinations (gallery + smartDestinations only, fallback detail copy)
     Benidorm: [38.538, -0.131], Malaga: [36.721, -4.420], Cannes: [43.553, 7.017],
     Split: [43.508, 16.440], Zadar: [44.119, 15.230], Albufeira: [37.089, -8.247],
     Faro: [37.019, -7.930], Catania: [37.502, 15.087], Bari: [41.117, 16.872],
@@ -13394,7 +13396,7 @@
   };
 
   // ============================================================
-  // CITY DATA MODEL — canonical structured shape for AI + affiliates
+  // CITY DATA MODEL — canonical structured shape for partner overlays
   //
   // Four existing data sources (cityGallery, smartDestinations,
   // cityCoords, cityProfiles) are deliberately kept separate — each
@@ -13403,8 +13405,8 @@
   // entry). MV.cities composes them into one normalised City object
   // on read so:
   //
-  //   1. AI / affiliate / overlay code has ONE shape to consume —
-  //      they don't need to know about four scattered globals.
+  //   1. Overlay code (future partner APIs) has ONE shape to consume —
+  //      it doesn't need to know about four scattered globals.
   //   2. Curated baseline stays editable in its native shape.
   //   3. API overrides merge cleanly via MV.cities.override(name, patch)
   //      without mutating any curated data — the renderer just picks
@@ -15077,7 +15079,7 @@
   //   }
   //
   // This is the public injection point for future overlay sources
-  // (AI trips, Hotelbeds, Skyscanner). buildMarker is intentionally
+  // (Hotelbeds, Skyscanner). buildMarker is intentionally
   // shape-agnostic — it never reads cityCoords, smartDestinations,
   // or any global. The caller does the data shaping.
   //
@@ -15654,12 +15656,9 @@
   //
   // Pulls the cheapest 8 destinations from the current origin via
   // MV.transport.cheapest(), shows the top 4, and rotates through
-  // 8 every 9 seconds so the section feels "live" without faking
-  // any live data (the rotation is deterministic).
-  //
-  // Honest copy: subtitle says "Live-checked routes" because the
-  // route DB IS the live data — we compute it client-side every
-  // time the origin changes, instead of caching a stale list.
+  // 8 every 9 seconds. The rotation is deterministic — no live data
+  // is involved, and the subtitle says "Curated routes" so the copy
+  // never implies real-time monitoring.
   // ============================================================
   let bestDealsTimer = null;
   let bestDealsVisHandler = null;
@@ -16055,9 +16054,8 @@
   // BUDGET TIERS — four-band model, the redesigned budget system
   //
   // Single source of truth for everything budget-related: the
-  // slider value display, the live breakdown panel, the AI-prompt
-  // budget hint, the mobile step-wizard label, the "destinations
-  // in range" counter.
+  // slider value display, the live breakdown panel, the mobile
+  // step-wizard label, the "destinations in range" counter.
   //
   //   Budget Escape    — €100–250   cheap cities, hostels, FlixBus
   //   Smart Weekend    — €250–450   mid cities, boutique, mix of modes
