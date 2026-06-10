@@ -22,10 +22,18 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Maison Voyage — The Cheapest Beautiful Weekends in Europe" />
   <meta name="twitter:description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks." />
-  <!-- og:image / twitter:image are populated at runtime from the
-       active hero image (Wikipedia URL). Crawlers that don't run
-       JS see a text-only preview; TikTok / Pinterest / Twitter /
-       WhatsApp do render JS and pick up the image. -->
+  <!-- Default share image: Wikipedia lead image for Lisbon (the hero's
+       first slide), CC-licensed, hotlinked from Wikimedia like all other
+       imagery on the site (attribution in the footer Trust Strip).
+       Verified 200/image-jpeg. MV.seo upgrades og:image at runtime to
+       the active hero / opened city; restore() falls back to this. -->
+  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg" />
+  <meta property="og:image:width" content="2048" />
+  <meta property="og:image:height" content="1313" />
+  <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg" />
+  <!-- OPERATOR: weekendr.vercel.app is a placeholder host. When the
+       final domain lands, replace it here (canonical + og:url) and in
+       robots.txt + sitemap.xml. -->
   <link rel="canonical" href="https://weekendr.vercel.app/" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14317,7 +14325,13 @@
       setMeta('twitter:title',       titleStr);
       setMeta('twitter:description', descStr);
       if (imageUrl) setMeta('twitter:image', imageUrl);
-      setLink('canonical', url);
+      // Canonical stays fragment-free: search engines ignore the
+      // #/city/… fragment, so a hash canonical would just be a noisy
+      // duplicate of the homepage. og:url above keeps the hash — for
+      // social shares the fragment is what routes the recipient to
+      // the city. Real per-city canonicals arrive with server-side
+      // /city/{name} routes (roadmap).
+      setLink('canonical', location.origin + location.pathname);
     }
 
     function restore() {

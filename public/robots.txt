@@ -1,8 +1,9 @@
 # Maison Voyage — robots.txt
-# Crawl everything except the AI proxy endpoint and any future
-# server-only routes. The /api/* paths run on Vercel serverless
-# functions; they're not public content and shouldn't appear in
-# search results.
+# Crawl everything except /api/* (Vercel serverless routes — today
+# just a health-check endpoint; not public content).
+#
+# OPERATOR: replace `weekendr.vercel.app` with the final domain
+# (also in sitemap.xml and the canonical/og:url tags in index.html).
 
 User-agent: *
 Allow: /

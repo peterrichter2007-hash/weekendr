@@ -1,93 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Maison Voyage — sitemap.xml
-  Lists the homepage + every destination city. City pages live at
-  hash URLs (#/city/{name}) handled by the client-side router in
-  index.html.
 
-  To regenerate after adding/removing a city, copy the keys from
-  smartDestinations and rebuild the <url> blocks below. A future
-  serverless endpoint can produce this dynamically when the
-  destination list churns more.
+  Homepage only, on purpose. City pages currently live at hash routes
+  (#/city/{name}) which search engines cannot index — URL fragments
+  are ignored by crawlers, so listing 67 hash URLs here was 67
+  duplicates of the homepage, not 67 pages. No fake SEO signals.
 
-  Domain: replace `weekendr.vercel.app` with the production host
-  once the custom domain is wired.
+  Re-add per-city <url> entries only when real server-side routes
+  (/city/{name}) exist — see the SSR item on the HANDOVER roadmap.
+
+  OPERATOR: replace `weekendr.vercel.app` with the final domain
+  (also in robots.txt and the canonical/og:url tags in index.html).
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://weekendr.vercel.app/</loc>
-    <lastmod>2026-05-19</lastmod>
+    <lastmod>2026-06-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Curated 16 (original cityProfiles) -->
-  <url><loc>https://weekendr.vercel.app/#/city/Barcelona</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Lisbon</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Budapest</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Prague</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Milan</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Dubrovnik</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Amalfi</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Mykonos</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Santorini</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Paris</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Krakow</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Naples</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Porto</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Vienna</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Athens</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Copenhagen</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-
-  <!-- Top-tier 17 (full cityProfiles) -->
-  <url><loc>https://weekendr.vercel.app/#/city/London</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Rome</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Amsterdam</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Berlin</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Madrid</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Brussels</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Dublin</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Stockholm</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Oslo</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Ibiza</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Palma%20de%20Mallorca</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Valencia</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Nice</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Venice</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Florence</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Seville</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Granada</loc><lastmod>2026-05-19</lastmod><priority>0.9</priority></url>
-
-  <!-- Basic-tier 33 (smartDestinations + AI-enhanced detail) -->
-  <url><loc>https://weekendr.vercel.app/#/city/Benidorm</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Malaga</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Cannes</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Split</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Zadar</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Albufeira</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Faro</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Catania</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Bari</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Belgrade</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Warsaw</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Riga</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Vilnius</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Monaco</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Lake%20Como</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Reykjavik</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Ljubljana</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Bratislava</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Sofia</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Sarajevo</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Tirana</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Skopje</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Wroc%C5%82aw</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Gda%C5%84sk</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Interlaken</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Lucerne</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Innsbruck</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Salzburg</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Bergen</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Annecy</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://weekendr.vercel.app/#/city/Hallstatt</loc><lastmod>2026-05-19</lastmod><priority>0.7</priority></url>
 </urlset>

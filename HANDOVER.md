@@ -476,7 +476,9 @@ don't surface.
 ### Other files
 
 - `public/robots.txt` — allow all, disallow `/api/*`
-- `public/sitemap.xml` — 67 city URLs + homepage
+- `public/sitemap.xml` — homepage only (hash city routes are not
+  indexable; per-city entries return when real `/city/{name}` SSR
+  routes exist)
 - `server.js` — tiny static Express server (serves `public/` + `/api/health`)
 - `.claude/launch.json` — preview tool config (`node server.js` on :3000)
 
@@ -566,7 +568,9 @@ Still pending operator changes:
   honesty pass — Privacy Policy says "no affiliate programs are
   currently active"). When a real approved ID exists, add the param
   back in `bookingURL()` in `partnerLinks`.
-- `weekendr.vercel.app` in `robots.txt` + `sitemap.xml` → custom domain
+- `weekendr.vercel.app` → custom domain, in four places (all carry an
+  OPERATOR marker comment): `robots.txt`, `sitemap.xml`, and the
+  canonical + og:url tags in `public/index.html` `<head>`
 
 ---
 
