@@ -8503,8 +8503,29 @@
     heroIdx = i;
   }
   dots.forEach((d, i) => d.addEventListener('click', () => setHero(i)));
-  // Slower carousel — calm, luxurious pacing (was 6s, now 13s)
-  setInterval(() => setHero((heroIdx + 1) % slides.length), 13000);
+  // Slower carousel — calm, luxurious pacing (13s). The timer only
+  // runs while the hero is actually on screen AND the tab is visible:
+  // once the user scrolls past the fold there is no reason to keep
+  // rotating slides (DOM writes + potential image loads) forever.
+  (function heroRotation() {
+    const heroSection = document.querySelector('.hero');
+    let heroTimer = null;
+    let heroInView = true;
+    const tick = () => setHero((heroIdx + 1) % slides.length);
+    const sync = () => {
+      const shouldRun = heroInView && !document.hidden;
+      if (shouldRun && !heroTimer) heroTimer = setInterval(tick, 13000);
+      else if (!shouldRun && heroTimer) { clearInterval(heroTimer); heroTimer = null; }
+    };
+    if (heroSection && 'IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        heroInView = !!(entries[0] && entries[0].isIntersecting);
+        sync();
+      }).observe(heroSection);
+    }
+    document.addEventListener('visibilitychange', sync);
+    sync();
+  })();
   
   // ============================================================
   // Vibe pills
@@ -14850,7 +14871,17 @@
     return score;
   }
   
+  // Memoised on (from|sort): smartDestinations is static, so the same
+  // inputs always produce the same ranking. The concierge preview
+  // rotator calls this every 4.5s — without the cache that was a full
+  // filter+map+sort over 67 cities, ~800×/hour at idle, for an
+  // identical result. Callers share the cached wrapper objects;
+  // renderMap's d.allIn annotation is recomputed on every paint, so
+  // sharing is safe.
+  let _rankedCache = { key: null, list: null };
   function rankedDestinations(from, sort) {
+    const key = from + '|' + (sort || 'value');
+    if (_rankedCache.key === key) return _rankedCache.list;
     const list = smartDestinations
       .filter(d => (d.prices[from] ?? 0) > 0) // exclude the home city itself
       .map(d => ({
@@ -14861,6 +14892,7 @@
     if (sort === 'price') list.sort((a, b) => a.price - b.price);
     else if (sort === 'short') list.sort((a, b) => a.flight - b.flight);
     else list.sort((a, b) => valueScore(a, from) - valueScore(b, from));
+    _rankedCache = { key, list };
     return list;
   }
   
@@ -16835,17 +16867,35 @@
   })();
   
   // -- Concierge preview rotating dots --
+  // Only ticks while the concierge section is on screen and the tab
+  // is visible. Off-screen it did a full rank + DOM rewrite every
+  // 4.5s for a panel nobody was looking at.
   (function previewRotator() {
     const dots = document.querySelectorAll('.cg-pg-dot');
     if (dots.length < 2) return;
+    const section = document.getElementById('concierge');
     let i = 0;
-    setInterval(() => {
+    let timer = null;
+    let inView = true;
+    const tick = () => {
       i = (i + 1) % dots.length;
       dots.forEach((d, idx) => d.classList.toggle('on', idx === i));
-      // Rotate through top 3 ranked destinations
       const ranked = rankedDestinations(mapState.from, mapState.sort);
       if (ranked[i]) updateConciergePreview(ranked[i], mapState.from);
-    }, 4500);
+    };
+    const sync = () => {
+      const shouldRun = inView && !document.hidden;
+      if (shouldRun && !timer) timer = setInterval(tick, 4500);
+      else if (!shouldRun && timer) { clearInterval(timer); timer = null; }
+    };
+    if (section && 'IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        inView = !!(entries[0] && entries[0].isIntersecting);
+        sync();
+      }).observe(section);
+    }
+    document.addEventListener('visibilitychange', sync);
+    sync();
   })();
   // ============================================================
   // STEP WIZARD — mobile-first single-action search flow
