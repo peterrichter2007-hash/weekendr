@@ -2469,79 +2469,6 @@
     }
     
     /* ============================================================
-       LOADING
-       ============================================================ */
-    .loading-veil {
-      position: fixed; inset: 0;
-      background: var(--bg);
-      z-index: 300;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      padding: 2rem;
-      text-align: center;
-    }
-    .loading-veil.show { display: flex; }
-    .loading-veil .orbit {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      border: 1px solid var(--hairline-strong);
-      position: relative;
-      margin-bottom: 2rem;
-    }
-    .loading-veil .orbit::before {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      border-top-color: var(--accent);
-      animation: spin 1.2s linear infinite;
-    }
-    .loading-veil .orbit::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 0 6px rgba(139, 111, 62, 0.18);
-      animation: aiBlink 1.4s ease-in-out infinite;
-    }
-    .loading-veil h3 {
-      font-family: var(--serif);
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
-      font-weight: 300;
-      letter-spacing: -0.025em;
-      line-height: 1.1;
-      margin-bottom: 0.8rem;
-      max-width: 720px;
-    }
-    .loading-veil p {
-      font-size: 0.95rem;
-      color: var(--muted);
-      max-width: 480px;
-      line-height: 1.55;
-    }
-    .loading-veil .tick {
-      margin-top: 2rem;
-      font-size: 0.78rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--muted);
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .loading-veil .tick::before {
-      content: '';
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: aiBlink 1.5s ease-in-out infinite;
-    }
-    
-    /* ============================================================
        Reveal on scroll
        ============================================================ */
     .reveal {
@@ -3013,14 +2940,7 @@
       position: relative;
       z-index: 2;
     }
-    .cg-cta .spinner {
-      width: 14px; height: 14px;
-      border: 1.5px solid rgba(255, 255, 255, 0.25);
-      border-top-color: var(--cream);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    
+
     /* Preview pane */
     .cg-preview {
       display: flex; flex-direction: column;
@@ -8659,8 +8579,7 @@
         tags: (d.vibeTags || []).slice(0, 3).concat(i === 0 ? ['Best value'] : i === 1 ? ['Cheap flight'] : []),
         price: priceFromRange(c.totalPP) + ' per person all-in',
         best_for: vibes.length ? vibes.join(' · ') + ' weekends' : 'Weekend escapes from ' + origin,
-        image_keywords: d.key,
-        _estTotalPP: c.totalPP
+        image_keywords: d.key
       };
     });
   }
@@ -10418,21 +10337,6 @@
     };
   }
 
-  // Legacy shape — keep partnerCodes for any external readers that may
-  // still reference it, but its fields are now derived from cityAirports.
-  const partnerCodes = {
-    get skyscannerOrigin() {
-      const out = {};
-      Object.keys(cityAirports).forEach(k => { out[k] = cityAirports[k].iata; });
-      return out;
-    },
-    get skyscannerDest() {
-      const out = {};
-      Object.keys(cityAirports).forEach(k => { out[k] = cityAirports[k].iata; });
-      return out;
-    }
-  };
-  
   // ============================================================
   // SEARCH CONTEXT — every partner link inherits these
   //
@@ -10505,12 +10409,6 @@
     };
   }
 
-  // Backwards-compat shim — older callers still use weekendDates().
-  function weekendDates() {
-    const d = computeDates('Next weekend', 2);
-    return { friday: d.checkin, sunday: d.checkout, fridayCompact: d.checkinCompact, sundayCompact: d.checkoutCompact };
-  }
-
   // ============================================================
   // PARTNER DEEP-LINKS — cheapest-first, parameter-persistent
   //
@@ -10566,7 +10464,6 @@
       return `https://www.booking.com/searchresults.html?${p.toString()}`;
     }
     const booking      = bookingURL(city);
-    const bookingHotel = (hotelName) => bookingURL(`${hotelName} ${city}`);
 
     // --- GetYourGuide: keyword + dates + cheapest sort
     function gygURL(query) {
@@ -10590,8 +10487,8 @@
       : `https://www.google.com/travel/flights?q=${cityQ}`;
 
     return {
-      // Primary URLs (back-compat — every consumer uses these strings)
-      skyscanner, booking, bookingHotel, getyourguide, getyourguideAct, googleFlights,
+      // Primary URLs — every consumer uses these strings
+      skyscanner, booking, getyourguide, getyourguideAct, googleFlights,
       flixbus, trainline,
       // Validation metadata — new fields, consumers can hide CTAs when false
       skyscannerInfo,        // { url, valid, label, note }
@@ -10601,8 +10498,7 @@
       canFly:   canFly(ctx.origin, city),
       canBus:   canBus(ctx.origin, city),
       canTrain: canTrain(ctx.origin, city),
-      // Legacy aliases — older code expects friday/sunday
-      dates: { ...dates, friday: dates.checkin, sunday: dates.checkout, fridayCompact: dates.checkinCompact, sundayCompact: dates.checkoutCompact },
+      dates,
       ctx
     };
   }
@@ -11080,10 +10976,10 @@
   // ============================================================
   // CITY PROFILES — curated, city-specific data for every destination
   //
-  // Each city has its own hotels, activities, restaurants, guides.
-  // Names are plausible but invented (no Booking partner API to verify
-  // real properties). Neighbourhoods, dishes, attractions, vibes are
-  // all REAL and specific to that city.
+  // Each city has its own activities, restaurants and guides. Every
+  // entry — neighbourhoods, dishes, attractions, venues, vibes — is
+  // REAL and specific to that city. (No hotels: we don't recommend
+  // specific properties without a Booking Partner API.)
   //
   // Rule: NO two cities may share an entry. If you add a new city,
   // give it its own dataset.
@@ -11886,11 +11782,6 @@
     }
   };
 
-  // fallbackHotels — DELETED. No code path renders hotels any more.
-  // The platform doesn't recommend specific properties without a
-  // Booking Partner API. cityProfiles[city].hotels arrays still exist
-  // in data for now (removed in a follow-up pass) but no UI reads them.
-
   function fallbackActivities(city) {
     return (cityProfiles[city] && cityProfiles[city].activities)
       ? cityProfiles[city].activities.slice()
@@ -12176,8 +12067,8 @@
   }
 
   // ----- Country-aware vocab for smart fallback content -----
-  // Used by genericHotels/Activities/Restaurants to generate names
-  // that don't feel templated. Falls back to neutral terms.
+  // Used by genericActivities / genericRestaurants to generate copy
+  // that doesn't feel templated. Falls back to neutral terms.
   const _countryVocab = {
     'Italy':       { quarter: 'Centro Storico', cuisine: 'Italian', dish: 'pasta tasting + glass of Chianti', market: 'mercato' },
     'Spain':       { quarter: 'Casco Antiguo',  cuisine: 'Spanish · tapas', dish: 'tapas selection + glass of vermut', market: 'mercado' },
@@ -12223,21 +12114,17 @@
   // ============================================================
   // SMART FALLBACK CONTENT — economy-aware, country-flavoured
   //
-  // Replaces the four hardcoded "Central Hostel / Boutique Townhouse /
-  // Design Hotel / Grand Hotel" templates that previously made every
-  // unprofiled city look identical. Each generator now:
+  // For cities without a full cityProfiles entry. Each generator:
   //  • Reads cityEconomy → prices reflect the city's actual cost level
-  //    (Tirana's "Central Hostel" is €14, Zurich's is €52)
+  //    (a Tirana lunch is €6, a Zurich one €28)
   //  • Reads country → neighbourhood + cuisine labels are local-flavoured
   //  • Adds price_source field so the UI can show "Estimate · research"
   //    instead of pretending these are partner-quoted
+  //
+  // No hotel generator — we never fabricate specific properties.
+  // cityEconomy drives the accommodation budget shown in the
+  // cost-breakdown instead.
   // ============================================================
-  // genericHotels — DELETED. This function used to template-generate
-  // fake hotel names ("Tirana Central Hostel", "Grand Zurich") which
-  // is exactly the "fake hotel recommendations" the user asked us
-  // to remove. cityEconomy still drives the accommodation budget
-  // estimate in the cost-breakdown, but we no longer fabricate
-  // specific properties.
 
   function genericActivities(city) {
     const econ = getEconomy(city);
@@ -12333,11 +12220,6 @@
     `).join('');
   }
   
-  // renderHotels — DELETED. We have no Booking Partner API and won't
-  // pretend to recommend specific properties. The cost-breakdown
-  // shows an honest accommodation estimate; users search inventory
-  // on Booking directly via the existing CTA.
-
   function renderActivities(activities, city, links) {
     const el = document.getElementById('cityActivities');
     if (!el) return;
@@ -15069,11 +14951,7 @@
 
     renderLeafletMarkers();
   }
-  
-  // Legacy stub — the map is satellite-only now, no toggle. Kept so any
-  // legacy callers don't throw.
-  function setMapView() { /* satellite-only — toggle removed */ }
-  
+
   // Smoothly fly the map to a city's location (used when the user changes departure
   // or sort, so the camera glides instead of snapping)
   function flyToTopPick() {
@@ -16051,10 +15929,8 @@
     if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight · ${priceRangeTransport(d.prices[from], 'flight')}`;
     const vibe = document.getElementById('cgPreviewVibe');
     if (vibe) vibe.textContent = d.vibe;
-    const eyebrow = document.querySelector('.cg-pg-eyebrow');
-    if (eyebrow) eyebrow.textContent = `Suggested for ${from} · best value`;
   }
-  
+
   // ====== MAP CONTROLS ======
   function bindMapControls() {
     document.querySelectorAll('#mapCities .mc-chip').forEach(c => {
