@@ -1817,6 +1817,15 @@
       color: rgba(251, 247, 239, 0.88);
       font-weight: 500;
     }
+    /* Subtle, global price-honesty line — sits on its own row under
+       the data-sources list. Deliberately quiet (no marketing tone). */
+    .trust-note {
+      width: 100%;
+      font-size: 0.7rem;
+      color: rgba(251, 247, 239, 0.40);
+      line-height: 1.6;
+      margin-top: 0.1rem;
+    }
     @media (max-width: 720px) {
       .trust-strip { gap: 0.9rem; }
       .trust-list { justify-content: flex-start; }
@@ -7981,6 +7990,7 @@
           <span class="trust-item"><span class="trust-cat">Map</span><strong>Esri · Carto</strong></span>
           <span class="trust-item"><span class="trust-cat">Deep links</span><strong>Skyscanner · Booking.com · FlixBus · GetYourGuide</strong></span>
         </div>
+        <div class="trust-note">Prices are estimates based on transport and accommodation ranges. Final prices may vary on partner websites.</div>
       </div>
       <div class="foot-bottom">
         <div>© 2026 Maison Voyage. All rights reserved.</div>
@@ -8287,7 +8297,7 @@
     const items = [...collections[key]]; // copy
     // Per-card price: ONLY shown when we can compute a real estimate
     // (place has a cityEconomy entry → weekendEstimate → range via
-    // priceFromRange, from the current origin). Places without an
+    // weekendRange, from the current origin). Places without an
     // economy entry (most hidden/beach spots) show NO price badge —
     // the static `price` strings in the collections data are never
     // displayed; they only serve as a relative sort heuristic below.
@@ -8301,7 +8311,7 @@
         try {
           const est = weekendEstimate(it.place, { origin: fromCity, adults: 2, nights: 2 });
           it._dynamicAllIn = est.totalPP;
-          it._displayPrice = priceFromRange(est.totalPP) + ' pp';
+          it._displayPrice = weekendRange(est.totalPP) + ' pp';
         } catch (e) { /* no price badge */ }
       }
     });
@@ -8577,7 +8587,7 @@
                       ? highlightsFromProf.slice(0, 4)
                       : fallbackHighlights,
         tags: (d.vibeTags || []).slice(0, 3).concat(i === 0 ? ['Best value'] : i === 1 ? ['Cheap flight'] : []),
-        price: priceFromRange(c.totalPP) + ' per person all-in',
+        price: weekendRange(c.totalPP) + ' per person all-in',
         best_for: vibes.length ? vibes.join(' · ') + ' weekends' : 'Weekend escapes from ' + origin,
         image_keywords: d.key
       };
@@ -10585,7 +10595,7 @@
           <div class="place"><span class="line"></span>${trip.country || 'Europe'} · ${cityName}</div>
           <h1>${cityName.replace(/(\w+)$/, '<em>$1</em>')}</h1>
           <div class="stats">
-            <div><span class="lbl">Flights from ${origin}</span><span class="val">${flightPrice ? priceFromRange(flightPrice) : 'check live'}</span></div>
+            <div><span class="lbl">Flights from ${origin}</span><span class="val">${flightPrice ? priceRangeTransport(flightPrice, 'flight') : 'check live'}</span></div>
             <div><span class="lbl">Flight time</span><span class="val">${flightTime}</span></div>
             <div><span class="lbl">Best for</span><span class="val">${(trip.tags || trip.vibeTags || ['Weekend']).slice(0,2).join(' · ')}</span></div>
           </div>
@@ -10665,7 +10675,7 @@
                         <div class="cb-row-label">Return flight</div>
                         <div class="cb-row-sub">${subBits.join(' · ')}</div>
                       </div>
-                      <div class="cb-row-price">${priceFromRange(est.transport.pp)}<span class="cb-row-unit">p/p</span></div>
+                      <div class="cb-row-price">${priceRangeTransport(est.transport.pp, est.transport.mode)}<span class="cb-row-unit">p/p</span></div>
                       <a class="cb-row-cta" href="${flightInfo.url}" target="_blank" rel="noopener" title="Search opens on Skyscanner">${flightInfo.valid ? 'Search live →' : 'Search Google Flights →'}</a>
                     </div>
                   `;
@@ -10701,8 +10711,8 @@
                 const wins = summary.isOverlandWin && summary.savingsVsFlight > 0;
                 const heroLabel =
                   isReturn ? 'Return flight'
-                  : main.mode === 'bus'   ? (wins ? `Cheapest by bus · save €${summary.savingsVsFlight} vs flying` : 'By bus')
-                  : main.mode === 'train' ? (wins ? `Cheapest by train · save €${summary.savingsVsFlight} vs flying` : 'By train')
+                  : main.mode === 'bus'   ? (wins ? `Cheapest by bus · save ~€${Math.round(summary.savingsVsFlight / 5) * 5} vs flying` : 'By bus')
+                  : main.mode === 'train' ? (wins ? `Cheapest by train · save ~€${Math.round(summary.savingsVsFlight / 5) * 5} vs flying` : 'By train')
                   : 'Cheapest option';
 
                 const subBits = [];
@@ -10757,7 +10767,7 @@
                   <div class="cb-row-label">Accommodation budget · ${est.nights} ${est.nights === 1 ? 'night' : 'nights'}, ${est.rooms} ${est.rooms === 1 ? 'room' : 'rooms'}</div>
                   <div class="cb-row-sub">~€${est.stay.nightlyLow}–€${est.stay.nightlyMid}/night · hostel to mid-range · est · search live on Booking</div>
                 </div>
-                <div class="cb-row-price" title="Estimate — biased toward cheapest realistic stays. Real Booking results vary by date + room type.">€${est.stay.total}<span class="cb-row-unit">total · €${est.stay.pp} p/p · est</span></div>
+                <div class="cb-row-price" title="Estimate — biased toward cheapest realistic stays. Real Booking results vary by date + room type.">${priceRange(est.stay.total)}<span class="cb-row-unit">total · ${priceRange(est.stay.pp)} p/p · est</span></div>
                 <a class="cb-row-cta" href="${links.booking}" target="_blank" rel="noopener" title="Search opens on Booking.com">Search Booking →</a>
               </div>
 
@@ -10767,14 +10777,14 @@
                   <div class="cb-row-label">1 experience</div>
                   <div class="cb-row-sub">cheapest-sorted on GetYourGuide</div>
                 </div>
-                <div class="cb-row-price">€${est.activity.pp}<span class="cb-row-unit">p/p</span></div>
+                <div class="cb-row-price">${priceRange(est.activity.pp)}<span class="cb-row-unit">p/p</span></div>
                 <a class="cb-row-cta" href="${links.getyourguide}" target="_blank" rel="noopener" title="Search opens on GetYourGuide">Search live →</a>
               </div>
 
               <div class="cb-total">
                 <div>
                   <div class="cb-total-eyebrow">All-in estimate · per person · ~€${est.transport.pp} ${est.transport.mode === 'bus' ? 'bus' : est.transport.mode === 'train' ? 'train' : 'flight'} + ~€${est.stay.pp} stay + ~€${est.activity.pp} activity</div>
-                  <div class="cb-total-num">${priceFromRange(est.totalPP)}<span class="cb-row-unit" style="display:inline; margin-left: 0.45em; font-size: 0.55em; vertical-align: middle;">EST</span></div>
+                  <div class="cb-total-num">${weekendRange(est.totalPP)}<span class="cb-row-unit" style="display:inline; margin-left: 0.45em; font-size: 0.55em; vertical-align: middle;">EST</span></div>
                 </div>
                 <a class="cb-total-cta" href="${links.booking}" target="_blank" rel="noopener">
                   Reserve weekend
@@ -10846,7 +10856,7 @@
             Flights, ${ctx.nights} ${ctx.nights === 1 ? 'night' : 'nights'} and one experience — all-in <strong>${(() => {
               // Single source of truth — matches the cost-breakdown total above
               const est = weekendEstimate(cityName, ctx);
-              return priceFromRange(est.totalPP);
+              return weekendRange(est.totalPP);
             })()}</strong> per person.
           </p>
           <a class="btn-primary" style="background: var(--ink); color: var(--cream); display: inline-flex;" href="${links.booking}" target="_blank" rel="noopener">
@@ -14200,15 +14210,14 @@
 
     function applyCity(name, opts) {
       opts = opts || {};
-      const price = opts.price;
       const country = opts.country || '';
       const vibe = opts.vibe || '';
       const imageUrl = opts.imageUrl || cityImageSync(name) || defaults.ogImage;
 
-      // Title — capped to ~60 chars per Google SERP guideline.
-      const baseTitle = price
-        ? `${name} Weekend Trips from €${price}`
-        : `${name} — Weekend Trips`;
+      // Title — capped to ~60 chars per Google SERP guideline. No price
+      // in the title: it would be an exact figure in the SERP/tab, which
+      // breaks the "ranges only, no fake precision" rule.
+      const baseTitle = `${name} — Weekend Trips`;
       const fullTitle = baseTitle + ' | Maison Voyage';
       const titleStr = fullTitle.length > 65 ? baseTitle + ' | MV' : fullTitle;
 
@@ -14603,9 +14612,7 @@
     const flightDisplay = (priceOrigin != null && typeof priceRangeTransport === 'function')
       ? priceRangeTransport(priceOrigin, 'flight')
       : (priceOrigin != null ? '€' + priceOrigin : '—');
-    const totalDisplay = (weekendAllIn != null && typeof priceFromRange === 'function')
-      ? priceFromRange(weekendAllIn)
-      : (weekendAllIn != null ? 'from €' + weekendAllIn : '—');
+    const totalDisplay = (weekendAllIn != null) ? weekendRange(weekendAllIn) : '—';
     const tags = (c.tags || []).slice(0, 3).join(' · ') || '—';
     return `
       <div class="cm-col" data-id="${id}">
@@ -14797,14 +14804,34 @@
     if (low === high) return '€' + low + (opts.suffix ? ' ' + opts.suffix : '');
     return '€' + low + '–' + high + (opts.suffix ? ' ' + opts.suffix : '');
   }
-  function priceFromRange(n, opts = {}) {
-    // For "from €X" displays — shows the low end of the range
-    if (n == null || n === 0) return opts.zero || 'Free';
-    const num = typeof n === 'number' ? n : parseFloat(String(n).replace(/[^\d.]/g, ''));
-    if (!num || isNaN(num)) return String(n);
-    const spread = num < 50 ? 0.22 : num < 200 ? 0.16 : num < 500 ? 0.13 : 0.10;
-    const low = Math.max(1, Math.floor(num * (1 - spread) / 5) * 5);
-    return 'from €' + low;
+  // ============================================================
+  // getWeekendPrice(city, origin) — THE single source of truth for
+  // "what does a weekend cost", shown as a RANGE, never an exact value.
+  //
+  // Every price surface routes through this (or weekendRange, the bare
+  // formatter, when the total is already computed): search cards,
+  // best deals, map markers + sidebar, city detail, compare modal,
+  // manifesto, hero, budget counter. Same city + same origin always
+  // reads identically.
+  //
+  // The range brackets weekendEstimate().totalPP (cheapest transport +
+  // budget-leaning stay + one activity, per person): ~15% under for a
+  // lean execution, ~35% over for pricier dates / a mid-range stay.
+  // Rounded to clean tens — no false precision. e.g. "€150 – €250".
+  // ============================================================
+  function weekendRange(totalPP) {
+    const num = typeof totalPP === 'number' ? totalPP : parseFloat(String(totalPP).replace(/[^\d.]/g, ''));
+    if (!num || isNaN(num) || num <= 0) return '—';
+    const low  = Math.max(10, Math.floor(num * 0.85 / 10) * 10);
+    const high = Math.ceil(num * 1.35 / 10) * 10;
+    return '€' + low + ' – €' + high;
+  }
+  function getWeekendPrice(city, origin, ctxIn) {
+    const ctx = ctxIn || { origin: origin || 'Berlin', adults: 2, nights: 2 };
+    if (origin && !ctx.origin) ctx.origin = origin;
+    let est = null;
+    try { est = (typeof weekendEstimate === 'function') ? weekendEstimate(city, ctx) : null; } catch (e) {}
+    return est ? weekendRange(est.totalPP) : '—';
   }
 
   // priceRangeTransport — wider ranges than the general priceRange.
@@ -15152,25 +15179,17 @@
   // precedence: while one is open, ambient reveal is suppressed.
   // ============================================================
   function _buildAmbientMarker(d, coords) {
-    // The marker labels show "{city} · from €X–€Y · Yh flight".
+    // The marker labels show "{city} · €X – €Y · Yh flight".
     // Every marker shows the all-in weekend estimate for the user's
     // origin (same number as the search drawer, best deals and city
     // detail) — never a raw smartDestinations flight number, so units
     // never mix across markers in the same view.
     const origin = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
     const fromSdFlight = d && d.flights && d.flights[origin];
-    let priceLabel = '';
     const flightLabel = (fromSdFlight != null && typeof fmtFlight === 'function') ? fmtFlight(fromSdFlight) : '';
-    try {
-      if (typeof weekendEstimate === 'function') {
-        const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : { origin, adults: 2, nights: 2 };
-        const est = weekendEstimate(d.key, ctx);
-        priceLabel = priceFromRange(est.totalPP) + ' pp';
-      }
-    } catch (e) {
-      priceLabel = '—';
-    }
-    if (!priceLabel) priceLabel = '—';
+    const ctx = (typeof getSearchContext === 'function') ? getSearchContext() : { origin, adults: 2, nights: 2 };
+    const range = getWeekendPrice(d.key, origin, ctx);   // single source of truth → range
+    const priceLabel = (range && range !== '—') ? range + ' pp' : '—';
     const html = `
       <div class="lf-ambient">
         <span class="lf-ambient-dot" aria-hidden="true"></span>
@@ -15713,7 +15732,7 @@
             <h3 class="deal-name">${d.city.name}</h3>
             <div class="deal-foot">
               <div class="deal-price">
-                <span class="deal-price-amount">${priceFromRange(allIn)}</span>
+                <span class="deal-price-amount">${weekendRange(allIn)}</span>
                 <span class="deal-price-meta">all-in p/p · 2 nights · estimate</span>
               </div>
               <span class="deal-cta" aria-label="Open ${d.city.name}">
@@ -15743,7 +15762,7 @@
     // line to reflect reality. Uses the same weekendEstimate() as the
     // cost-breakdown so the number a visitor sees on the homepage
     // matches what they see after clicking through — shown as a range
-    // via priceFromRange, never an exact figure.
+    // via weekendRange, never an exact figure.
     const cheap = pool[0];
     if (cheap) {
       const est = (typeof weekendEstimate === 'function')
@@ -15752,12 +15771,12 @@
       const allIn = est ? est.totalPP : (cheap.opt.price + 36);
       const mp = document.getElementById('manifestoMinPrice');
       if (mp) {
-        mp.textContent = priceFromRange(allIn) + ' all-in · ' + cheap.city.name;
+        mp.textContent = weekendRange(allIn) + ' all-in · ' + cheap.city.name;
       }
       const ht = document.getElementById('heroTrustLine');
       if (ht) {
         const n = (typeof smartDestinations !== 'undefined') ? smartDestinations.length : 67;
-        ht.textContent = priceFromRange(allIn) + ' all-in · ' + n + ' cities · no signup';
+        ht.textContent = weekendRange(allIn) + ' all-in · ' + n + ' cities · no signup';
       }
     }
 
@@ -15812,9 +15831,7 @@
                                       ranked.find(d => d.allIn != null) || ranked[0]);
     const shortest = ranked.reduce((a, b) => a.flight < b.flight ? a : b, ranked[0]);
     if (document.getElementById('ms-from')) {
-      const v = (cheapestWk && cheapestWk.allIn)
-        ? priceFromRange(cheapestWk.allIn)
-        : priceFromRange(ranked[0]?.price || 89);
+      const v = (cheapestWk && cheapestWk.allIn) ? weekendRange(cheapestWk.allIn) : '—';
       document.getElementById('ms-from').textContent = v;
       document.getElementById('ms-flight').textContent = fmtFlight(shortest.flight);
       document.getElementById('ms-count').textContent = ranked.length;
@@ -15826,13 +15843,13 @@
       items.innerHTML = ranked.slice(0, 10).map((d, i) => {
         const isBest = i === 0;
         const isCheap = (d.allIn != null) ? d.allIn < 250 : d.price < 80;
-        const priceLabel = (d.allIn != null) ? priceFromRange(d.allIn) : priceFromRange(d.price);
+        const priceLabel = (d.allIn != null) ? weekendRange(d.allIn) : priceRangeTransport(d.price, 'flight');
         return `
           <div class="ml-item ${isBest ? 'best' : ''}" data-key="${d.key}">
             <div class="ml-img has-placeholder" data-label="${d.key}" data-wiki="${d.key}"><img alt="${d.key}" loading="lazy" /></div>
             <div class="ml-info">
               <div class="ml-name">${d.key} ${isBest ? '<span class="ml-badge">Best value</span>' : i < 3 ? '<span class="ml-badge cool">Top pick</span>' : ''}</div>
-              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)} · €${d.price} flight</div>
+              <div class="ml-meta">${d.country}<span class="dot"></span>${fmtFlight(d.flight)} · ${priceRangeTransport(d.price, 'flight')} flight</div>
             </div>
             <div class="ml-price ${isCheap ? 'cheap' : ''}">${priceLabel}</div>
           </div>
@@ -15878,7 +15895,7 @@
     try {
       if (typeof weekendEstimate === 'function') {
         const est = weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 });
-        priceLabel = `${priceFromRange(est.totalPP)} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
+        priceLabel = `${weekendRange(est.totalPP)} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
       }
     } catch (e) { /* keep fallback label */ }
     const trip = {
@@ -15923,7 +15940,7 @@
       const est = (typeof weekendEstimate === 'function')
         ? weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 })
         : null;
-      price.textContent = est ? `${priceFromRange(est.totalPP)} pp · all-in` : `${priceRangeTransport(d.prices[from], 'flight')} flight`;
+      price.textContent = est ? `${weekendRange(est.totalPP)} pp · all-in` : `${priceRangeTransport(d.prices[from], 'flight')} flight`;
     }
     const flight = document.getElementById('cgPreviewFlight');
     if (flight) flight.textContent = `${fmtFlight(d.flights[from])} flight · ${priceRangeTransport(d.prices[from], 'flight')}`;
@@ -16101,7 +16118,7 @@
       return 'No weekends fit this budget yet — try raising it or picking a closer origin.';
     }
     const cheapest = r.samples[0];
-    const cheap = cheapest ? ` · cheapest ${cheapest.name} ${priceFromRange(cheapest.totalPP)}` : '';
+    const cheap = cheapest ? ` · cheapest ${cheapest.name} ${weekendRange(cheapest.totalPP)}` : '';
     return `${r.count} of ${r.total} weekends fit${cheap}`;
   }
 

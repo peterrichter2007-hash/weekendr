@@ -68,7 +68,7 @@ These are real product decisions, not stylistic preferences.
 | Rule | Why |
 |---|---|
 | **NEVER say "live"** unless the data is actually fetched live. The only real-time sources today: Open-Meteo (weather) and Wikipedia REST API (images). | User said "nothing fake". |
-| **Prices are estimates shown as ranges** (e.g. "€30–€70 flight · est") via `priceRangeTransport(n, mode)` for transport, `priceRange(n)` for general. Single exact numbers killed trust on click-through. | Real partner prices vary too much for "€49" to read as a promise. |
+| **Prices are estimates shown as RANGES — never exact, never "from €X".** Weekend totals route through **`getWeekendPrice(city, origin)`** → `weekendRange(totalPP)` → "€150 – €250" (the single display source of truth, used by search cards, best deals, map markers + sidebar, city detail headline + total, compare modal, manifesto, hero, budget counter). Transport via `priceRangeTransport(n, mode)`, general/component lines via `priceRange(n)`. `priceFromRange` ("from €X") was REMOVED. | Real partner prices vary too much; an exact "€49" or even "from €49" reads as a promise. |
 | **NO availability claims** like "4 left" or "Limited". `valueBadge(idx)` only marks index 0/1 as "Best value" / "Top pick" — labels on our internal sort, not user metrics. | Inventory data we don't have. |
 | **NO hotel recommendations** at all. The "Where to stay" section is removed. We don't have a Booking Partner API and won't pretend to recommend specific properties. | "Fake hotel names destroy trust." |
 | **Accommodation = budget estimate** via `cityEconomy[city]` blend `(h_min + h_mid) / 2`, biased toward cheapest realistic stays. Cost-breakdown shows nightly RANGE ("~€20–€60/night · hostel to mid-range · est"). | Honest budget signal without specific inventory. |
@@ -627,7 +627,7 @@ curated dataset. The Express server just serves `public/` and a
 | Cuisine descriptors | `const cuisineWikiMap` |
 | Atmosphere keywords | `const atmosphereKeywords` |
 | Dish keywords | `const dishKeywordWiki` |
-| Price helpers | `function priceRange`, `function priceFromRange`, `function priceRangeTransport`, `function getEconomy` |
+| Price helpers | `function getWeekendPrice`, `function weekendRange`, `function priceRange`, `function priceRangeTransport`, `function getEconomy` |
 | Trip pricing core | `function weekendEstimate`, `function transportSummary` |
 | Budget breakdown | `function budgetBreakdown`, `function budgetTier`, `function countDestinationsInRange` |
 | Instant search synthesis | `function synthesizeInstantTrips` |
