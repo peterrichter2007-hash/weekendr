@@ -1798,17 +1798,19 @@
       gap: 0.5rem;
     }
     .trust-list .trust-cat {
-      font-size: 0.62rem;
+      font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      /* Was --accent-2 (#B8945E ≈ 2.9:1 vs cream — failed AA). The
-         darker --accent (#7E6230 ≈ 5.4:1) keeps the warm-bronze
-         brand voice while passing AA for small text. */
-      color: var(--accent);
+      /* The footer is dark (--ink) now. On it the darker --accent
+         (#7E6230) measured only ~3.3:1 — failed AA. The lighter
+         --accent-2 (#B8945E) gives ~6.7:1 on the dark footer, passing
+         AA for small text while keeping the warm-bronze brand voice.
+         (Earlier this was inverted, tuned for a light trust strip.) */
+      color: var(--accent-2);
       padding: 0.14rem 0.55rem;
-      background: rgba(126, 98, 48, 0.10);
-      border: 1px solid rgba(126, 98, 48, 0.26);
+      background: rgba(184, 148, 94, 0.12);
+      border: 1px solid rgba(184, 148, 94, 0.30);
       border-radius: 100px;
       font-family: var(--sans);
       white-space: nowrap;
