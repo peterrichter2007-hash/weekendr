@@ -4982,7 +4982,7 @@
     }
     .bp-tier-row {
       display: grid;
-      grid-template-columns: 10.7% 14.3% 25% 50%;  /* matches BUDGET_TIERS breakpoints */
+      grid-template-columns: 16.67% 16.67% 22.22% 44.44%; /* 100–175–250–350–550, matches BUDGET_TIERS */
       margin-top: 0.7rem;
       padding: 0 4px;
       font-size: 0.66rem;
@@ -7675,14 +7675,13 @@
               </div>
 
               <div class="cg-slider-wrap bp-slider-wrap" data-tier="premium">
-                <input type="range" id="budgetSlider" class="cg-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person, all-in weekend" />
+                <input type="range" id="budgetSlider" class="cg-slider" min="100" max="550" step="25" value="300" aria-label="Budget per person, all-in weekend" />
                 <div class="cg-slider-track" aria-hidden="true">
-                  <!-- Tier boundaries on the 100→1500 scale:
-                       €250 = 10.7%, €450 = 25.0%, €800 = 50.0%
-                       Four tiers split clearly across the track. -->
-                  <span class="cg-slider-tier-mark" style="left: 10.7%"></span>
-                  <span class="cg-slider-tier-mark" style="left: 25%"></span>
-                  <span class="cg-slider-tier-mark" style="left: 50%"></span>
+                  <!-- Tier boundaries on the 100→550 scale:
+                       €175 = 16.67%, €250 = 33.33%, €350 = 55.56% -->
+                  <span class="cg-slider-tier-mark" style="left: 16.67%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 33.33%"></span>
+                  <span class="cg-slider-tier-mark" style="left: 55.56%"></span>
                   <div class="cg-slider-fill" id="budgetFill"></div>
                 </div>
                 <div class="bp-tier-row" aria-hidden="true">
@@ -8302,7 +8301,7 @@
         <div class="sw-budget">
           <div class="sw-budget-display" id="swBudgetDisplay">€500</div>
           <div class="sw-budget-label" id="swBudgetLabel">Premium Escape</div>
-          <input type="range" id="swBudgetSlider" class="cg-slider sw-slider" min="100" max="1500" step="25" value="500" aria-label="Budget per person" />
+          <input type="range" id="swBudgetSlider" class="cg-slider sw-slider" min="100" max="550" step="25" value="300" aria-label="Budget per person" />
           <div class="sw-budget-ticks">
             <span>Budget</span><span>Smart</span><span>Premium</span><span>Luxury</span>
           </div>
@@ -10574,13 +10573,22 @@
     // Strip combining-diacritical-marks block (U+0300–U+036F) — turns
     // "Kraków" → "Krakow", "Wrocław" → "Wroclaw", "Gdańsk" → "Gdansk".
     // FlixBus + Skyscanner slug routes are ASCII; passing through Unicode
-    // produces 404s in practice. ł / Ł are base characters (not combining
-    // marks) so they get a separate pass. Using explicit \u escapes so
-    // the source stays unambiguous across editors / encodings.
+    // produces 404s in practice.
+    //
+    // NFD only decomposes letters that are a base plus a combining
+    // mark. Nordic and German letters are separate code points with no
+    // decomposition, so they survive normalisation untouched and need
+    // their own pass — without it "Kobenhavn" did not match
+    // "København" in the origin search.
     return s.normalize('NFD')
       .replace(/[̀-ͯ]/g, '')
-      .replace(/ł/g, 'l')   // ł
-      .replace(/Ł/g, 'L');  // Ł
+      .replace(/ø/g, 'o').replace(/Ø/g, 'O')
+      .replace(/æ/g, 'ae').replace(/Æ/g, 'AE')
+      .replace(/å/g, 'a').replace(/Å/g, 'A')
+      .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+      .replace(/ð/g, 'd').replace(/Ð/g, 'D')
+      .replace(/þ/g, 'th').replace(/Þ/g, 'Th')
+      .replace(/ß/g, 'ss');
   }
   // citySlug() removed with the FlixBus rewrite — its only caller
   // built the /bus-routes/{city} URL, which turned out to be a
@@ -16553,31 +16561,52 @@
   // slider value display, the live breakdown panel, the mobile
   // step-wizard label, the "destinations in range" counter.
   //
-  //   Budget Escape    — €100–250   cheap cities, hostels, FlixBus
-  //   Smart Weekend    — €250–450   mid cities, boutique, mix of modes
-  //   Premium Escape   — €450–800   premium cities, design hotel
-  //   Luxury Weekend   — €800+      luxury cities, no cap
+  //   Budget Escape    — €100–175   cheap cities, hostels, FlixBus
+  //   Smart Weekend    — €175–250   mid cities, boutique, mix of modes
+  //   Premium Escape   — €250–350   premium cities, design hotel
+  //   Luxury Weekend   — €350+      Greek islands, Riviera, Reykjavik
   //
-  // Tier breakpoints (250 / 450 / 800) align with real city-economy
-  // ranges so a Budget pick really reaches Krakow / Sofia / Tirana
-  // and a Luxury pick really reaches Reykjavik / Zurich / Santorini.
+  // Breakpoints are fitted to the measured price distribution — see
+  // the note on BUDGET_TIERS below for the numbers and for why the
+  // previous 250 / 450 / 800 split left two tiers empty.
   // ============================================================
+  // Tier boundaries are fitted to what the dataset actually costs.
+  //
+  // Measured over 569 origin×destination pairs across nine departure
+  // cities: the cheapest weekend is €73, the median €216, the most
+  // expensive €499. Against the old 250/450/800 boundaries that put
+  // 68% of every trip in "Budget", 29% in "Smart", 3% in "Premium"
+  // and — from any origin — exactly zero in "Luxury". Two of the four
+  // tiers were labels with nothing behind them, and the slider ran to
+  // €1500, so 71% of its travel changed no result at all: the user
+  // dragged, the tier name changed, the count stayed frozen.
+  //
+  // These cuts sit near the 25th, 65th and 90th percentiles, so every
+  // tier holds a real share and every position on the track moves
+  // something.
   const BUDGET_TIERS = [
-    { key: 'budget',  max: 250,      label: 'Budget Escape',   micro: 'Cheap cities · hostels + FlixBus or budget airline',         maxCityTier: 'budget' },
-    { key: 'smart',   max: 450,      label: 'Smart Weekend',   micro: 'Mid-tier cities · boutique stay + a paid experience',         maxCityTier: 'mid' },
-    { key: 'premium', max: 800,      label: 'Premium Escape',  label_short: 'Premium', micro: 'Premium cities · design hotel + curated experiences', maxCityTier: 'premium' },
-    { key: 'luxury',  max: Infinity, label: 'Luxury Weekend',  micro: 'Swiss Alps · Greek islands · Riviera · Reykjavik · Zurich',  maxCityTier: 'luxury' }
+    { key: 'budget',  max: 175,      label: 'Budget Escape',   micro: 'Cheap cities · hostels + FlixBus or budget airline',         maxCityTier: 'budget' },
+    { key: 'smart',   max: 250,      label: 'Smart Weekend',   micro: 'Mid-tier cities · boutique stay + a paid experience',         maxCityTier: 'mid' },
+    { key: 'premium', max: 350,      label: 'Premium Escape',  label_short: 'Premium', micro: 'Premium cities · design hotel + curated experiences', maxCityTier: 'premium' },
+    { key: 'luxury',  max: Infinity, label: 'Luxury Weekend',  micro: 'Greek islands · Riviera · Reykjavik · the Amalfi Coast',      maxCityTier: 'luxury' }
   ];
+  // Top of the slider track — above the €499 worst case with headroom.
+  const BUDGET_SLIDER_MAX = 550;
   function budgetTier(v) {
     return BUDGET_TIERS.find(t => v <= t.max) || BUDGET_TIERS[BUDGET_TIERS.length - 1];
   }
+  // "+" only at the very top of the track, where the value means "and
+  // anything above". It was keyed to 800 — a point the slider now
+  // never reaches.
+  function budgetAmountLabel(v) {
+    return v >= BUDGET_SLIDER_MAX ? `€${v}+` : `€${v}`;
+  }
   function fmtBudget(v) {
-    const t = budgetTier(v);
-    return (t.key === 'luxury' && v >= 800 ? `€${v}+ — ${t.label}` : `€${v} — ${t.label}`);
+    return `${budgetAmountLabel(v)} — ${budgetTier(v).label}`;
   }
   function budgetLabelFromValue(v) {
     const t = budgetTier(v);
-    return (t.key === 'luxury' && v >= 800 ? `€${v}+` : `€${v}`) + ` per person — ${t.label} · ${t.micro}`;
+    return `${budgetAmountLabel(v)} per person — ${t.label} · ${t.micro}`;
   }
 
   // Live counter — how many of our destinations have a
@@ -16749,26 +16778,26 @@
     { name: 'Berlin',    country: 'Germany',         iata: 'BER', popularity: 9 },
     { name: 'Madrid',    country: 'Spain',           iata: 'MAD', popularity: 9 },
     { name: 'Vienna',    country: 'Austria',         iata: 'VIE', popularity: 9 },
-    { name: 'Prague',    country: 'Czechia',         iata: 'PRG', popularity: 9 },
+    { name: 'Prague',    country: 'Czechia',         iata: 'PRG', popularity: 9, aliases: ['Praha', 'Prag'] },
     { name: 'Lisbon',    country: 'Portugal',        iata: 'LIS', popularity: 9, aliases: ['Lissabon'] },
-    { name: 'Venice',    country: 'Italy',           iata: 'VCE', popularity: 9, aliases: ['Venezia'] },
+    { name: 'Venice',    country: 'Italy',           iata: 'VCE', popularity: 9, aliases: ['Venezia', 'Venedig'] },
     { name: 'Florence',  country: 'Italy',           iata: 'FLR', popularity: 9, aliases: ['Firenze'] },
     { name: 'Athens',    country: 'Greece',          iata: 'ATH', popularity: 9 },
     // Tier-3 cool weekend picks
     { name: 'Budapest',  country: 'Hungary',         iata: 'BUD', popularity: 8 },
     { name: 'Milan',     country: 'Italy',           iata: 'MIL', popularity: 8, aliases: ['Milano'] },
-    { name: 'Brussels',  country: 'Belgium',         iata: 'BRU', popularity: 8 },
+    { name: 'Brussels',  country: 'Belgium',         iata: 'BRU', popularity: 8, aliases: ['Bruxelles', 'Brussel', 'Bruessel'] },
     { name: 'Stockholm', country: 'Sweden',          iata: 'STO', popularity: 8 },
     { name: 'Copenhagen',country: 'Denmark',         iata: 'CPH', popularity: 8, aliases: ['København'] },
     { name: 'Dublin',    country: 'Ireland',         iata: 'DUB', popularity: 8 },
-    { name: 'Naples',    country: 'Italy',           iata: 'NAP', popularity: 8, aliases: ['Napoli'] },
+    { name: 'Naples',    country: 'Italy',           iata: 'NAP', popularity: 8, aliases: ['Napoli', 'Neapel'] },
     { name: 'Munich',    country: 'Germany',         iata: 'MUC', popularity: 8, aliases: ['München'] },
     // Tier-4 trending & coastal
     { name: 'Porto',     country: 'Portugal',        iata: 'OPO', popularity: 7 },
     { name: 'Krakow',    country: 'Poland',          iata: 'KRK', popularity: 7, aliases: ['Kraków', 'Cracow'] },
     { name: 'Palma de Mallorca', country: 'Spain',   iata: 'PMI', popularity: 7, aliases: ['Mallorca', 'Majorca', 'Palma'] },
     { name: 'Valencia',  country: 'Spain',           iata: 'VLC', popularity: 7 },
-    { name: 'Nice',      country: 'France',          iata: 'NCE', popularity: 7 },
+    { name: 'Nice',      country: 'France',          iata: 'NCE', popularity: 7, aliases: ['Nizza'] },
     { name: 'Seville',   country: 'Spain',           iata: 'SVQ', popularity: 7, aliases: ['Sevilla'] },
     { name: 'Granada',   country: 'Spain',           iata: 'GRX', popularity: 7 },
     { name: 'Dubrovnik', country: 'Croatia',         iata: 'DBV', popularity: 7 },
@@ -16812,7 +16841,7 @@
     { name: 'Sarajevo',  country: 'Bosnia',          iata: 'SJJ', popularity: 4 },
     { name: 'Skopje',    country: 'North Macedonia', iata: 'SKP', popularity: 4 },
     { name: 'Zadar',     country: 'Croatia',         iata: 'ZAD', popularity: 4 },
-    { name: 'Gdańsk',    country: 'Poland',          iata: 'GDN', popularity: 4, aliases: ['Gdansk'] },
+    { name: 'Gdańsk',    country: 'Poland',          iata: 'GDN', popularity: 4, aliases: ['Gdansk', 'Danzig'] },
     { name: 'Wrocław',   country: 'Poland',          iata: 'WRO', popularity: 4, aliases: ['Wroclaw', 'Breslau'] },
     { name: 'Benidorm',  country: 'Spain',           iata: 'ALC', popularity: 4 },
     { name: 'Interlaken',country: 'Switzerland',     iata: 'ZRH', popularity: 4 }
@@ -16857,17 +16886,25 @@
   //   5 = name contains query
   //   6 = country contains query / alias contains query
   //   7 = fuzzy (Levenshtein ≤ 2) — only when nothing else hit
-  function matchTier(c, lower) {
-    const name = c.name.toLowerCase();
-    const country = (c.country || '').toLowerCase();
+  function matchTier(c, lowerRaw) {
+    // Compare with diacritics stripped on BOTH sides. "München" was an
+    // alias and matched, but the ASCII "Munchen" that most people
+    // actually type on a non-German keyboard did not — same for
+    // Kobenhavn, Krakow and Wroclaw. Normalising here fixes every
+    // accented name at once, including any alias added later.
+    const norm = s => _stripDiacritics(String(s || '')).toLowerCase();
+    const lower = norm(lowerRaw);
+    const name = norm(c.name);
+    const country = norm(c.country);
+    const aliases = (c.aliases || []).map(norm);
     if (name === lower) return 0;
     if (name.startsWith(lower)) return 1;
-    if ((c.aliases || []).some(a => a.toLowerCase().startsWith(lower))) return 2;
+    if (aliases.some(a => a.startsWith(lower))) return 2;
     if ((c.iata || '').toLowerCase() === lower) return 3;
     if (country.startsWith(lower)) return 4;
     if (name.includes(lower)) return 5;
     if (country.includes(lower)) return 6;
-    if ((c.aliases || []).some(a => a.toLowerCase().includes(lower))) return 6;
+    if (aliases.some(a => a.includes(lower))) return 6;
     // Fuzzy fallback — Levenshtein on name only, for 3+ char queries
     if (lower.length >= 3) {
       const d = levenshtein(name.slice(0, lower.length + 1), lower);

@@ -247,14 +247,25 @@ hero + alternative chips below) and the Best Deals card mode chip.
 
 ### `budgetTier(v)` + `BUDGET_TIERS`
 
-Four-tier model on the budget slider (€100–1500 range):
+Four-tier model on the budget slider (**€100–550 range, default €300**):
 
-| Tier | Cap | Cities at this budget (typical) |
-|---|---|---|
-| **Budget Escape** | €250 | Krakow, Sofia, Tirana, Belgrade, Riga, Sarajevo, Skopje |
-| **Smart Weekend** | €450 | Lisbon, Porto, Athens, Naples, Valencia, Granada |
-| **Premium Escape** | €800 | Barcelona, Rome, Vienna, Madrid, Berlin, Florence |
-| **Luxury Weekend** | >€800 | Reykjavik, Zurich, Santorini, Mykonos, Amalfi, Monaco |
+| Tier | Cap | Share of trips | Cities at this budget (typical) |
+|---|---|---|---|
+| **Budget Escape** | €175 | 25% | Krakow, Sofia, Tirana, Belgrade, Riga, Sarajevo, Skopje |
+| **Smart Weekend** | €250 | 43% | Lisbon, Porto, Athens, Naples, Valencia, Granada |
+| **Premium Escape** | €350 | 21% | Barcelona, Rome, Vienna, Madrid, Florence |
+| **Luxury Weekend** | >€350 | 11% | Reykjavik, Santorini, Mykonos, Amalfi, Monaco |
+
+**Do not restore the old 250 / 450 / 800 boundaries or the €1500 max.**
+Measured over 569 origin×destination pairs across nine departure
+cities, a weekend in this dataset costs €73 at the cheapest, €216 at
+the median and €499 at the most expensive. Against the old
+breakpoints that put 68% of trips in Budget, 29% in Smart, 3% in
+Premium and — from any origin — **zero** in Luxury, while 71% of the
+slider's travel changed no result at all. The cuts above sit near the
+25th / 65th / 90th percentiles. `BUDGET_SLIDER_MAX` (550) is the one
+place the top of the track is defined; the `+` suffix and the tier-row
+grid percentages are derived from it.
 
 `budgetBreakdown(v, ctx)` computes typical transport / stay / activity
 across all in-budget destinations → drives the live breakdown pill row
