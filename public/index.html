@@ -7287,6 +7287,90 @@
     .lf-pin, .lf-ambient, .lf-scene-hero, .lf-scene-chip {
       will-change: transform, opacity;
     }
+
+    /* A 10px floor at every width. The fine letter-spaced micro-label
+       is a real part of this type system and mostly earns its size,
+       but five classes had drifted to 9.3–9.9px, which is below any
+       reasonable minimum even on a desktop monitor. Raised only to
+       10px so the visual weight barely moves. */
+    .bp-cell-label,
+    .bp-cell-sub,
+    .map-stats .lbl,
+    .ml-name .ml-badge {
+      font-size: 0.625rem;
+    }
+
+    /* ============================================================
+       MOBILE READABILITY & TAP TARGETS
+       Last block in the sheet so it wins on source order.
+
+       Two measured problems on a 375px viewport:
+
+       1. A tier of micro-labels rendered at 9.3–10.9px. Uppercase
+          letter-spaced labels get away with being small, but below
+          ~11px they stop being readable on a phone held at arm's
+          length. Only this genuinely-too-small tier is raised — the
+          11.2–11.8px labels are left alone, that size is a
+          deliberate part of the type system.
+
+       2. Footer links were 18px tall with 17px between them. That is
+          both under the 44px tap-target guideline and close enough
+          together to mis-tap. Padding fixes both without changing
+          how the column looks.
+
+       Scoped to 900px rather than the 720px used elsewhere in this
+       sheet: a tablet in portrait is held at phone distance and is a
+       touch device, so it needs the same floor and the same hit
+       areas. 11px is a sane minimum on any device anyway.
+       ============================================================ */
+    @media (max-width: 900px) {
+      .bp-cell-label,
+      .bp-cell-sub,
+      .bp-tier-tag,
+      .ip-tag,
+      .cb-row-unit,
+      .per,
+      .listing-rank,
+      .guide-cat,
+      .wx-dlbl,
+      .wx-rain,
+      .cg-pg-eyebrow,
+      .section-attribution,
+      .trust-eyebrow,
+      .price-tag,
+      .avail-chip,
+      /* These carry a descendant selector upstream, so they need the
+         same shape here to win. The last four only appear inside the
+         city-detail modal. */
+      .map-stats .lbl,
+      .ml-name .ml-badge,
+      .rail-card .deal,
+      .sw-budget-ticks span,
+      .listing-price .per,
+      .lf-pop-body .price .per,
+      .smart-pin .pin-preview .pp-price .per,
+      .img-placeholder .ip-tag,
+      .cb-disclaimer .ai-pill {
+        font-size: 0.69rem; /* 11.04px — the readability floor */
+      }
+
+      /* Tap targets. Padding, not height, so the visual rhythm of
+         each column is unchanged while the hit area roughly doubles. */
+      footer ul li a {
+        display: inline-block;
+        padding: 0.55rem 0;
+      }
+      footer ul li { margin-bottom: 0; }
+      .foot-bottom .links a,
+      .trust-list a {
+        display: inline-block;
+        padding: 0.45rem 0;
+      }
+      /* Section CTAs ("View all destinations") were 22px tall. */
+      .section-head .link { padding: 0.5rem 0; }
+      .map-hint-action { padding: 0.5rem 0.9rem; }
+      .cb-btn { padding: 0.7rem 0.9rem; }
+    }
   </style>
 </head>
 <body>
@@ -8040,7 +8124,11 @@
           <h4>Newsletter</h4>
           <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.7rem;">A short letter, once a month. New places, quietly.</p>
           <input type="email" placeholder="Sign-up coming soon" disabled aria-label="Newsletter email — currently disabled" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.04); border: 1px solid rgba(251,247,239,0.10); border-radius: 100px; color: rgba(255,255,253,0.45); font-size: 0.88rem; cursor: not-allowed;" />
-          <p style="font-size: 0.66rem; opacity: 0.55; margin-top: 0.55rem; font-style: italic; line-height: 1.5;">We'll wire this up when there's a backend that respects your <a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();" style="color: rgba(255, 214, 138, 0.85); text-decoration: underline; text-decoration-color: rgba(255, 214, 138, 0.25); text-underline-offset: 2px;">consent choice</a>.</p>
+          <!-- 0.66rem/0.55 opacity measured 10.6px at 2.6:1 — below both
+               the readability floor and AA. 0.72rem/0.8 reads cleanly
+               and this sentence is a promise about user consent, so it
+               should not be the faintest text in the footer. -->
+          <p style="font-size: 0.72rem; opacity: 0.8; margin-top: 0.55rem; font-style: italic; line-height: 1.55;">We'll wire this up when there's a backend that respects your <a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();" style="color: rgba(255, 214, 138, 0.95); text-decoration: underline; text-decoration-color: rgba(255, 214, 138, 0.4); text-underline-offset: 2px;">consent choice</a>.</p>
         </div>
       </div>
       <!-- Trust Strip — honest "Data & Sources" line above the copyright.
