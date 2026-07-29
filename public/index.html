@@ -416,12 +416,22 @@
        slides but lifts contrast on bright-sky shots where the scrim
        alone can't fully neutralise the imagery underneath. */
     .hero-tagline,
+    /* The hero scrim is deliberately light across the upper third
+       (0.45 → 0.30 by 30%) so the photograph reads as a photograph.
+       The tagline and meta line sit in that band, at ~17%, which
+       measures 2.5:1 against a bright sky — and city lead images are
+       mostly sky up there. Darkening the scrim enough to clear AA
+       would visibly flatten the first thing anyone sees, so the
+       separation comes from the glyph edge instead: a tight, opaque
+       contact shadow plus a wider soft halo. */
     .hero-meta,
     .hero-meta .place,
+    .hero-tagline,
     .hero-headline {
       text-shadow:
-        0 1px 2px rgba(18, 17, 15, 0.35),
-        0 2px 18px rgba(18, 17, 15, 0.30);
+        0 1px 2px rgba(18, 17, 15, 0.75),
+        0 0 10px rgba(18, 17, 15, 0.55),
+        0 2px 26px rgba(18, 17, 15, 0.40);
     }
     .hero-tagline {
       font-size: 0.8rem;
@@ -934,7 +944,14 @@
     .ed-card .img::after {
       content: '';
       position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+      /* Ramp starts at 28% rather than 40%, and lands slightly darker.
+         The card's overlay text runs from 78% (the 11px country tag)
+         down to 93%, and at the old 40%/0.7 ramp the tag sat where
+         the scrim was only 0.45 — measured 3.3:1 against a bright
+         photo, under AA for text that size. The headline and standfirst
+         further down were always fine; this lifts the tag to ~5:1
+         without visibly muddying the image. */
+      background: linear-gradient(180deg, rgba(0,0,0,0) 28%, rgba(0,0,0,0.82) 100%);
       pointer-events: none;
     }
     .ed-card .body {
