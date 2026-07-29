@@ -25,12 +25,15 @@
   <!-- Default share image: Wikipedia lead image for Lisbon (the hero's
        first slide), CC-licensed, hotlinked from Wikimedia like all other
        imagery on the site (attribution in the footer Trust Strip).
-       Verified 200/image-jpeg. MV.seo upgrades og:image at runtime to
-       the active hero / opened city; restore() falls back to this. -->
-  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg" />
-  <meta property="og:image:width" content="2048" />
-  <meta property="og:image:height" content="1313" />
-  <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg" />
+       Served at the 1280px rung of Wikimedia's thumbnail ladder —
+       353 KB and above the 1200px social-card spec, where the raw
+       original was 2048px / 2.1 MB. MV.seo upgrades og:image at
+       runtime to the active hero / opened city; restore() falls
+       back to this. Verified 200/image-jpeg. -->
+  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg/1280px-Lisboa_-_Portugal_%2852597836992%29.jpg" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="821" />
+  <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg/1280px-Lisboa_-_Portugal_%2852597836992%29.jpg" />
   <!-- OPERATOR: weekendr.vercel.app is a placeholder host. When the
        final domain lands, replace it here (canonical + og:url) and in
        robots.txt + sitemap.xml. -->
@@ -526,13 +529,27 @@
       opacity: 0;
       animation: fadeUp 1s var(--ease-out) 1.3s forwards;
     }
+    /* The visible bar stays 24×2px, but the button itself carries
+       20px of vertical / 4px of horizontal padding so the tap target
+       is 32×42px instead of 24×2px — the smallest hit area on the
+       page by a wide margin. background-clip keeps the padding
+       transparent, and the negative margin cancels the extra box out
+       of the flex row so the hero layout is unchanged. */
     .hero-dots button {
+      box-sizing: content-box;
       width: 24px; height: 2px;
+      padding: 20px 4px;
+      margin: -20px -4px;
       background: rgba(251, 247, 239, 0.3);
+      background-clip: content-box;
       border-radius: 2px;
-      transition: all 0.5s var(--ease);
+      transition: width 0.5s var(--ease), background-color 0.5s var(--ease);
     }
-    .hero-dots button.active { background: var(--cream); width: 44px; }
+    .hero-dots button.active { background: var(--cream); background-clip: content-box; width: 44px; }
+    .hero-dots button:focus-visible {
+      outline: 2px solid var(--cream);
+      outline-offset: -18px;
+    }
     
     .hero-scroll {
       display: flex; align-items: center; gap: 0.7rem;
@@ -1727,7 +1744,9 @@
       font-size: 0.72rem;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(251, 247, 239, 0.45);
+      /* 0.45 measured 4.32:1 on the #12110F footer — just under AA
+         for text this small. 0.55 → 5.9:1. */
+      color: rgba(251, 247, 239, 0.55);
       font-weight: 500;
       margin-bottom: 1.2rem;
     }
@@ -1779,7 +1798,8 @@
       font-weight: 500;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(251, 247, 239, 0.42);
+      /* was 0.42 → 3.9:1, under AA. 0.55 → 5.9:1. */
+      color: rgba(251, 247, 239, 0.55);
       flex-shrink: 0;
     }
     .trust-list {
@@ -1824,7 +1844,11 @@
     .trust-note {
       width: 100%;
       font-size: 0.7rem;
-      color: rgba(251, 247, 239, 0.40);
+      /* This is the site's price-honesty disclosure — the one line a
+         sceptical user goes looking for. It was the LEAST readable
+         text on the page at 0.40 (3.7:1, under AA). 0.62 → 7.2:1,
+         and it should out-rank the labels around it. */
+      color: rgba(251, 247, 239, 0.62);
       line-height: 1.6;
       margin-top: 0.1rem;
     }
@@ -5896,6 +5920,25 @@
       font-size: 1.05rem;
       opacity: 0.5;
     }
+    /* Restore the scrim under light overlay text while in placeholder
+       state.
+
+       These hosts paint their dark bottom gradient on ::after — but so
+       does the placeholder label above, and it wins on source order.
+       So for every moment an image was missing or still loading, the
+       card's white headline, price and meta text sat on a near-white
+       placeholder (measured 1.3:1) and was effectively invisible.
+       ::before only carries the soft top highlight here, so it can
+       take the gradient as a second background layer. */
+    .ed-card .img.has-placeholder:not(:has(.img-placeholder))::before,
+    .rail-card .img-wrap.has-placeholder:not(:has(.img-placeholder))::before,
+    .hero-slide.has-placeholder:not(:has(.img-placeholder))::before,
+    .detail-hero.has-placeholder:not(:has(.img-placeholder))::before,
+    .cg-preview-img.has-placeholder:not(:has(.img-placeholder))::before {
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.62) 100%),
+        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
+    }
     /* Image source attribution (only shown on verified Wikipedia images) */
     img[data-source="wikipedia"] {
       /* Small CSS-only credit added below via a sibling overlay */
@@ -6800,12 +6843,27 @@
       color: rgba(255, 255, 253, 0.85);
       margin: 0 0 0.95rem;
     }
-    .cb-text a {
+    .cb-text a,
+    .cb-text button {
       color: rgba(255, 214, 138, 0.95);
       text-decoration: underline;
       text-decoration-color: rgba(255, 214, 138, 0.35);
       text-underline-offset: 2px;
       cursor: pointer;
+    }
+    /* The two consent actions are <button> for keyboard reachability;
+       strip the UA chrome so they still read as inline links. */
+    .cb-text button {
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      line-height: inherit;
+    }
+    .cb-text button:focus-visible {
+      outline: 2px solid rgba(255, 214, 138, 0.9);
+      outline-offset: 3px;
+      border-radius: 3px;
     }
     .cb-prefs {
       display: none;
@@ -7236,8 +7294,11 @@
   <!-- ============================================================
        NAV
        ============================================================ -->
+  <span id="top"></span>
   <nav class="nav" id="nav">
-    <a href="#" class="nav-logo">
+    <!-- href="#" did nothing: the smooth-scroll handler skips a bare
+         hash, so clicking the brand mark was a dead end. -->
+    <a href="#top" class="nav-logo" aria-label="Maison Voyage — back to top">
       <span class="dot"></span>
       Maison<em style="font-style: italic; color: var(--accent); margin-left: 2px;">Voyage</em>
     </a>
@@ -7339,12 +7400,12 @@
       </div>
 
       <div class="hero-bottom">
-        <div class="hero-dots" id="heroDots">
-          <button class="active" data-i="0"></button>
-          <button data-i="1"></button>
-          <button data-i="2"></button>
-          <button data-i="3"></button>
-          <button data-i="4"></button>
+        <div class="hero-dots" id="heroDots" role="tablist" aria-label="Featured destinations">
+          <button type="button" class="active" data-i="0" role="tab" aria-selected="true"  aria-label="Show Lisbon, Portugal"></button>
+          <button type="button"                data-i="1" role="tab" aria-selected="false" aria-label="Show Barcelona, Spain"></button>
+          <button type="button"                data-i="2" role="tab" aria-selected="false" aria-label="Show Budapest, Hungary"></button>
+          <button type="button"                data-i="3" role="tab" aria-selected="false" aria-label="Show Naples, Italy"></button>
+          <button type="button"                data-i="4" role="tab" aria-selected="false" aria-label="Show Prague, Czechia"></button>
         </div>
         <div class="hero-scroll">
           <span>Scroll to explore</span>
@@ -7731,7 +7792,7 @@
           <div class="eyebrow"><span class="dot"></span>The Featured Edit</div>
           <h2 class="h-1">Places we're <em class="italic-accent">in love with</em><br>this season.</h2>
         </div>
-        <a href="#collections" class="link reveal d1">
+        <a href="#weekends" class="link reveal d1">
           View all destinations
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
@@ -7880,10 +7941,9 @@
           <div class="eyebrow"><span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 0.5rem;"></span>The Journal</div>
           <h2 class="h-1">Stories from <em class="italic-accent">the road</em>.</h2>
         </div>
-        <a href="#" class="link reveal d1">
-          Read the journal
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
+        <!-- "Read the journal" CTA removed: it linked to href="#" and
+             promised a journal index page that does not exist. The
+             three stories below are the journal. -->
       </div>
       <div class="stories-grid">
         <article class="story reveal d1" onclick="openStory('naples')">
@@ -7962,8 +8022,9 @@
             <li><a href="#concierge">Concierge</a></li>
             <li><a href="#map">The Atlas</a></li>
             <li><a href="#stories">The Journal</a></li>
-            <li><a href="#">Membership</a></li>
-            <li><a href="#">Gifting</a></li>
+            <li><a href="#deals">Best Deals</a></li>
+            <!-- "Membership" and "Gifting" removed: both were href="#"
+                 and advertised products that do not exist. -->
           </ul>
         </div>
         <div>
@@ -8015,8 +8076,8 @@
         <h3 id="resTitle">Curated for you</h3>
         <div class="meta" id="resMeta">5 escapes · ranked by value</div>
       </div>
-      <button class="results-close" onclick="closeResults()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      <button type="button" class="results-close" onclick="closeResults()" aria-label="Close results">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="results-body" id="resBody"></div>
@@ -8208,7 +8269,10 @@
     <div class="cb-head"><span class="cb-dot"></span>Cookies &amp; storage</div>
     <p class="cb-text">
       We use <strong>localStorage</strong> to remember your saved trips, comparisons and Wikipedia image cache so the site stays fast on repeat visits. No analytics is currently active — your choice will apply if any is added in the future.
-      <a id="cbTogglePrefs">Preferences</a> · <a data-legal="privacy" id="cbPrivacyLink">Privacy Policy</a>
+      <!-- Buttons, not bare <a>: these are actions, and an <a> without
+           href is not keyboard-reachable — which left the whole
+           consent panel unusable without a mouse. -->
+      <button type="button" id="cbTogglePrefs" aria-expanded="false" aria-controls="cbPrefs">Preferences</button> · <button type="button" data-legal="privacy" id="cbPrivacyLink">Privacy Policy</button>
     </p>
     <div class="cb-prefs" id="cbPrefs">
       <div class="cb-prefs-row">
@@ -8427,7 +8491,10 @@
   let heroIdx = 0;
   function setHero(i) {
     slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
-    dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+    dots.forEach((d, idx) => {
+      d.classList.toggle('active', idx === i);
+      d.setAttribute('aria-selected', idx === i ? 'true' : 'false');
+    });
     const meta = document.querySelector('.hero-meta');
     if (meta && places[i]) {
       meta.innerHTML = `<div class="place">${places[i].name}</div><div>${places[i].coord}</div>`;
@@ -8624,11 +8691,13 @@
   // - Hotels / activities / restaurants → typographic placeholder
   //   (we have no partner API to verify these)
   //
-  // Cache version in localStorage = mv_wiki_v4_{slug} — bumping this
+  // Cache version in localStorage = mv_wiki_v5_{slug} — bumping this
   // version automatically invalidates the prior image cache so users
-  // get the clean system on next load.
+  // get the clean system on next load. v5 dropped the "upscale to
+  // 1600px" rewrite, which produced a width outside Wikimedia's
+  // allowed thumbnail ladder and therefore cached broken URLs.
   // ============================================================
-  
+
   // One-time cache wipe of older Unsplash-based assignments
   (function purgeOldImageCaches() {
     try {
@@ -8636,10 +8705,7 @@
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (!k) continue;
-        if (k.startsWith('mv_wiki_v1_') ||
-            k.startsWith('mv_wiki_v2_') ||
-            k.startsWith('mv_wiki_v3_') ||
-            k.startsWith('mv_img_')) drop.push(k);
+        if (/^mv_wiki_v[1-4]_/.test(k) || k.startsWith('mv_img_')) drop.push(k);
       }
       drop.forEach(k => localStorage.removeItem(k));
     } catch (e) {}
@@ -8663,12 +8729,26 @@
     'Cinque Terre': 'Cinque_Terre',
     'Algarve': 'Algarve',
     'Hvar': 'Hvar',
-    'Comporta': 'Comporta_(Portugal)',
     'Lefkada': 'Lefkada',
     'Menorca': 'Menorca',
     'Mallorca': 'Mallorca',
     'Procida': 'Procida',
-    'Cefalù': 'Cefalù'
+    'Cefalù': 'Cefalù',
+    // Bare city names that resolve to a Wikipedia disambiguation page
+    // (and therefore returned no image at all — these two were
+    // rendering as typographic placeholders on every surface).
+    'Split': 'Split,_Croatia',
+    'Faro': 'Faro,_Portugal',
+    // Coves, beaches and hamlets with no article of their own. We
+    // point at the nearest real place the photo genuinely shows —
+    // the island, peninsula or commune the spot belongs to — rather
+    // than borrowing an unrelated picture. Each card already names
+    // that wider region in its country line.
+    'Comporta': 'Troia_Peninsula',            // Comporta sits on the Tróia coast
+    'Hvar Backcountry': 'Stari_Grad_Plain',   // the island's interior, UNESCO-listed
+    'Cala Macarella': 'Menorca',
+    'Plage de Palombaggia': 'Porto-Vecchio',  // the commune the beach belongs to
+    'Spiaggia Rosa': 'Budelli'                // the island whose beach it is
   };
 
   // ============================================================
@@ -9723,14 +9803,122 @@
     return place.trim().replace(/\s+/g, '_');
   }
   
+  // ------------------------------------------------------------
+  // WIKIMEDIA THUMBNAIL SIZING
+  //
+  // Wikimedia only serves a FIXED ladder of thumbnail widths to
+  // external callers. Any other width returns HTTP 400
+  // ("Use thumbnail sizes listed on https://w.wiki/GHai").
+  // Verified empirically against upload.wikimedia.org — do not
+  // add speculative widths here, they will 400.
+  const WIKI_WIDTHS = [120, 250, 330, 500, 960, 1280, 1920, 3840];
+
+  // Pick the ladder width closest to what we actually render at.
+  // Nearest-on-a-log-scale rather than always-round-up: the ladder
+  // jumps 500 → 960, and rounding a 680px need up to 960 doubles
+  // the bytes for a card that is cropped with object-fit anyway.
+  // The 0.7 floor stops us serving a visibly soft image.
+  function wikiWidthFor(want) {
+    const floor = want * 0.7;
+    let best = null, bestD = Infinity;
+    for (const w of WIKI_WIDTHS) {
+      if (w < floor) continue;
+      const d = Math.abs(Math.log(w / want));
+      if (d < bestD) { bestD = d; best = w; }
+    }
+    return best || WIKI_WIDTHS[WIKI_WIDTHS.length - 1];
+  }
+
+  // Rewrite any Wikimedia URL to the given render width.
+  //
+  //   original : /commons/f/f2/Name.jpg
+  //   thumb    : /commons/thumb/f/f2/Name.jpg/{W}px-Name.jpg
+  //
+  // The REST summary hands back either the raw original (Lisbon:
+  // 2048px / 2.1 MB) or a 3840px-capped thumb (Barcelona, Krakow).
+  // Both are absurd for a 56px map marker or a 340px rail card, and
+  // together they were by far the heaviest thing on the page.
+  // Requesting a width above the source is safe — Wikimedia caps to
+  // the original rather than erroring.
+  function wikiSized(url, want) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.indexOf('upload.wikimedia.org') === -1) return url;
+    const w = wikiWidthFor(Math.max(1, Math.round(want || 500)));
+    const asThumb = url.match(/^(.*\/thumb\/.+?\/)\d+px-(.+)$/);
+    if (asThumb) return asThumb[1] + w + 'px-' + asThumb[2];
+    const asOriginal = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/([0-9a-f])\/([0-9a-f]{2})\/(.+)$/);
+    if (!asOriginal) return url;
+    const [, base, d1, d2, file] = asOriginal;
+    // Wikimedia renders SVG thumbnails as PNG; raster formats keep their name.
+    const thumbName = /\.svg$/i.test(file) ? file + '.png' : file;
+    return `${base}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
+  }
+
+  // How many source pixels does this <img> actually need? Measured,
+  // because the same renderer feeds a 56px map marker and a
+  // full-bleed hero.
+  //
+  // Every image host here is object-fit:cover, so width alone is not
+  // enough: a tall portrait box (the 238×634 concierge preview, the
+  // 375×507 deal card) crops a LANDSCAPE Wikipedia photo down to its
+  // height, and the source has to be wide enough to survive that
+  // crop. Wikipedia lead images sit around 3:2, so a box needs
+  // roughly `height × 1.5` source pixels across. Sizing those by
+  // width alone asked for a 330px source and upscaled it 2.5×.
+  //
+  // Falls back up the ancestor chain for elements that are laid out
+  // but not yet sized (below-fold cards under content-visibility).
+  const COVER_ASPECT = 1.5; // typical Wikipedia lead-image aspect
+  function renderWidthOf(img) {
+    let r = img.getBoundingClientRect();
+    let el = img.parentElement, hops = 0;
+    while ((!r.width || r.width < 8) && el && hops < 4) {
+      r = el.getBoundingClientRect();
+      el = el.parentElement; hops++;
+    }
+    const need = Math.max(r.width || 0, (r.height || 0) * COVER_ASPECT);
+    if (need < 8) return 480 * Math.min(window.devicePixelRatio || 1, 2); // unmeasurable → sane card default
+    return need * Math.min(window.devicePixelRatio || 1, 2);
+  }
+
+  // Re-check size once the image is genuinely on screen.
+  //
+  // Hydration can measure a card before its box has resolved —
+  // absolutely-positioned image hosts inside a grid that has not
+  // been laid out yet report a zero height, which undersizes the
+  // request. Rather than guess at the right moment to measure, we
+  // let the element tell us: when it approaches the viewport its
+  // box is real, so we recompute and upgrade if we asked too small.
+  //
+  // Only ever upgrades, never downgrades, so this cannot thrash. In
+  // practice it costs no extra bytes: the images are loading="lazy",
+  // so the browser has not started fetching at the point the
+  // observer corrects the URL.
+  const wikiSizeObserver = ('IntersectionObserver' in window)
+    ? new IntersectionObserver((entries, obs) => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          const img = e.target;
+          obs.unobserve(img);
+          const src = img.dataset.wikiSrc;
+          if (!src) return;
+          const want = renderWidthOf(img);
+          if (wikiWidthFor(want) > (parseInt(img.dataset.wikiW, 10) || 0)) {
+            img.dataset.wikiW = String(wikiWidthFor(want));
+            img.src = wikiSized(src, want);
+          }
+        });
+      }, { rootMargin: '400px' })
+    : null;
+
   // Tracks in-flight requests so we don't fire the same call twice
   const wikiInFlight = new Map();
-  
+
   // Returns a URL string on success, or null on failure / no image.
   async function wikiImage(place) {
     if (!place) return null;
     const slug = wikiSlug(place);
-    const cacheKey = 'mv_wiki_v4_' + slug;
+    const cacheKey = 'mv_wiki_v5_' + slug;
   
     const cached = localStorage.getItem(cacheKey);
     if (cached === '__NONE__') return null;
@@ -9748,14 +9936,16 @@
           return null;
         }
         const data = await res.json();
-        // Prefer originalimage (full resolution), fall back to thumbnail
-        let url = data.originalimage?.source || data.thumbnail?.source;
+        // Cache the canonical source. It is never used verbatim —
+        // wikiSized() rewrites it to the width each surface renders
+        // at. (The previous "upscale to 1600px" rewrite produced a
+        // width outside Wikimedia's allowed ladder, so every city
+        // that had only a thumbnail served a broken image.)
+        const url = data.originalimage?.source || data.thumbnail?.source;
         if (!url) {
           localStorage.setItem(cacheKey, '__NONE__');
           return null;
         }
-        // Upscale thumbnail URLs to a respectable size
-        url = url.replace(/\/(\d+)px-/, (_, w) => parseInt(w) < 1600 ? '/1600px-' : '/' + w + 'px-');
         try { localStorage.setItem(cacheKey, url); } catch (e) {}
         return url;
       } catch (e) {
@@ -9777,7 +9967,14 @@
     if (url) {
       img.classList.remove('img-broken');
       img.removeAttribute('srcset');
-      img.src = url;
+      // Request the width this element actually paints at, not the
+      // 2048–3840px source Wikipedia hands us.
+      const want = opts.width || renderWidthOf(img);
+      img.dataset.wikiSrc = url;
+      img.dataset.wikiW = String(wikiWidthFor(want));
+      img.src = wikiSized(url, want);
+      // Correct the guess once the element is really on screen.
+      if (wikiSizeObserver && !opts.width) wikiSizeObserver.observe(img);
       img.dataset.source = 'wikipedia';
       if (parent) {
         parent.classList.remove('has-placeholder');
@@ -9952,7 +10149,7 @@
   
   async function fetchCityHero(city) {
     if (!city) return null;
-    const cacheKey = 'mv_wiki_v2_' + city;
+    const cacheKey = 'mv_wiki_hero_v5_' + city;
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) return cached === '__none__' ? null : cached;
@@ -9967,7 +10164,8 @@
         return null;
       }
       const data = await res.json();
-      // Prefer originalimage (full-res). Wikipedia returns thumbnail otherwise.
+      // Canonical source only — callers pass it through wikiSized()
+      // to request the width they actually render at.
       const url = data.originalimage?.source || data.thumbnail?.source || null;
       if (url) {
         try { localStorage.setItem(cacheKey, url); } catch (e) {}
@@ -9984,8 +10182,9 @@
   async function upgradeHeroWithWikipedia(cityName) {
     const heroImg = document.querySelector('.detail-hero img');
     if (!heroImg) return;
-    const url = await fetchCityHero(cityName);
-    if (!url) return;
+    const raw = await fetchCityHero(cityName);
+    if (!raw) return;
+    const url = wikiSized(raw, renderWidthOf(heroImg));
     // Preload before swap so the transition is smooth
     const pre = new Image();
     pre.onload = () => {
@@ -13911,6 +14110,7 @@
           e.preventDefault();
           prefsPanel.classList.toggle('show');
           const open = prefsPanel.classList.contains('show');
+          togglePrefsLink.setAttribute('aria-expanded', open ? 'true' : 'false');
           if (btnSave) btnSave.style.display = open ? 'inline-flex' : 'none';
         });
       }
@@ -14203,8 +14403,12 @@
           const cleanSlug = (typeof wikiSlug === 'function')
             ? wikiSlug(slug)
             : String(slug).replace(/\s+/g, '_');
-          const v = localStorage.getItem('mv_wiki_v4_' + cleanSlug);
-          if (v && v !== '__NONE__') return v;
+          const v = localStorage.getItem('mv_wiki_v5_' + cleanSlug);
+          // 1280px: comfortably above the 1200px social-card spec
+          // without shipping a 3840px original into a link preview.
+          if (v && v !== '__NONE__') {
+            return (typeof wikiSized === 'function') ? wikiSized(v, 1280) : v;
+          }
         }
       } catch (e) {}
       return null;
@@ -14300,13 +14504,17 @@
       if (!img) return;
       function apply() {
         if (img.src && /^https?:/.test(img.src)) {
-          defaults.ogImage = img.src;
-          defaults.twImage = img.src;
+          // The hero <img> is served at this device's render width —
+          // 500px on a phone. A share card needs ~1200px regardless
+          // of who is doing the sharing, so re-request that rung.
+          const shareUrl = (typeof wikiSized === 'function') ? wikiSized(img.src, 1280) : img.src;
+          defaults.ogImage = shareUrl;
+          defaults.twImage = shareUrl;
           // Only push the default into <meta> if we're not currently
           // showing a city-specific override.
           if (!location.hash || !parseHashCity()) {
-            setMeta('og:image', img.src, 'property');
-            setMeta('twitter:image', img.src);
+            setMeta('og:image', shareUrl, 'property');
+            setMeta('twitter:image', shareUrl);
           }
         }
       }
