@@ -38,7 +38,7 @@ is young / friends / couples on a real budget. Every UI decision reinforces
 "find the cheapest beautiful weekend" — not luxury aesthetics.
 
 What the site shows today:
-- **67 destinations** across 28 European countries (Tirana → Reykjavik)
+- **64 destinations** across 30 European countries (Tirana → Reykjavik)
 - Interactive Leaflet **satellite map** — empty default, ambient hover-reveal
   surfaces ~3–10 nearby cities, click enters a single-city "scene mode"
 - **Concierge** — desktop form / 4-step mobile wizard with a redesigned
@@ -90,7 +90,7 @@ defined inside the inline `<script>` block.
 
 ```js
 MV.cities.get('Lisbon')      // → normalised city object — see SHAPE below
-MV.cities.all()              // → all 67 baseline + any overrides
+MV.cities.all()              // → all 64 baseline + any overrides
 MV.cities.override(name, p)  // merge partial override (future Hotelbeds /
                              // Skyscanner real-time data). Pass null to remove.
 ```
@@ -273,13 +273,33 @@ buildSkyscannerUrl(origin, dest, ctx)
 
 buildFlixBusUrl(origin, dest, ctx)
 // → { url, valid, label, note }
-// Confidence-tiered:
-//   • canBus true:  /search?fromCity=X&toCity=Y&rideDate=...&returnDate=...&adult=N
-//   • canBus false: /bus-routes/{dest-slug} (city listing)
-//   • no dest:      homepage
+//   • city in flixbusCitySlug:  /bus/{verified-slug}
+//   • otherwise:                homepage + "FlixBus does not serve X"
 ```
 
-Comprehensive `cityAirports` map covers every one of 67 destinations
+**FlixBus has no usable pre-filled deep link — do not try to add one
+back.** Verified against the live site:
+
+| URL shape | Result |
+|---|---|
+| `global.flixbus.com/search?fromCity=…&toCity=…` | **hard 404** |
+| `global.flixbus.com/bus-routes/{anything}` | one generic network page, byte-identical for `berlin-prague` and `zzzz-qqqq` |
+| `global.flixbus.com/bus/{a}-{b}` | generic "Coming your Way!" placeholder |
+| `global.flixbus.com/bus/{city}` | **real page** — "Affordable Bus tickets to X" |
+| `shop.flixbus.com/search?departureCity=<id>` | works, but needs FlixBus's internal numeric city IDs |
+
+`flixbusCitySlug` is a verified lookup table: every destination was
+fetched and its page title checked. 53 have a real city page; the
+other 11 (Mykonos, Santorini, Ibiza, Palma, Amalfi, Monaco, Lake Como,
+Reykjavik, Interlaken, Hallstatt — islands and Alpine villages) are
+genuinely unserved and get an honest "FlixBus does not serve X"
+instead of a link into a dead end. Slugs are not always the obvious
+one: Wrocław lives at `wroclaw-poland`.
+
+`canBus` no longer picks the URL — it only chooses the note, since we
+can no longer pass the route through to FlixBus either way.
+
+Comprehensive `cityAirports` map covers every one of 64 destinations
 + 19 common origins with real IATAs. Cities without their own airport
 (Cannes, Monaco, Annecy, Amalfi, Lake Como, Hallstatt, Interlaken,
 Lucerne, Albufeira, Benidorm) map to nearest airport via `via` +
@@ -426,7 +446,7 @@ don't surface.
   mobile blur reduction, `prefers-reduced-motion`, `will-change`
 
 **JS sections (in `<script>`, top-to-bottom):**
-- `DATA` — `collections` (3 rails), `smartDestinations` (67 cities ×
+- `DATA` — `collections` (3 rails), `smartDestinations` (64 cities ×
   prices/flights per origin), `cityCoords`, `cityGallery`,
   **`cityEconomy`** (70 entries, drives all accommodation budgets),
   `knownCities` (autocomplete)
@@ -475,10 +495,9 @@ don't surface.
 
 ### Other files
 
-- `public/robots.txt` — allow all, disallow `/api/*`
-- `public/sitemap.xml` — homepage only (hash city routes are not
-  indexable; per-city entries return when real `/city/{name}` SSR
-  routes exist)
+- `public/robots.txt` — allow all, disallow `/api/*`. Deliberately has
+  **no `Sitemap:` line** and there is **no `sitemap.xml`** — see the
+  domain note under "Pending placeholders" below.
 - `server.js` — tiny static Express server (serves `public/` + `/api/health`)
 - `.claude/launch.json` — preview tool config (`node server.js` on :3000)
 
@@ -538,7 +557,7 @@ fabricated content" verifiable by inspection.
   activity estimate routes through this.
 - **`pickRestaurantWiki` 8-step chain** — engineered for honesty.
 - **`pickActivityWiki`** — 130+ landmark→Wikipedia mappings.
-- **`cityAirports` map** — 67 destinations + 19 origins, every IATA
+- **`cityAirports` map** — 64 destinations + 19 origins, every IATA
   hand-verified. `via` + `viaCity` for cities without airports.
 - **The inline `<script>` block** — ~100 DOM-coupled functions. Edit
   in-place; relocate one function per commit if needed. No big-bang.
@@ -568,9 +587,27 @@ Still pending operator changes:
   honesty pass — Privacy Policy says "no affiliate programs are
   currently active"). When a real approved ID exists, add the param
   back in `bookingURL()` in `partnerLinks`.
-- `weekendr.vercel.app` → custom domain, in four places (all carry an
-  OPERATOR marker comment): `robots.txt`, `sitemap.xml`, and the
-  canonical + og:url tags in `public/index.html` `<head>`
+- **The production domain is the one open decision.** `weekendr.vercel.app`
+  was treated as a harmless placeholder throughout the repo. It is not
+  one — it currently serves an **unrelated Next.js application**
+  (verified: `X-Powered-By: Next.js`, Next router `Vary` headers).
+  A cross-domain `<link rel="canonical">` is honoured by Google, so
+  the site was telling search engines its canonical home was somebody
+  else's website.
+
+  Nothing in the build depends on knowing the domain any more:
+  - `canonical` + `og:url` are written at runtime from
+    `location.origin` (`publishSelfUrl()` in `MV.seo`), so they are
+    correct wherever this is deployed.
+  - `robots.txt` has no `Sitemap:` line and `sitemap.xml` is gone —
+    both required an absolute host, and a sitemap advertised on a
+    foreign domain is rejected by crawlers anyway. For a single-page
+    site it costs nothing.
+
+  Once the real domain is live: add
+  `Sitemap: https://<domain>/sitemap.xml` back to `robots.txt` and
+  restore a one-URL `sitemap.xml`. Per-city `<url>` entries only make
+  sense after real `/city/{name}` SSR routes exist.
 
 ---
 
@@ -749,7 +786,7 @@ Earlier highlights (prior to this session):
   curated data sources for AI / affiliate overlays)
 - TASK 7 — `MV.favorites` + `MV.compare` (retention layer, DB-ready
   storage shape, side-by-side comparison modal with live weather)
-- **Destination expansion** — 17 → 67 cities
+- **Destination expansion** — 17 → 64 cities
 - **Search system upgrade** — Levenshtein typo tolerance, popularity
   scoring, country-match, mobile UX
 - **Best Deals section** — top 4 cheapest from origin, rotates every 9s

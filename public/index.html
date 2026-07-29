@@ -7546,7 +7546,10 @@
           </button>
           <div class="hero-trust">
             <span class="hero-trust-dot"></span>
-            <span id="heroTrustLine">All-in estimates · 67 cities · no signup</span>
+            <!-- Replaced at runtime from smartDestinations.length; this
+                 is only what a crawler or a no-JS visitor sees. It said
+                 67 while the dataset held 64. -->
+            <span id="heroTrustLine">All-in estimates · 64 cities · no signup</span>
           </div>
         </div>
       </div>
@@ -7826,7 +7829,9 @@
         </div>
         <div>
           <span class="label">Cities tracked</span>
-          <span class="value">67 · Europe only</span>
+          <!-- Was a hardcoded 67 that nothing kept in sync — the
+               dataset holds 64. Now written from smartDestinations. -->
+          <span class="value" id="manifestoCityCount">64 · Europe only</span>
         </div>
         <div>
           <span class="label">Routes via</span>
@@ -10577,18 +10582,13 @@
       .replace(/ł/g, 'l')   // ł
       .replace(/Ł/g, 'L');  // Ł
   }
-  function citySlug(name) {
-    if (!name) return '';
-    return _stripDiacritics(String(name))
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-  // Skyscanner /flights-to/ uses lowercase city names (no slug).
-  function cityForSkyscannerSlug(name) {
-    if (!name) return '';
-    return _stripDiacritics(String(name)).toLowerCase().replace(/\s+/g, '-');
-  }
+  // citySlug() removed with the FlixBus rewrite — its only caller
+  // built the /bus-routes/{city} URL, which turned out to be a
+  // generic page. FlixBus slugs are now a verified lookup table.
+
+  // cityForSkyscannerSlug() removed too: its one caller computed a
+  // slug and then built the URL from the IATA code instead, so the
+  // result was never used. The /flights-to/ path is keyed on IATA.
 
   // ----- Airport / route validation -----
   function airportFor(city) {
@@ -10637,7 +10637,6 @@
     }
     // (2) Dest IATA only → city flights-to page with dates as params
     if (da) {
-      const slug = cityForSkyscannerSlug(dest);
       let url = `https://www.skyscanner.net/transport/flights-to/${da.iata.toLowerCase()}/?${shared}`;
       if (dates.checkin)  url += `&outbounddate=${dates.checkin}`;
       if (dates.checkout) url += `&inbounddate=${dates.checkout}`;
@@ -10653,55 +10652,69 @@
     return { url, valid: false, label: 'Search on Google Flights', note: 'No direct deep-link available' };
   }
 
+  // FlixBus destinations that have a real city page, verified by
+  // fetching every one of our destinations against global.flixbus.com
+  // and reading the page title. A served city returns "Affordable Bus
+  // tickets to X"; everything else returns the same generic "Coming
+  // your Way!" placeholder regardless of what you put in the path, so
+  // the URL 200s while telling the user nothing.
+  //
+  // The eleven destinations missing here are islands and Alpine
+  // villages FlixBus genuinely does not serve (Mykonos, Santorini,
+  // Ibiza, Palma, Amalfi, Monaco, Lake Como, Reykjavik, Interlaken,
+  // Hallstatt) — for those we say so instead of linking into a dead
+  // end. Values are the slug FlixBus itself uses, which is not always
+  // the obvious one: Wrocław lives at `wroclaw-poland`.
+  const flixbusCitySlug = {
+    Barcelona: 'barcelona', Lisbon: 'lisbon', Budapest: 'budapest', Prague: 'prague',
+    Milan: 'milan', Dubrovnik: 'dubrovnik', Paris: 'paris', Krakow: 'krakow',
+    Naples: 'naples', Porto: 'porto', Vienna: 'vienna', Athens: 'athens',
+    Copenhagen: 'copenhagen', London: 'london', Rome: 'rome', Amsterdam: 'amsterdam',
+    Berlin: 'berlin', Madrid: 'madrid', Brussels: 'brussels', Dublin: 'dublin',
+    Stockholm: 'stockholm', Oslo: 'oslo', Valencia: 'valencia', Nice: 'nice',
+    Venice: 'venice', Florence: 'florence', Seville: 'seville', Granada: 'granada',
+    Benidorm: 'benidorm', Malaga: 'malaga', Cannes: 'cannes', Split: 'split',
+    Zadar: 'zadar', Albufeira: 'albufeira', Faro: 'faro', Catania: 'catania',
+    Bari: 'bari', Belgrade: 'belgrade', Warsaw: 'warsaw', Riga: 'riga',
+    Vilnius: 'vilnius', Ljubljana: 'ljubljana', Bratislava: 'bratislava',
+    Sofia: 'sofia', Sarajevo: 'sarajevo', Tirana: 'tirana', Skopje: 'skopje',
+    'Wrocław': 'wroclaw-poland', 'Gdańsk': 'gdansk', Lucerne: 'lucerne',
+    Innsbruck: 'innsbruck', Salzburg: 'salzburg', Bergen: 'bergen', Annecy: 'annecy'
+  };
+
   function buildFlixBusUrl(origin, dest, ctxIn) {
     if (!dest || origin === dest) {
       return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus', note: null };
     }
-    const ctx    = ctxIn || {};
-    const dates  = ctx.dates || {};
-    const adults = Math.max(1, ctx.adults || 1);
-    // ASCII-normalise city names so URL params resolve reliably
-    // even for "Kraków" / "Wrocław" / "Gdańsk". FlixBus's search
-    // engine handles ASCII names robustly; Unicode is hit-and-miss.
-    const ascii = (s) => (_stripDiacritics(String(s || '')) || '').replace(/\s+/g, ' ').trim();
 
-    // FALLBACK HIERARCHY (per brief):
-    //   1. Full route + dates + passengers     ← when canBus
-    //   2. Destination-only city listing       ← when route uncertain
-    //   3. Homepage                            ← last resort (handled above)
+    // There is no working pre-filled deep link to give here. The old
+    // `/search?fromCity=…&toCity=…&rideDate=…` URL returned a hard
+    // 404 — so the "high confidence" path, the one taken for every
+    // route we had actually confirmed, was the broken one. FlixBus's
+    // only parameterised search lives on shop.flixbus.com and keys on
+    // internal numeric city IDs we do not have. `/bus-routes/…`, the
+    // old fallback, is a single generic network page for every input.
     //
-    // Why this shape: canBus is our confidence signal that the pair
-    // is genuinely served. When true, a full pre-filled search URL
-    // gives the seamless "everything is already set up for me" feel
-    // the user asked for. When false, the destination-only page
-    // shows EVERY route to the city — user can pick a workaround
-    // (Berlin → Vienna → Bratislava etc.) themselves.
-    if (canBus(origin, dest)) {
-      // Full pre-filled search. FlixBus's /search endpoint accepts
-      // city names as string params; we provide origin, destination,
-      // outbound + return dates, passenger count. Format verified
-      // against FlixBus's current URL schema.
-      const params = new URLSearchParams();
-      params.set('fromCity', ascii(origin));
-      params.set('toCity',   ascii(dest));
-      if (dates.checkin)  params.set('rideDate',   dates.checkin);
-      if (dates.checkout) params.set('returnDate', dates.checkout);
-      params.set('adult', String(adults));
+    // What does work is the per-city page at /bus/{slug}, which lists
+    // real connections and prices into that city. So we send the user
+    // there and are honest that the dates aren't carried over.
+    const slug = flixbusCitySlug[dest];
+    if (!slug) {
       return {
-        url: `https://global.flixbus.com/search?${params.toString()}`,
-        valid: true,
-        label: 'Find buses on FlixBus',
-        note: null
+        url: 'https://global.flixbus.com/',
+        valid: false,
+        label: 'Browse FlixBus',
+        note: 'FlixBus does not serve ' + dest
       };
     }
-
-    // Unknown route → CITY-LEVEL listing. Always lands on a usable
-    // page (every FlixBus connection serving the destination).
+    const confirmed = canBus(origin, dest);
     return {
-      url: `https://global.flixbus.com/bus-routes/${citySlug(dest)}`,
-      valid: false,
+      url: `https://global.flixbus.com/bus/${slug}`,
+      valid: true,
       label: 'Find buses to ' + dest,
-      note: 'Direct route not confirmed — FlixBus search will suggest alternatives'
+      note: confirmed
+        ? 'Dates aren’t carried over — pick them on FlixBus'
+        : 'Direct route not confirmed — the page lists every connection into ' + dest
     };
   }
 
@@ -16283,11 +16296,17 @@
       if (mp) {
         mp.textContent = weekendRange(allIn) + ' all-in · ' + cheap.city.name;
       }
+      // Both counts come from the dataset itself. They used to be
+      // hardcoded 67s that nobody updated when the destination list
+      // changed, so the site was overstating its own coverage.
+      const n = (typeof smartDestinations !== 'undefined') ? smartDestinations.length : null;
       const ht = document.getElementById('heroTrustLine');
       if (ht) {
-        const n = (typeof smartDestinations !== 'undefined') ? smartDestinations.length : 67;
-        ht.textContent = weekendRange(allIn) + ' all-in · ' + n + ' cities · no signup';
+        ht.textContent = weekendRange(allIn) + ' all-in'
+          + (n ? ' · ' + n + ' cities' : '') + ' · no signup';
       }
+      const cc = document.getElementById('manifestoCityCount');
+      if (cc && n) cc.textContent = n + ' · Europe only';
     }
 
     // Stop any previous rotation, then start a new one (only if 5+ deals)

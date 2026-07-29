@@ -46,7 +46,7 @@ See [HANDOVER.md](./HANDOVER.md) for the full architecture overview — modules 
 Search is **fully deterministic and client-side**. There is no external API call in the search flow.
 
 1. The user fills out the concierge form (origin, dates, group, budget, vibes).
-2. `synthesizeInstantTrips()` filters and ranks `smartDestinations` (67 European cities) by:
+2. `synthesizeInstantTrips()` filters and ranks `smartDestinations` (64 European cities across 30 countries) by:
    - `weekendEstimate(city, ctx).totalPP` must fit budget (with a small tolerance)
    - vibe-tag overlap with the selected vibes (heavily weighted)
    - shorter flights slightly favoured
