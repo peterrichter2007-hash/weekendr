@@ -17,7 +17,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Maison Voyage — The Cheapest Beautiful Weekends in Europe" />
   <meta property="og:description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples." />
-  <meta property="og:url" content="https://weekendr.vercel.app/" />
+  <!-- og:url and the canonical below are set at runtime from
+       location.origin (see MV.seo). They used to hardcode
+       weekendr.vercel.app, which today serves an unrelated Next.js
+       app — so the page was telling Google and every social crawler
+       that its canonical home was somebody else's website. Deriving
+       the host is correct wherever this is deployed; a crawler that
+       runs no JS simply gets no canonical, which is the safe default
+       (the fetched URL wins). -->
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Maison Voyage — The Cheapest Beautiful Weekends in Europe" />
@@ -34,10 +41,6 @@
   <meta property="og:image:width" content="1280" />
   <meta property="og:image:height" content="821" />
   <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg/1280px-Lisboa_-_Portugal_%2852597836992%29.jpg" />
-  <!-- OPERATOR: weekendr.vercel.app is a placeholder host. When the
-       final domain lands, replace it here (canonical + og:url) and in
-       robots.txt + sitemap.xml. -->
-  <link rel="canonical" href="https://weekendr.vercel.app/" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14806,6 +14809,19 @@
       else img.addEventListener('load', apply, { once: true });
     }
     bindDefaultHeroImage();
+
+    // Publish the host-derived canonical / og:url immediately, rather
+    // than only when a city page opens or restore() runs. The <head>
+    // deliberately ships neither tag: hardcoding one meant shipping a
+    // domain that turned out to serve an unrelated site, and pointing
+    // a canonical at somebody else's host is the one SEO mistake that
+    // actively de-indexes you. Derived from location, this is right
+    // on any domain the site is deployed to.
+    (function publishSelfUrl() {
+      const self = location.origin + location.pathname;
+      setMeta('og:url', self, 'property');
+      setLink('canonical', self);
+    })();
 
     return {
       applyCity, restore,

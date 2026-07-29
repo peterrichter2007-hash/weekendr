@@ -2,11 +2,16 @@
 # Crawl everything except /api/* (Vercel serverless routes — today
 # just a health-check endpoint; not public content).
 #
-# OPERATOR: replace `weekendr.vercel.app` with the final domain
-# (also in sitemap.xml and the canonical/og:url tags in index.html).
+# No `Sitemap:` line on purpose. It has to be an absolute URL, and the
+# host this file used to name (weekendr.vercel.app) is not this site —
+# it serves an unrelated application. A sitemap advertised on a
+# foreign host is rejected by crawlers anyway, and for a single-page
+# site it buys nothing: search engines find / by crawling it.
+#
+# OPERATOR: once the real domain is live, add it back as
+#   Sitemap: https://<your-domain>/sitemap.xml
+# and restore public/sitemap.xml (see HANDOVER.md).
 
 User-agent: *
 Allow: /
 Disallow: /api/
-
-Sitemap: https://weekendr.vercel.app/sitemap.xml
