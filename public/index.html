@@ -14861,7 +14861,12 @@
   // - Liability / external-link / copyright clauses: standard for a
   //   deep-link recommendation platform without active affiliate
   //   programs.
-  // - "AI-assisted content" note: matches the site's honesty rules.
+  // - Content-production note: the Impressum used to carry an
+  //   "AI-assisted content" disclosure. That survived the AI-removal
+  //   pass and became a false statement in a legal document — the
+  //   Privacy Policy on the next tab already said the opposite
+  //   ("no external content-generation API is called"). Rewritten to
+  //   describe what actually produces the content.
   // ============================================================
   MV.legal.register('impressum', {
     title: 'Impressum',
@@ -14889,7 +14894,7 @@
       <p>Maison Voyage is an <strong>editorial recommendation platform</strong>. No affiliate programs are currently operated. External links lead to third-party providers (such as Skyscanner, Booking.com, FlixBus or GetYourGuide) and the booking takes place on their own websites, under their terms and conditions.</p>
 
       <div class="lm-note">
-        <strong>AI-assisted content.</strong> Some content (such as travel descriptions and recommendations) may be AI-assisted or refined. Prices shown on this site are estimates — please confirm the final price on the partner site before booking.
+        <strong>How the content is produced.</strong> Descriptions, activities, restaurants and guides come from a curated dataset written and checked by the operator — no content-generation service is called, at page load or otherwise. Prices shown on this site are estimates presented as ranges, never quotes; please confirm the final price on the partner site before booking.
       </div>
 
       <h3>Liability</h3>
@@ -15342,12 +15347,21 @@
   // lean execution, ~35% over for pricier dates / a mid-range stay.
   // Rounded to clean tens — no false precision. e.g. "€150 – €250".
   // ============================================================
-  function weekendRange(totalPP) {
+  // The two bounds behind the displayed range. Exposed separately so
+  // that anything making a claim ABOUT the price (badges, filters,
+  // counters) can reason with the same numbers the user is shown,
+  // instead of the point estimate underneath them.
+  function weekendBounds(totalPP) {
     const num = typeof totalPP === 'number' ? totalPP : parseFloat(String(totalPP).replace(/[^\d.]/g, ''));
-    if (!num || isNaN(num) || num <= 0) return '—';
-    const low  = Math.max(10, Math.floor(num * 0.85 / 10) * 10);
-    const high = Math.ceil(num * 1.35 / 10) * 10;
-    return '€' + low + ' – €' + high;
+    if (!num || isNaN(num) || num <= 0) return null;
+    return {
+      low:  Math.max(10, Math.floor(num * 0.85 / 10) * 10),
+      high: Math.ceil(num * 1.35 / 10) * 10
+    };
+  }
+  function weekendRange(totalPP) {
+    const b = weekendBounds(totalPP);
+    return b ? ('€' + b.low + ' – €' + b.high) : '—';
   }
   function getWeekendPrice(city, origin, ctxIn) {
     const ctx = ctxIn || { origin: origin || 'Berlin', adults: 2, nights: 2 };
@@ -16165,7 +16179,12 @@
 
   function _badgeFor(opt, idx, allInPP) {
     if (idx === 0) return 'Best value';
-    if (allInPP != null && allInPP <= 180) return 'Whole weekend under €180';
+    // Test the TOP of the range the card actually displays, not the
+    // point estimate under it. Keyed on allInPP <= 180, this badge
+    // promised "under €180" on cards whose own price read "€150 –
+    // €250" — a tighter claim than our own pricing model supports.
+    const b = (typeof weekendBounds === 'function') ? weekendBounds(allInPP) : null;
+    if (b && b.high <= 180) return 'Whole weekend under €180';
     if (opt && opt.mode === 'bus' && opt.price <= 20) return 'Bus deal';
     if (opt && opt.mode === 'train' && opt.duration <= 2.5) return 'Quick train';
     if (opt && opt.mode === 'flight' && opt.price <= 60) return 'Cheap flight';
