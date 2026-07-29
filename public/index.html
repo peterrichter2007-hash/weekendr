@@ -286,12 +286,21 @@
       background: var(--bg);
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.5s var(--ease);
+      /* visibility, not just opacity: an opacity-0 overlay is still in
+         the tab order and still in the accessibility tree, so the
+         closed full-screen menu was putting eight invisible links
+         between the hero CTA and the rest of the page — a keyboard
+         user tabbed straight into a menu they could not see. Same
+         hidden/visible pattern the cookie banner already uses, and
+         the fade still works because visibility interpolates
+         discretely. */
+      visibility: hidden;
+      transition: opacity 0.5s var(--ease), visibility 0.5s var(--ease);
       display: flex; flex-direction: column;
       padding: 6rem clamp(1.5rem, 5vw, 4rem) 3rem;
       overflow-y: auto;
     }
-    .fullmenu.open { pointer-events: auto; opacity: 1; }
+    .fullmenu.open { pointer-events: auto; opacity: 1; visibility: visible; }
     .fullmenu-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1739,7 +1748,7 @@
       gap: 3rem;
       margin-bottom: 4rem;
     }
-    footer h4 {
+    footer h3 {
       font-family: var(--sans);
       font-size: 0.72rem;
       letter-spacing: 0.22em;
@@ -7288,6 +7297,57 @@
       will-change: transform, opacity;
     }
 
+    /* ============================================================
+       KEYBOARD FOCUS
+       The sheet defined focus styling for exactly three controls, and
+       one of them (.cg-input-wrap input/select) actively removed the
+       outline. Everything else — every nav link, card, footer link,
+       partner CTA and modal close button — fell back to the UA
+       outline, which is effectively invisible against this palette.
+       A keyboard user could not tell where they were on the page.
+
+       Two rings, because this site puts controls on both near-white
+       parchment and near-black glass: the cream outline carries on
+       dark surfaces, the ink halo carries on light ones. One of the
+       two always has contrast.
+
+       :where() keeps specificity at 0, so any component that wants
+       its own focus treatment still wins without !important.
+       ============================================================ */
+    :where(a[href], button, input, select, textarea, summary,
+           [tabindex]:not([tabindex="-1"])):focus-visible {
+      outline: 2px solid var(--cream);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(18, 17, 15, 0.6);
+      border-radius: 3px;
+    }
+    /* The concierge fields deliberately drop the outline in favour of
+       a lit border; make that state unmistakable rather than subtle. */
+    .cg-input-wrap:focus-within {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Skip link — first tab stop, invisible until focused. */
+    .skip-link {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, -120%);
+      z-index: 300;
+      padding: 0.8rem 1.4rem;
+      background: var(--ink);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      border-radius: 0 0 12px 12px;
+      text-decoration: none;
+    }
+    .skip-link:focus-visible {
+      transform: translate(-50%, 0);
+    }
+
     /* A 10px floor at every width. The fine letter-spaced micro-label
        is a real part of this type system and mostly earns its size,
        but five classes had drifted to 9.3–9.9px, which is below any
@@ -7379,6 +7439,7 @@
        NAV
        ============================================================ -->
   <span id="top"></span>
+  <a class="skip-link" href="#main">Skip to content</a>
   <nav class="nav" id="nav">
     <!-- href="#" did nothing: the smooth-scroll handler skips a bare
          hash, so clicking the brand mark was a dead end. -->
@@ -7422,6 +7483,10 @@
   <!-- ============================================================
        HERO
        ============================================================ -->
+  <!-- The document had no <main> landmark, so screen readers and the
+       skip link had nothing to jump to. Wraps hero → CTA band; the
+       nav, footer and the modal layer stay outside it. -->
+  <main id="main">
   <section class="hero">
     <div class="hero-stage" id="heroStage">
       <div class="hero-slide active img-host has-placeholder" data-label="Lisbon" data-wiki="Lisbon">
@@ -7546,7 +7611,7 @@
 
           <div class="cg-grid">
             <div class="cg-field">
-              <span class="cg-lbl">Departing from</span>
+              <label class="cg-lbl" for="i-from">Departing from</label>
               <div class="cg-input-wrap cg-autocomplete-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h18M12 3l9 9-9 9"/></svg>
                 <input type="text" id="i-from" placeholder="Where do you fly from?" value="Berlin" autocomplete="off" spellcheck="false" />
@@ -7555,7 +7620,7 @@
             </div>
 
             <div class="cg-field">
-              <span class="cg-lbl">When</span>
+              <label class="cg-lbl" for="i-when">When</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
                 <select id="i-when">
@@ -7568,7 +7633,7 @@
             </div>
 
             <div class="cg-field">
-              <span class="cg-lbl">Group</span>
+              <label class="cg-lbl" for="i-group">Group</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M3 21c0-3 2.5-6 6-6s6 3 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 15c2 0 6 1 6 5"/></svg>
                 <select id="i-group">
@@ -7581,7 +7646,7 @@
             </div>
 
             <div class="cg-field">
-              <span class="cg-lbl">Length</span>
+              <label class="cg-lbl" for="i-length">Length</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                 <select id="i-length">
@@ -7594,7 +7659,7 @@
             </div>
 
             <div class="cg-field cg-field-wide bp-panel">
-              <span class="cg-lbl">Your weekend budget · per person</span>
+              <label class="cg-lbl" for="budgetSlider">Your weekend budget · per person</label>
 
               <!-- Big amount + tier label — the value reads as a single
                    editorial unit at the top of the panel. -->
@@ -8078,6 +8143,7 @@
       </button>
     </div>
   </section>
+  </main>
 
   <!-- ============================================================
        FOOTER
@@ -8091,7 +8157,7 @@
           <p style="font-size: 0.78rem; opacity: 0.5;">An independent weekend-curation project · Switzerland-operated.</p>
         </div>
         <div>
-          <h4>Discover</h4>
+          <h3>Discover</h3>
           <ul>
             <li><a href="#destinations">Destinations</a></li>
             <li><a href="#weekends">Weekend Trips</a></li>
@@ -8101,7 +8167,7 @@
           </ul>
         </div>
         <div>
-          <h4>Experience</h4>
+          <h3>Experience</h3>
           <ul>
             <li><a href="#concierge">Concierge</a></li>
             <li><a href="#map">The Atlas</a></li>
@@ -8112,7 +8178,7 @@
           </ul>
         </div>
         <div>
-          <h4>Legal &amp; Trust</h4>
+          <h3>Legal &amp; Trust</h3>
           <ul>
             <li><a href="#" data-legal="impressum">Impressum</a></li>
             <li><a href="#" data-legal="privacy">Privacy Policy</a></li>
@@ -8121,7 +8187,7 @@
           </ul>
         </div>
         <div>
-          <h4>Newsletter</h4>
+          <h3>Newsletter</h3>
           <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.7rem;">A short letter, once a month. New places, quietly.</p>
           <input type="email" placeholder="Sign-up coming soon" disabled aria-label="Newsletter email — currently disabled" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.04); border: 1px solid rgba(251,247,239,0.10); border-radius: 100px; color: rgba(255,255,253,0.45); font-size: 0.88rem; cursor: not-allowed;" />
           <!-- 0.66rem/0.55 opacity measured 10.6px at 2.6:1 — below both
@@ -13005,7 +13071,137 @@
     else if (MV.consent && MV.consent.isOpen && MV.consent.isOpen()) MV.consent.close();
     else if (fullmenu.classList.contains('open')) menuBtn.click();
   });
-  
+
+  // ============================================================
+  // OVERLAY FOCUS MANAGEMENT
+  //
+  // Measured before this existed: opening the results drawer left
+  // focus on the button behind it, 124 controls on the page stayed
+  // tabbable underneath, and no overlay announced itself as a
+  // dialog. A keyboard user opened a modal and then tabbed through
+  // the page hidden behind it.
+  //
+  // Written as one observer rather than edits to eight separate
+  // open/close functions: those are DOM-coupled and called from
+  // inline onclick handlers, so watching the class attribute they
+  // already toggle is both smaller and harder to get wrong. Nothing
+  // below changes how any modal opens — it only reacts.
+  //
+  // The trap itself is `inert` on the three page landmarks, which
+  // removes them from the tab order and the accessibility tree in
+  // one attribute. Browsers without inert simply keep the previous
+  // behaviour; nothing breaks.
+  // ============================================================
+  (function overlayFocus() {
+    const OVERLAYS = [
+      ['legalModal',   'show'],
+      ['compareModal', 'show'],
+      ['storyReader',  'show'],
+      ['detail',       'show'],
+      ['results',      'show'],
+      ['stepWizard',   'show'],
+      ['fullmenu',     'open']
+    ];
+    // Everything at body level except the overlay itself and its
+    // veil. Naming the three landmarks explicitly would leave the
+    // cookie banner and the other overlay shells reachable behind an
+    // open dialog, and would need editing every time one is added.
+    const backdrop = (open) => [...document.body.children].filter(n =>
+      n !== open && !n.contains(open) && n.tagName !== 'SCRIPT' && !/Veil$/.test(n.id)
+    );
+    let lastFocused = null;
+    let inerted = [];
+
+    // Derived from the DOM every time rather than tracked in a
+    // counter. Overlays open on top of each other (a city detail over
+    // the results drawer) and close in whatever order the user picks,
+    // and a counter that drifts by one leaves the whole page inert —
+    // unrecoverable without a reload.
+    const openOverlays = () => OVERLAYS
+      .map(([id, cls]) => [document.getElementById(id), cls])
+      .filter(([el, cls]) => el && el.classList.contains(cls))
+      .map(([el]) => el);
+
+    function firstFocusable(root) {
+      const sel = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      return [...root.querySelectorAll(sel)].find(el => {
+        const cs = getComputedStyle(el);
+        return cs.display !== 'none' && cs.visibility !== 'hidden' && el.getBoundingClientRect().width > 0;
+      }) || null;
+    }
+
+    // Several overlays add their open class before filling in their
+    // content, so the first attempt can find nothing to focus. Retry
+    // across the next frame and once more shortly after, and stop as
+    // soon as focus is actually inside.
+    function moveFocusInto(el, attempt) {
+      attempt = attempt || 0;
+      if (!el.classList.contains(el.dataset.a11yClass)) return;
+      if (el.contains(document.activeElement) && document.activeElement !== document.body) return;
+      const target = firstFocusable(el);
+      if (target) {
+        target.focus({ preventScroll: true });
+      } else if (attempt >= 2) {
+        // Nothing focusable at all — put the dialog itself in the tab
+        // order so a screen reader still lands inside it.
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+        el.focus({ preventScroll: true });
+        return;
+      }
+      if (attempt < 2 && !el.contains(document.activeElement)) {
+        if (attempt === 0) requestAnimationFrame(() => moveFocusInto(el, 1));
+        else setTimeout(() => moveFocusInto(el, 2), 120);
+      }
+    }
+
+    function onOpen(el) {
+      if (el.dataset.a11yOpen === '1') return;
+      el.dataset.a11yOpen = '1';
+      if (inerted.length === 0) lastFocused = document.activeElement;
+      // Re-derive the backdrop: with a second overlay stacked on top,
+      // the one underneath must become inert too.
+      inerted.forEach(n => n.removeAttribute('inert'));
+      inerted = backdrop(el).filter(n => !n.hasAttribute('inert'));
+      inerted.forEach(n => n.setAttribute('inert', ''));
+      if (!el.getAttribute('role')) el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      moveFocusInto(el, 0);
+    }
+
+    function onClose(el) {
+      if (el.dataset.a11yOpen !== '1') return;
+      delete el.dataset.a11yOpen;
+      el.removeAttribute('aria-modal');
+      const stillOpen = openOverlays();
+      inerted.forEach(n => n.removeAttribute('inert'));
+      inerted = [];
+      if (stillOpen.length) {
+        // Hand the trap back to whatever is still on screen.
+        const top = stillOpen[stillOpen.length - 1];
+        inerted = backdrop(top).filter(n => !n.hasAttribute('inert'));
+        inerted.forEach(n => n.setAttribute('inert', ''));
+        moveFocusInto(top, 0);
+        return;
+      }
+      // Only pull focus back if it is still inside the overlay we
+      // just closed — otherwise the user has already moved on.
+      if (!lastFocused || !document.contains(lastFocused)) return;
+      if (document.activeElement === document.body || el.contains(document.activeElement)) {
+        lastFocused.focus({ preventScroll: true });
+      }
+    }
+
+    OVERLAYS.forEach(([id, openClass]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.dataset.a11yClass = openClass;
+      new MutationObserver(() => {
+        if (el.classList.contains(openClass)) onOpen(el); else onClose(el);
+      }).observe(el, { attributes: true, attributeFilter: ['class'] });
+      if (el.classList.contains(openClass)) onOpen(el);
+    });
+  })();
+
   // ============================================================
   // Smooth-scroll nav links
   // ============================================================
@@ -14654,10 +14850,10 @@
         <div class="lm-meta-row"><span class="k">Phone</span><span class="v">+41 77 500 05 47</span></div>
       </div>
 
-      <h4>Responsible for content (V.i.S.d.P.)</h4>
+      <h3>Responsible for content (V.i.S.d.P.)</h3>
       <p>Same as the operator above.</p>
 
-      <h4>VAT / UID number</h4>
+      <h3>VAT / UID number</h3>
       <p>Maison Voyage is operated by a single natural person below the Swiss VAT registration threshold of <strong>CHF 100'000</strong> annual turnover. A Swiss UID number will be added here once VAT registration becomes mandatory.</p>
 
       <h3>Business model</h3>
@@ -14677,7 +14873,7 @@
       <h3>Applicable law &amp; jurisdiction</h3>
       <p>Swiss substantive law applies. Place of jurisdiction is the residence of the operator, unless mandatory consumer-protection rules of the visitor's country provide otherwise.</p>
 
-      <h4>Contact</h4>
+      <h3>Contact</h3>
       <p>Reach the operator directly at <a href="mailto:peter.richter2007@gmail.com">peter.richter2007@gmail.com</a>.</p>
 
       <time datetime="2026-05-28">Last updated · 2026-05-28</time>
