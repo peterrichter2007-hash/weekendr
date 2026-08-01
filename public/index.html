@@ -7755,7 +7755,12 @@
           <div class="cg-cta-row">
             <div class="cg-cta-hint">
               <span class="cg-blink"></span>
-              <span>5 cheap weekend matches · ranked by value · ~9s</span>
+              <!-- "~9s" was left over from the AI-era search, which
+                   really did take that long. The deterministic search
+                   that replaced it renders in about a millisecond, so
+                   the label was both wrong and selling the product
+                   short at the exact moment someone decides to click. -->
+              <span>5 cheap weekend matches · ranked by value · instant</span>
             </div>
             <button class="cg-cta" id="genBtn" onclick="generate()">
               <span class="cg-cta-text">
