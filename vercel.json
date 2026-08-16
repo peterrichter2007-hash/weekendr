@@ -28,6 +28,10 @@
       "dest": "/public/city/$1/index.html"
     },
     {
+      "src": "/de/city/([^/]+)/?",
+      "dest": "/public/de/city/$1/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
