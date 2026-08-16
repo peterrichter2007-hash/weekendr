@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#F6F1E8" />
+
+  <!-- The tab showed a blank sheet until now. SVG only: it is one file
+       that stays crisp at every size, and every browser this site
+       supports reads it. A PNG apple-touch-icon is the one thing it
+       does not cover — add it if the site ever wants an iOS
+       home-screen icon. -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
   <title>Maison Voyage — The Cheapest Beautiful Weekends in Europe</title>
   <meta name="description" content="Find the cheapest beautiful weekend in Europe. Smart flight + stay + activity picks for young travellers, friends and couples. Curated for under €600." />
 
@@ -14864,6 +14872,32 @@
       const self = location.origin + location.pathname;
       setMeta('og:url', self, 'property');
       setLink('canonical', self);
+    })();
+
+    // Structured data. Injected at runtime for the same reason the
+    // canonical is: schema.org wants absolute URLs and this file must
+    // not hardcode a host again.
+    //
+    // Deliberately minimal. There is no aggregateRating, no review
+    // count and no sameAs list of social profiles, because none of
+    // those exist — inventing them is exactly the kind of fake signal
+    // the rest of this project spent commits removing, and Google
+    // penalises it when it does not match the visible page.
+    (function publishStructuredData() {
+      try {
+        const data = {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Maison Voyage',
+          url: location.origin + '/',
+          description: readMeta('description'),
+          inLanguage: 'en'
+        };
+        const el = document.createElement('script');
+        el.type = 'application/ld+json';
+        el.textContent = JSON.stringify(data);
+        document.head.appendChild(el);
+      } catch (e) { /* structured data is additive — never break the page for it */ }
     })();
 
     return {

@@ -20,6 +20,10 @@
       "dest": "/public/robots.txt"
     },
     {
+      "src": "/favicon.svg",
+      "dest": "/public/favicon.svg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }

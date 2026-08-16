@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Maison Voyage">
+  <!-- Drawn as a path rather than <text>: a favicon has no access to the
+       site's webfont, so a serif M would silently fall back to whatever
+       the OS picks. Geometric also survives 16px better than a serif. -->
+  <rect width="64" height="64" rx="14" fill="#12110F"/>
+  <path d="M18 45 L18 19 L32 35 L46 19 L46 45"
+        fill="none" stroke="#B8945E" stroke-width="5.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
