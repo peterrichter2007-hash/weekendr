@@ -509,6 +509,19 @@ don't surface.
 - `public/robots.txt` — allow all, disallow `/api/*`. Deliberately has
   **no `Sitemap:` line** and there is **no `sitemap.xml`** — see the
   domain note under "Pending placeholders" below.
+- `vercel.json` — **every static file needs its own route ahead of the
+  catch-all.** Routes are matched in order and the last rule sends
+  everything to `public/index.html`, so without an explicit entry a
+  file is never delivered: `/robots.txt` returned the 875 KB homepage
+  in production for months. Add a route here whenever you add a file
+  to `public/`.
+
+  **Do not put comments in this file.** JSON has none, and Vercel
+  rejects unknown top-level keys outright — a `"comment"` array added
+  on 2026-07-29 made the deployment fail schema validation, so Vercel
+  silently kept serving the previous build and two commits never went
+  live. Symptom to watch for: pushes succeed, the live site does not
+  change. Document routing decisions here in HANDOVER instead.
 - `server.js` — tiny static Express server (serves `public/` + `/api/health`)
 - `.claude/launch.json` — preview tool config (`node server.js` on :3000)
 

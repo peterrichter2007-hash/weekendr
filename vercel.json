@@ -10,16 +10,6 @@
       "use": "@vercel/static"
     }
   ],
-  "comment": [
-    "Static files are routed EXPLICITLY, before the catch-all.",
-    "The catch-all used to be the only rule after /api, so every path",
-    "on the site returned the 875 KB homepage with 200 — including",
-    "/robots.txt, which meant crawlers were served HTML and the",
-    "robots file was never actually delivered in production.",
-    "Routes are matched in order, so each real file needs its own",
-    "entry ahead of the fallback. Add one here when adding a file to",
-    "public/ (sitemap.xml goes back here once the domain is decided)."
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
