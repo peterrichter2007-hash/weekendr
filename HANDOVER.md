@@ -504,6 +504,48 @@ don't surface.
 - **Single ESC keydown chain** — legal → compare → story → detail →
   results → key → stepWizard → consent → fullmenu
 
+### Generated city pages — `scripts/build-city-pages.js`
+
+64 real, indexable pages at `/city/{slug}`, one per destination.
+**They are generated, not hand-written — never edit `public/city/**`
+directly, it is overwritten.** Rebuild with:
+
+```bash
+node scripts/build-city-pages.js
+```
+
+Run it after any change to `smartDestinations`, `cityProfiles`,
+`cityEconomy` or `cityGallery`, and commit the result.
+
+`scripts/extract-data.js` reads those datasets straight out of
+`public/index.html` by bracket-matching the `const` declarations and
+evaluating them in a `vm` sandbox. **It never modifies index.html** —
+moving the data into a module is precisely the big-bang refactor that
+broke this site once.
+
+The build also rewrites the destination index in the homepage footer,
+between `<!-- CITY-INDEX:START -->` and `<!-- CITY-INDEX:END -->`.
+That block is not decoration: without real `<a href>`s pointing at
+them the 64 pages are orphans and no crawler can reach any of them.
+
+Things the generator handles that will bite again if removed:
+
+- **Wikipedia throttles bulk requests.** Failures are never cached —
+  caching one would permanently bake "this city has no photo" into the
+  build. Requests are spaced 250ms with retries. `scripts/.image-cache.json`
+  holds only successes; delete it to force a full refresh.
+- **Lead images are sometimes flags or maps.** Ibiza returned
+  `Ibiza_flag.svg`, Monaco `Flag_of_Monaco.svg`. `looksLikeEmblem()`
+  detects these by filename and falls through to the next gallery slug.
+- **`a_min` is 0 for all 70 cities** — free things to do exist
+  everywhere. Rounding must not floor that to €5; it renders "Free".
+- **Row totals are the sum of the DISPLAYED figures**, not of the raw
+  ones. Rounding both separately produced tables that did not add up.
+
+Cost on these pages excludes transport on purpose: a static page has
+no departure city, so any transport figure would be wrong for nearly
+every reader. The interactive planner adds it.
+
 ### Other files
 
 - `public/robots.txt` — allow all, disallow `/api/*`. Deliberately has
