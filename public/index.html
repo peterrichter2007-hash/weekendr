@@ -1818,6 +1818,46 @@
     }
     .foot-bottom .links { display: flex; gap: 2rem; flex-wrap: wrap; }
     .foot-bottom .links a:hover { color: var(--cream); }
+    /* Language switch — two small pills in the nav. Deliberately quiet:
+       it is a preference, not a call to action. */
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      border: 1px solid var(--hairline-strong);
+      border-radius: 100px;
+      background: rgba(255, 255, 254, 0.5);
+    }
+    .lang-switch button {
+      border: 0;
+      background: none;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+      color: var(--muted-2);
+      padding: 0.35rem 0.6rem;
+      border-radius: 100px;
+      line-height: 1;
+    }
+    .lang-switch button[aria-pressed="true"] {
+      background: var(--ink);
+      color: var(--cream);
+    }
+    .lang-switch button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .nav.scrolled .lang-switch { background: rgba(255, 255, 254, 0.7); }
+    @media (max-width: 900px) {
+      .lang-switch button { padding: 0.5rem 0.7rem; }
+    }
+    @media (max-width: 560px) {
+      /* The hamburger and the CTA win the space on a phone. */
+      .lang-switch { display: none; }
+    }
+
     /* Destination index — the crawlable link list to the city pages.
        Quiet by design: it is navigation and a discovery requirement,
        not a feature competing with the rails above it. */
@@ -7499,27 +7539,31 @@
        NAV
        ============================================================ -->
   <span id="top"></span>
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" data-i18n="common.skipToContent">Skip to content</a>
   <nav class="nav" id="nav">
     <!-- href="#" did nothing: the smooth-scroll handler skips a bare
          hash, so clicking the brand mark was a dead end. -->
-    <a href="#top" class="nav-logo" aria-label="Maison Voyage — back to top">
+    <a href="#top" class="nav-logo" aria-label="Maison Voyage — back to top" data-i18n-attr="aria-label:nav.toTop">
       <span class="dot"></span>
       Maison<em style="font-style: italic; color: var(--accent); margin-left: 2px;">Voyage</em>
     </a>
     <div class="nav-links">
-      <a href="#destinations">Destinations</a>
-      <a href="#weekends">Weekends</a>
-      <a href="#map">Map</a>
-      <a href="#concierge">Concierge</a>
-      <a href="#stories">Journal</a>
+      <a href="#destinations" data-i18n="nav.destinations">Destinations</a>
+      <a href="#weekends" data-i18n="nav.weekends">Weekends</a>
+      <a href="#map" data-i18n="nav.map">Map</a>
+      <a href="#concierge" data-i18n="nav.concierge">Concierge</a>
+      <a href="#stories" data-i18n="nav.journal">Journal</a>
     </div>
     <div class="nav-right">
+      <div class="lang-switch" role="group" aria-label="Language / Sprache">
+        <button type="button" data-lang-btn="en" aria-pressed="true" onclick="MV.i18n.setLang('en')">EN</button>
+        <button type="button" data-lang-btn="de" aria-pressed="false" onclick="MV.i18n.setLang('de')">DE</button>
+      </div>
       <button class="nav-cta" onclick="scrollToConcierge()">
         Plan a trip
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </button>
-      <button class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span></button>
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" data-i18n-attr="aria-label:nav.menu"><span></span></button>
     </div>
   </nav>
 
@@ -7674,16 +7718,16 @@
 
           <div class="cg-grid">
             <div class="cg-field">
-              <label class="cg-lbl" for="i-from">Departing from</label>
+              <label class="cg-lbl" for="i-from" data-i18n="cg.from">Departing from</label>
               <div class="cg-input-wrap cg-autocomplete-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h18M12 3l9 9-9 9"/></svg>
-                <input type="text" id="i-from" placeholder="Where do you fly from?" value="Berlin" autocomplete="off" spellcheck="false" />
+                <input type="text" id="i-from" placeholder="Where do you fly from?" data-i18n-attr="placeholder:cg.placeholder" value="Berlin" autocomplete="off" spellcheck="false" />
                 <div class="cg-autocomplete" id="fromAutocomplete" role="listbox"></div>
               </div>
             </div>
 
             <div class="cg-field">
-              <label class="cg-lbl" for="i-when">When</label>
+              <label class="cg-lbl" for="i-when" data-i18n="cg.when">When</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
                 <select id="i-when">
@@ -7696,7 +7740,7 @@
             </div>
 
             <div class="cg-field">
-              <label class="cg-lbl" for="i-group">Group</label>
+              <label class="cg-lbl" for="i-group" data-i18n="cg.group">Group</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M3 21c0-3 2.5-6 6-6s6 3 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 15c2 0 6 1 6 5"/></svg>
                 <select id="i-group">
@@ -7709,7 +7753,7 @@
             </div>
 
             <div class="cg-field">
-              <label class="cg-lbl" for="i-length">Length</label>
+              <label class="cg-lbl" for="i-length" data-i18n="cg.length">Length</label>
               <div class="cg-input-wrap">
                 <svg class="cg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                 <select id="i-length">
@@ -7722,7 +7766,7 @@
             </div>
 
             <div class="cg-field cg-field-wide bp-panel">
-              <label class="cg-lbl" for="budgetSlider">Your weekend budget · per person</label>
+              <label class="cg-lbl" for="budgetSlider" data-i18n="cg.budget">Your weekend budget · per person</label>
 
               <!-- Big amount + tier label — the value reads as a single
                    editorial unit at the top of the panel. -->
@@ -8226,7 +8270,7 @@
           <p style="font-size: 0.78rem; opacity: 0.5;">An independent weekend-curation project · Switzerland-operated.</p>
         </div>
         <div>
-          <h3>Discover</h3>
+          <h3 data-i18n="foot.discover">Discover</h3>
           <ul>
             <li><a href="#destinations">Destinations</a></li>
             <li><a href="#weekends">Weekend Trips</a></li>
@@ -8236,7 +8280,7 @@
           </ul>
         </div>
         <div>
-          <h3>Experience</h3>
+          <h3 data-i18n="foot.experience">Experience</h3>
           <ul>
             <li><a href="#concierge">Concierge</a></li>
             <li><a href="#map">The Atlas</a></li>
@@ -8247,7 +8291,7 @@
           </ul>
         </div>
         <div>
-          <h3>Legal &amp; Trust</h3>
+          <h3 data-i18n="foot.legal">Legal &amp; Trust</h3>
           <ul>
             <li><a href="#" data-legal="impressum">Impressum</a></li>
             <li><a href="#" data-legal="privacy">Privacy Policy</a></li>
@@ -8256,7 +8300,7 @@
           </ul>
         </div>
         <div>
-          <h3>Newsletter</h3>
+          <h3 data-i18n="foot.newsletter">Newsletter</h3>
           <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.7rem;">A short letter, once a month. New places, quietly.</p>
           <input type="email" placeholder="Sign-up coming soon" disabled aria-label="Newsletter email — currently disabled" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.04); border: 1px solid rgba(251,247,239,0.10); border-radius: 100px; color: rgba(255,255,253,0.45); font-size: 0.88rem; cursor: not-allowed;" />
           <!-- 0.66rem/0.55 opacity measured 10.6px at 2.6:1 — below both
@@ -8274,7 +8318,7 @@
            them, the 64 city pages are orphans and a crawler has no way
            to reach any of them. -->
       <nav class="city-index" aria-label="All destinations">
-        <div class="city-index-title">All destinations</div>
+        <div class="city-index-title" data-i18n="foot.allDestinations">All destinations</div>
         <div class="city-index-links">
           <!-- CITY-INDEX:START -->
           <a href="/city/albufeira">Albufeira</a>
@@ -8348,7 +8392,7 @@
       <!-- Trust Strip — honest "Data & Sources" line above the copyright.
            Lists only sources the site actually uses. -->
       <div class="trust-strip" aria-label="Data sources">
-        <div class="trust-eyebrow">Data &amp; Sources</div>
+        <div class="trust-eyebrow" data-i18n="foot.sources">Data &amp; Sources</div>
         <div class="trust-list">
           <span class="trust-item"><span class="trust-cat">Imagery</span><strong>Wikipedia</strong></span>
           <span class="trust-item"><span class="trust-cat">Weather</span><strong>Open-Meteo</strong></span>
@@ -14771,12 +14815,123 @@
       return read() || FALLBACK;
     }
 
+    // ---- string table ------------------------------------------
+    //
+    // Only the frame is in here: navigation, the concierge form, the
+    // section headings, the footer, buttons. The curated content —
+    // 1,261 pieces of editorial prose describing activities,
+    // restaurants and guides — is deliberately NOT machine-translated.
+    // That writing is the one thing this site has that its competitors
+    // do not, and running it through a translator would quietly wreck
+    // it. Those strings stay English until a human writes the German.
+    //
+    // English is the source language, so there is no `en` table: a
+    // missing key falls through to whatever the markup already says.
+    const STRINGS = {
+      de: {
+        'nav.destinations': 'Reiseziele',
+        'nav.weekends': 'Wochenenden',
+        'nav.map': 'Karte',
+        'nav.concierge': 'Concierge',
+        'nav.journal': 'Journal',
+        'nav.plan': 'Trip planen',
+        'nav.menu': 'Menü öffnen',
+        'nav.toTop': 'Maison Voyage — nach oben',
+
+        'hero.tagline': 'Günstige, schöne Wochenenden · Europa',
+        'hero.cta': 'Finde dein günstigstes Wochenende',
+        'hero.scroll': 'Scrollen zum Entdecken',
+
+        'cg.eyebrow': 'Der Concierge · sofort',
+        'cg.from': 'Abflug ab',
+        'cg.when': 'Wann',
+        'cg.group': 'Gruppe',
+        'cg.length': 'Dauer',
+        'cg.budget': 'Dein Wochenendbudget · pro Person',
+        'cg.mood': 'Die Stimmung',
+        'cg.submit': 'Mein günstigstes Wochenende finden',
+        'cg.placeholder': 'Von wo fliegst du?',
+
+        'deals.eyebrow': 'Preis-Tipps von heute',
+        'sec.editorial': 'Die aktuelle Auswahl',
+        'sec.viewAll': 'Alle Reiseziele ansehen',
+        'sec.journal': 'Das Journal',
+        'sec.stories': 'Geschichten von unterwegs.',
+
+        'foot.discover': 'Entdecken',
+        'foot.experience': 'Erlebnis',
+        'foot.legal': 'Rechtliches & Vertrauen',
+        'foot.newsletter': 'Newsletter',
+        'foot.allDestinations': 'Alle Reiseziele',
+        'foot.contact': 'Kontakt',
+        'foot.impressum': 'Impressum',
+        'foot.privacy': 'Datenschutz',
+        'foot.cookies': 'Cookie-Einstellungen',
+        'foot.sources': 'Daten & Quellen',
+        'foot.priceNote': 'Preise sind Schätzungen auf Basis von Transport- und Übernachtungsspannen. Endpreise können auf den Partnerseiten abweichen.',
+
+        'common.close': 'Schliessen',
+        'common.back': 'Zurück',
+        'common.estimate': 'Schätzung',
+        'common.perPerson': 'pro Person',
+        'common.skipToContent': 'Zum Inhalt springen'
+      }
+    };
+
+    function t(key, fallback) {
+      const table = STRINGS[lang()];
+      if (table && Object.prototype.hasOwnProperty.call(table, key)) return table[key];
+      return fallback != null ? fallback : key;
+    }
+
+    // Elements carry data-i18n="key" (text) or data-i18n-attr="attr:key"
+    // (attributes such as aria-label or placeholder). The original
+    // English is captured on first run, so switching back to English
+    // restores exactly what the author wrote rather than a key.
+    function translateDom(root) {
+      (root || document).querySelectorAll('[data-i18n]').forEach(el => {
+        if (el.dataset.i18nSource == null) el.dataset.i18nSource = el.textContent;
+        el.textContent = t(el.dataset.i18n, el.dataset.i18nSource);
+      });
+      (root || document).querySelectorAll('[data-i18n-attr]').forEach(el => {
+        el.dataset.i18nAttr.split(',').forEach(pair => {
+          const [attr, key] = pair.split(':').map(s => s.trim());
+          if (!attr || !key) return;
+          const store = 'i18nSrc' + attr.replace(/[^a-z]/gi, '');
+          if (el.dataset[store] == null) el.dataset[store] = el.getAttribute(attr) || '';
+          el.setAttribute(attr, t(key, el.dataset[store]));
+        });
+      });
+    }
+
     // Init: respect a previously saved choice; otherwise leave the
     // <html lang="en"> attribute as the HTML author wrote it.
     const saved = read();
     if (saved) apply(saved);
 
-    return { lang, setLang, supported: () => SUPPORTED.slice() };
+    function setLangAndRender(code) {
+      setLang(code);
+      translateDom(document);
+      document.querySelectorAll('[data-lang-btn]').forEach(b => {
+        b.setAttribute('aria-pressed', b.dataset.langBtn === lang() ? 'true' : 'false');
+      });
+      // Re-render the surfaces that build their markup in JS, so a
+      // language switch does not leave half the page in the old one.
+      try { if (typeof renderAllRails === 'function') renderAllRails(); } catch (e) {}
+      try { if (typeof renderBestDeals === 'function') renderBestDeals(); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('mv:langchange', { detail: { lang: code } }));
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => translateDom(document), { once: true });
+    } else {
+      translateDom(document);
+    }
+
+    return {
+      lang, setLang: setLangAndRender, t, translateDom,
+      supported: () => SUPPORTED.slice()
+    };
   })();
 
   // ============================================================
