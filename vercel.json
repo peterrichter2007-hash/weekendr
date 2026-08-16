@@ -24,6 +24,10 @@
       "dest": "/public/favicon.svg"
     },
     {
+      "src": "/city/([^/]+)/?",
+      "dest": "/public/city/$1/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
