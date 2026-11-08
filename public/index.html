@@ -54,7 +54,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://en.wikipedia.org">
   <link rel="preconnect" href="https://upload.wikimedia.org">
-  <link rel="preconnect" href="https://basemaps.cartocdn.com">
   <link rel="preconnect" href="https://server.arcgisonline.com">
 
   <!-- display=swap: text shows immediately in system fallback while Fraunces+Inter download.
@@ -639,7 +638,7 @@
     
     .manifesto {
       background: var(--bg);
-      padding: clamp(7rem, 13vw, 11rem) 0;
+      padding: clamp(5rem, 9vw, 8rem) 0;
     }
     .manifesto-text {
       font-family: var(--serif);
@@ -655,11 +654,17 @@
     .manifesto-meta {
       margin-top: 4rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5rem;
-      max-width: 900px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.5rem 2rem;
+      /* Was 900px: four 1.5rem serif values in 225px columns broke
+         mid-phrase ("€60 – €110 all-in · / Prague"). */
+      max-width: 1200px;
     }
-    .manifesto-meta div { display: flex; flex-direction: column; gap: 0.4rem; }
+    .manifesto-meta div {
+      display: flex; flex-direction: column; gap: 0.4rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--hairline);
+    }
     .manifesto-meta .label {
       font-size: 0.7rem; letter-spacing: 0.22em;
       text-transform: uppercase;
@@ -668,9 +673,11 @@
     }
     .manifesto-meta .value {
       font-family: var(--serif);
-      font-size: 1.5rem;
+      font-size: clamp(1.15rem, 1.5vw, 1.4rem);
       font-weight: 400;
       letter-spacing: -0.015em;
+      line-height: 1.3;
+      text-wrap: balance;
     }
     
     /* ============================================================
@@ -903,7 +910,7 @@
       from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @media (max-width: 960px) {
+    @media (max-width: 1100px) {
       .deals-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 520px) {
@@ -1074,6 +1081,9 @@
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       padding: 0 clamp(1.25rem, 4vw, 3rem) 1rem;
+      /* Snap against the gutter, not the viewport edge — without this
+         the first scroll step parked every card flush at x=0. */
+      scroll-padding-inline: clamp(1.25rem, 4vw, 3rem);
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -2157,7 +2167,9 @@
     }
     .res-card:hover { transform: translateY(-3px); box-shadow: 0 24px 60px -10px rgba(26, 22, 18, 0.15); }
     .res-card .ri {
-      aspect-ratio: 4 / 4.3;
+      /* 4/4.3 made the photo column far taller than the text column,
+         leaving a large empty band between description and tags. */
+      aspect-ratio: 5 / 4;
       position: relative;
       overflow: hidden;
       background: var(--bg-3);
@@ -2166,6 +2178,7 @@
     .res-card:hover .ri img { transform: scale(1.05); }
     .res-card .ri .num {
       position: absolute; top: 1rem; left: 1rem;
+      z-index: 3; /* stays above the placeholder layer ("No. 01" vanished under it) */
       padding: 0.4rem 0.7rem;
       background: var(--cream);
       border-radius: 100px;
@@ -2675,7 +2688,11 @@
     
     /* Body uses the consolidated tokens above */
     html { scroll-behavior: smooth; }
-    body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%); background-attachment: fixed; }
+    /* No background-attachment: fixed — Chrome cannot composite a fixed
+       body background, so it repainted the whole viewport on every
+       scroll frame. Over a 15,000px page the two-stop gradient is
+       visually identical without it. */
+    body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%); }
     
     /* ============= NAV — Vision-Pro always-on glass ============= */
     .nav {
@@ -3172,31 +3189,6 @@
     }
     .cg-pg-dot.on { background: var(--ink); width: 22px; border-radius: 4px; }
     
-    .cg-quote {
-      padding: 1rem 1.3rem;
-      background: var(--g-bg-1);
-      border: 1px solid var(--g-border);
-      backdrop-filter: saturate(1.8) blur(40px);
-      -webkit-backdrop-filter: saturate(1.8) blur(40px);
-      border-radius: 18px;
-      box-shadow: var(--g-inner-glow), var(--g-shadow-sm);
-    }
-    .cg-quote p {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 1.05rem;
-      font-weight: 400;
-      letter-spacing: -0.01em;
-      line-height: 1.3;
-      margin-bottom: 0.35rem;
-    }
-    .cg-quote span {
-      font-size: 0.74rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    
     /* ============= SMART MAP UPGRADE ============= */
     .map-section {
       padding: clamp(5rem, 10vw, 9rem) 0;
@@ -3270,9 +3262,20 @@
     }
     .map-shell {
       display: grid;
-      grid-template-columns: 1fr 360px;
+      grid-template-columns: minmax(0, 1fr) 360px;
       gap: 1.2rem;
-      align-items: stretch;
+      align-items: start;
+    }
+    /* The map frame (16:11) decides the row height; the sidebar fills
+       it and scrolls inside. Before, the sidebar's full list set the
+       row height (~1100px), the stretched frame then grew to 1596px
+       wide through its aspect ratio — wider than its column — and ran
+       under the sidebar, framing Greenland instead of Europe. */
+    @media (min-width: 1025px) {
+      .map-shell > .map-list {
+        align-self: stretch;
+        contain: size;
+      }
     }
     
     .map-frame {
@@ -3809,18 +3812,19 @@
       border-radius: 32px;
       overflow: hidden;
       z-index: 1;
-      background: #0c1a24; /* deep ocean fallback before tiles load */
+      background: #EDEAE4; /* street-map land tone — no dark flash before tiles load */
     }
     .leaflet-container {
       font-family: var(--sans);
-      background: #0c1a24;
+      background: #EDEAE4;
     }
-    /* Satellite-only: slight cinematic colour grade + crispness */
+    .leaflet-container.satellite-view { background: #0c1a24; }
+    /* Satellite: slight colour grade + crispness */
     .leaflet-container.satellite-view .leaflet-tile-pane {
       filter: saturate(1.12) brightness(0.94) contrast(1.05);
     }
-    /* Soft vignette over the map for cinematic framing */
-    .leaflet-host::after {
+    /* Soft vignette — satellite only; a street map should read edge to edge */
+    .leaflet-host.satellite-view::after {
       content: '';
       position: absolute;
       inset: 0;
@@ -3843,28 +3847,29 @@
       border: 1px solid var(--g-border);
     }
     .leaflet-control-attribution a { color: var(--accent) !important; }
+    /* Zoom buttons — solid white, bottom-right, like Google Maps.
+       Solid instead of backdrop-blurred glass: crisper on the light
+       street map and no blur repaint while the tiles move under it. */
     .leaflet-control-zoom {
       border: 0 !important;
-      box-shadow: var(--g-inner-glow), var(--g-shadow-sm) !important;
-      border-radius: 100px !important;
-      margin: 1rem !important;
+      box-shadow: 0 1px 4px rgba(18, 17, 15, 0.28) !important;
+      border-radius: 10px !important;
+      margin: 0 0.9rem 0.6rem 0 !important;
       overflow: hidden;
     }
     .leaflet-control-zoom a {
-      background: var(--g-bg-1) !important;
-      backdrop-filter: saturate(1.6) blur(20px) !important;
-      -webkit-backdrop-filter: saturate(1.6) blur(20px) !important;
-      color: var(--ink) !important;
+      background: #FFFFFF !important;
+      color: #3C3A36 !important;
       border: 0 !important;
-      width: 36px !important;
-      height: 36px !important;
-      line-height: 36px !important;
-      font-size: 18px !important;
-      font-weight: 300 !important;
+      width: 40px !important;
+      height: 40px !important;
+      line-height: 40px !important;
+      font-size: 20px !important;
+      font-weight: 400 !important;
       transition: background var(--fast) !important;
     }
-    .leaflet-control-zoom a:hover { background: var(--cream) !important; color: var(--accent) !important; }
-    .leaflet-control-zoom-in { border-bottom: 1px solid var(--hairline) !important; }
+    .leaflet-control-zoom a:hover { background: #F2F1EE !important; color: var(--ink) !important; }
+    .leaflet-control-zoom-in { border-bottom: 1px solid rgba(18, 17, 15, 0.1) !important; }
     .leaflet-popup-content-wrapper {
       background: transparent !important;
       box-shadow: none !important;
@@ -4166,15 +4171,76 @@
     }
     .map-hint { animation: mapHintIn 0.7s var(--ease-out) 0.6s both; }
 
-    /* Cinematic transition: blur the satellite tiles briefly while
-       the camera is mid-flight. Restored at zoomend/moveend. */
-    .leaflet-host.map-blurring .leaflet-tile-pane,
-    .leaflet-host.map-moving   .leaflet-tile-pane {
-      filter: blur(2.5px) saturate(1.15);
-      transition: filter 0.5s var(--ease-out);
+    /* (The tile pane used to be blurred 2.5px on every pan and zoom
+       — a full-map filter repaint each frame that made dragging
+       stutter and the map look out of focus whenever it moved.) */
+
+    /* Map / Satellite switch — bottom-left thumbnail, like Google's */
+    .map-layer-btn {
+      position: absolute;
+      left: 0.9rem;
+      bottom: 0.9rem;
+      z-index: 8;
+      width: 72px; height: 72px;
+      padding: 0;
+      border: 2px solid #FFFFFF;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #DDD;
+      box-shadow: 0 1px 4px rgba(18, 17, 15, 0.3);
+      transition: transform var(--fast), box-shadow var(--fast);
     }
-    .leaflet-host .leaflet-tile-pane {
-      transition: filter 0.55s var(--ease-out);
+    .map-layer-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(18, 17, 15, 0.3); }
+    .map-layer-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .map-layer-btn .mlb-thumb {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    .map-layer-btn[data-target="satellite"] .mlb-thumb {
+      background-image: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/10/17');
+    }
+    .map-layer-btn[data-target="map"] .mlb-thumb {
+      background-image: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/5/10/17');
+    }
+    .map-layer-btn .mlb-label {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: 0.3rem 0.2rem 0.28rem;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.62) 100%);
+      color: #FFFFFF;
+      font-family: var(--sans);
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    /* Cooperative-gesture hint: dims the map with one short line */
+    .map-coop-hint {
+      position: absolute; inset: 0;
+      z-index: 9;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(18, 17, 15, 0.42);
+      color: #FFFFFF;
+      font-family: var(--sans);
+      font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+      font-weight: 500;
+      border-radius: inherit;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease);
+    }
+    .map-coop-hint.show { opacity: 1; transition-duration: 0.15s; }
+
+    /* Destination pins */
+    .lf-dest-dot { cursor: pointer; transition: fill-opacity var(--fast); }
+    .lf-dest-dot:hover { fill-opacity: 0.75; }
+    @media (max-width: 640px) {
+      .map-layer-btn { width: 56px; height: 56px; bottom: 4.2rem; left: 0.75rem; }
+      .map-layer-btn .mlb-label { font-size: 0.6rem; }
     }
 
     /* ============================================================
@@ -4719,85 +4785,12 @@
       .cb-total-cta { width: 100%; justify-content: center; }
     }
 
-    /* Legacy: leave the old grid in case anything still uses it */
-    .deals-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.2rem;
-    }
-    .deal-card {
-      position: relative;
-      padding: 1.4rem 1.4rem 1.5rem;
-      background: var(--g-bg-1);
-      backdrop-filter: saturate(1.8) blur(40px);
-      -webkit-backdrop-filter: saturate(1.8) blur(40px);
-      border: 1px solid var(--g-border);
-      border-radius: 22px;
-      box-shadow: var(--g-inner-glow), var(--g-shadow-md);
-      display: flex; flex-direction: column;
-      transition: transform var(--med), box-shadow var(--med);
-    }
-    .deal-card:hover { transform: translateY(-3px); box-shadow: var(--g-inner-glow), var(--g-shadow-lg); }
-    .deal-card .deal-source {
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.6rem;
-      font-weight: 600;
-      display: inline-flex; align-items: center; gap: 0.4rem;
-    }
-    .deal-card .deal-source .sdot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
-    .deal-card .deal-title {
-      font-family: var(--serif);
-      font-size: 1.5rem;
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1.05;
-      margin-bottom: 0.4rem;
-    }
-    .deal-card .deal-meta {
-      font-size: 0.84rem;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-    .deal-card .deal-price {
-      font-family: var(--serif);
-      font-size: 2rem;
-      font-weight: 500;
-      letter-spacing: -0.022em;
-      line-height: 1;
-      margin-bottom: 0.8rem;
-    }
-    .deal-card .deal-price .small {
-      font-family: var(--sans);
-      font-size: 0.7rem;
-      color: var(--muted);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 500;
-      display: block;
-      margin-top: 0.3rem;
-    }
-    .deal-card .deal-cta {
-      margin-top: auto;
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-      padding: 0.85rem 1rem;
-      background: var(--ink);
-      background-image: linear-gradient(180deg, #2a241d 0%, #161210 100%);
-      color: var(--cream);
-      border-radius: 100px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: transform var(--fast), box-shadow var(--fast);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 8px 18px -6px rgba(26, 22, 18, 0.45);
-    }
-    .deal-card .deal-cta:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 14px 28px -6px rgba(26, 22, 18, 0.6); }
+    /* The pre-redesign glass deal card (3-column grid, padded body,
+       dark pill CTA) used to be kept here "in case anything still uses
+       it". The photo card above is the only deal card left, and these
+       later rules were overriding it: the grid fell to 3 columns, so
+       the 4 deals rendered as 3 + 1 orphan, and the round arrow button
+       turned into a squashed dark pill showing only a dot. */
     
     /* Availability chip used across listings */
     .avail-chip {
@@ -5025,7 +5018,6 @@
     }
     
     @media (max-width: 1024px) {
-      .deals-grid { grid-template-columns: 1fr; }
       .listing-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
@@ -5089,7 +5081,11 @@
       color: var(--muted);
     }
     .bp-tier-tag {
-      padding-left: 4px;
+      /* Centred inside its own segment of the track: left-aligned at
+         the tier marks, the four labels sat at visibly uneven gaps
+         because the segments are proportional (€100–550 scale). */
+      text-align: center;
+      padding: 0 2px;
       transition: color 0.3s var(--ease-out);
       white-space: nowrap;
       overflow: hidden;
@@ -7531,6 +7527,114 @@
       .map-hint-action { padding: 0.5rem 0.9rem; }
       .cb-btn { padding: 0.7rem 0.9rem; }
     }
+
+    /* ============================================================
+       NAV OVER THE HERO
+       At rest (scrollY ≤ 30) the nav floats over a dark photo, but it
+       kept its scrolled-state look: ink type on a pale gradient. Logo,
+       links and the language switch measured ~1.5:1 there. At rest it
+       now reads light-on-dark over a soft top scrim; once .scrolled
+       is set the glass bar takes over exactly as before. .menu-open
+       (set by the mobile menu button) hands the bar back to the dark
+       ink style, because the full-screen menu behind it is light.
+       ============================================================ */
+    .nav:not(.scrolled):not(.menu-open) {
+      background: linear-gradient(180deg, rgba(12, 10, 8, 0.55) 0%, rgba(12, 10, 8, 0.2) 60%, rgba(12, 10, 8, 0) 100%);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .nav:not(.scrolled):not(.menu-open) .nav-logo { color: var(--cream); }
+    .nav:not(.scrolled):not(.menu-open) .nav-logo em { color: #E2C38C !important; }
+    .nav:not(.scrolled):not(.menu-open) .nav-logo .dot {
+      background: #E2C38C;
+      box-shadow: 0 0 0 4px rgba(226, 195, 140, 0.18);
+    }
+    .nav:not(.scrolled):not(.menu-open) .nav-links a { color: rgba(255, 255, 253, 0.92); }
+    .nav:not(.scrolled):not(.menu-open) .nav-links a::after { background: var(--cream); }
+    .nav:not(.scrolled):not(.menu-open) .lang-switch {
+      background: rgba(255, 255, 253, 0.12);
+      border-color: rgba(255, 255, 253, 0.26);
+    }
+    .nav:not(.scrolled):not(.menu-open) .lang-switch button { color: rgba(255, 255, 253, 0.82); }
+    .nav:not(.scrolled):not(.menu-open) .lang-switch button[aria-pressed="true"] {
+      background: var(--cream);
+      color: var(--ink);
+    }
+    .nav:not(.scrolled):not(.menu-open) .nav-cta {
+      background: var(--cream);
+      background-image: none;
+      color: var(--ink);
+      box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
+    }
+    .nav:not(.scrolled):not(.menu-open) .nav-cta:hover { background: #E2C38C; }
+    .nav:not(.scrolled):not(.menu-open) .menu-btn {
+      background: rgba(255, 255, 253, 0.14);
+      border-color: rgba(255, 255, 253, 0.3);
+    }
+    .nav:not(.scrolled):not(.menu-open) .menu-btn span,
+    .nav:not(.scrolled):not(.menu-open) .menu-btn span::before,
+    .nav:not(.scrolled):not(.menu-open) .menu-btn span::after { background: var(--cream); }
+
+    /* ============================================================
+       DARK PLACEHOLDERS WHERE TEXT SITS ON THE IMAGE
+       Hero slides, editorial cards, deal cards, the concierge preview
+       and the detail heroes all print cream type directly on their
+       photo. Their placeholder (loading, or no verified image) was a
+       pale beige wash, so "Lisbon by candlelight" and the "City ·
+       Portugal" tag rendered white-on-cream at ~1.2:1. These hosts now
+       fall back to the same warm dark the deal cards already used, with
+       the initial in the brand gold — legible and still clearly a
+       placeholder rather than a fake photo.
+       ============================================================ */
+    .hero-slide .img-placeholder,
+    .ed-card .img .img-placeholder,
+    .deal-img .img-placeholder,
+    .cg-preview-img .img-placeholder,
+    .sr-hero .img-placeholder,
+    .detail-hero .img-placeholder,
+    .dh-slide .img-placeholder,
+    .hero-slide.has-placeholder:not(:has(.img-placeholder)),
+    .ed-card .img.has-placeholder:not(:has(.img-placeholder)),
+    .deal-img.has-placeholder:not(:has(.img-placeholder)),
+    .cg-preview-img.has-placeholder:not(:has(.img-placeholder)),
+    .sr-hero.has-placeholder:not(:has(.img-placeholder)),
+    .detail-hero.has-placeholder:not(:has(.img-placeholder)),
+    .dh-slide.has-placeholder:not(:has(.img-placeholder)) {
+      background:
+        radial-gradient(ellipse at 28% 22%, rgba(226, 195, 140, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 85%, rgba(120, 140, 160, 0.14) 0%, transparent 55%),
+        linear-gradient(160deg, #2E2720 0%, #1A1612 55%, #110F0C 100%);
+    }
+    .hero-slide .img-placeholder .ip-init,
+    .ed-card .img .img-placeholder .ip-init,
+    .deal-img .img-placeholder .ip-init,
+    .cg-preview-img .img-placeholder .ip-init,
+    .sr-hero .img-placeholder .ip-init,
+    .detail-hero .img-placeholder .ip-init,
+    .dh-slide .img-placeholder .ip-init { color: #E2C38C; opacity: 0.85; }
+    .hero-slide .img-placeholder .ip-name,
+    .ed-card .img .img-placeholder .ip-name,
+    .deal-img .img-placeholder .ip-name,
+    .cg-preview-img .img-placeholder .ip-name,
+    .sr-hero .img-placeholder .ip-name,
+    .detail-hero .img-placeholder .ip-name,
+    .dh-slide .img-placeholder .ip-name { color: rgba(255, 255, 253, 0.7); }
+    .hero-slide.has-placeholder:not(:has(.img-placeholder))::after,
+    .ed-card .img.has-placeholder:not(:has(.img-placeholder))::after,
+    .deal-img.has-placeholder:not(:has(.img-placeholder))::after,
+    .cg-preview-img.has-placeholder:not(:has(.img-placeholder))::after,
+    .sr-hero.has-placeholder:not(:has(.img-placeholder))::after,
+    .detail-hero.has-placeholder:not(:has(.img-placeholder))::after,
+    .dh-slide.has-placeholder:not(:has(.img-placeholder))::after {
+      color: #E2C38C;
+      opacity: 0.55;
+    }
+    /* The placeholder's light top sheen made sense on beige; on the dark
+       surface it reads as a grey smear. */
+    .hero-slide .img-placeholder::before,
+    .ed-card .img .img-placeholder::before,
+    .deal-img .img-placeholder::before,
+    .cg-preview-img .img-placeholder::before { opacity: 0.25; }
   </style>
 </head>
 <body>
@@ -7596,16 +7700,16 @@
       <div class="hero-slide active img-host has-placeholder" data-label="Lisbon" data-wiki="Lisbon">
         <img alt="Lisbon" loading="eager" fetchpriority="high" decoding="async" />
       </div>
-      <div class="hero-slide img-host has-placeholder" data-label="Barcelona" data-wiki="Barcelona">
+      <div class="hero-slide img-host has-placeholder" data-label="Barcelona" data-wiki="Barcelona" data-wiki-defer="1">
         <img alt="Barcelona" loading="lazy" decoding="async" />
       </div>
-      <div class="hero-slide img-host has-placeholder" data-label="Budapest" data-wiki="Budapest">
+      <div class="hero-slide img-host has-placeholder" data-label="Budapest" data-wiki="Budapest" data-wiki-defer="1">
         <img alt="Budapest" loading="lazy" decoding="async" />
       </div>
-      <div class="hero-slide img-host has-placeholder" data-label="Naples" data-wiki="Naples">
+      <div class="hero-slide img-host has-placeholder" data-label="Naples" data-wiki="Naples" data-wiki-defer="1">
         <img alt="Naples" loading="lazy" decoding="async" />
       </div>
-      <div class="hero-slide img-host has-placeholder" data-label="Prague" data-wiki="Prague">
+      <div class="hero-slide img-host has-placeholder" data-label="Prague" data-wiki="Prague" data-wiki-defer="1">
         <img alt="Prague" loading="lazy" decoding="async" />
       </div>
     </div>
@@ -7877,10 +7981,9 @@
               </div>
             </div>
           </div>
-          <div class="cg-quote">
-            <p>"It felt like the trip was waiting for us."</p>
-            <span>Sofia &amp; Mateo · Berlin → Amalfi</span>
-          </div>
+          <!-- A "Sofia & Mateo · Berlin → Amalfi" testimonial sat here.
+               Nobody by that name ever reviewed the site — invented
+               social proof, removed like the fake ratings before it. -->
         </div>
       </div>
     </div>
@@ -7993,6 +8096,16 @@
         <div class="map-frame" id="mapFrame">
           <!-- Real interactive Leaflet map -->
           <div id="leafletMap" class="leaflet-host" aria-label="Interactive map of Europe"></div>
+
+          <!-- Map / Satellite switch (bottom-left, as on Google Maps).
+               Hidden until Leaflet has booted. -->
+          <button type="button" class="map-layer-btn" id="mapLayerBtn" data-target="satellite" aria-pressed="false" aria-label="Satellite" hidden>
+            <span class="mlb-thumb" aria-hidden="true"></span>
+            <span class="mlb-label">Satellite</span>
+          </button>
+
+          <!-- "Use Ctrl + scroll to zoom" overlay for cooperative gestures -->
+          <div class="map-coop-hint" id="mapCoopHint" aria-hidden="true"></div>
 
           <!-- Source note — indicative prices, not live -->
           <div class="map-live glass-pill">
@@ -8396,7 +8509,7 @@
         <div class="trust-list">
           <span class="trust-item"><span class="trust-cat">Imagery</span><strong>Wikipedia</strong></span>
           <span class="trust-item"><span class="trust-cat">Weather</span><strong>Open-Meteo</strong></span>
-          <span class="trust-item"><span class="trust-cat">Map</span><strong>Esri · Carto</strong></span>
+          <span class="trust-item"><span class="trust-cat">Map</span><strong>Esri</strong></span>
           <span class="trust-item"><span class="trust-cat">Deep links</span><strong>Skyscanner · Booking.com · FlixBus · GetYourGuide</strong></span>
         </div>
         <div class="trust-note">Prices are estimates based on transport and accommodation ranges. Final prices may vary on partner websites.</div>
@@ -8812,12 +8925,16 @@
   menuBtn.addEventListener('click', () => {
     menuBtn.classList.toggle('open');
     fullmenu.classList.toggle('open');
+    // The menu sheet is light, so the bar drops its over-the-hero
+    // light-on-dark styling while it is open.
+    nav.classList.toggle('menu-open', fullmenu.classList.contains('open'));
     document.body.style.overflow = fullmenu.classList.contains('open') ? 'hidden' : '';
   });
   fullmenu.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', () => {
       menuBtn.classList.remove('open');
       fullmenu.classList.remove('open');
+      nav.classList.remove('menu-open');
       document.body.style.overflow = '';
     });
   });
@@ -8835,7 +8952,28 @@
     { name: 'Prague, Czechia',   coord: '50°05′N 14°25′E' }
   ];
   let heroIdx = 0;
+  // Hidden slides carry data-wiki-defer and only fetch their photo
+  // when they are about to be shown. The active slide is the LCP
+  // image; on a retina screen each slide is a 3840px photo, and
+  // loading all five up front put ~10 MB in front of first paint for
+  // pictures nobody sees for another 13 seconds.
+  function wakeHeroSlide(slide) {
+    if (!slide || !slide.dataset.wikiDefer) return;
+    delete slide.dataset.wikiDefer;
+    hydrateWikiImages(slide.parentNode);
+  }
+  (function warmSecondHeroSlide() {
+    const go = () => {
+      const wake = () => wakeHeroSlide(slides[1]);
+      if ('requestIdleCallback' in window) requestIdleCallback(wake, { timeout: 3000 });
+      else setTimeout(wake, 1500);
+    };
+    if (document.readyState === 'complete') go();
+    else window.addEventListener('load', go, { once: true });
+  })();
   function setHero(i) {
+    wakeHeroSlide(slides[i]);
+    wakeHeroSlide(slides[(i + 1) % slides.length]); // warm the next one
     slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
     dots.forEach((d, idx) => {
       d.classList.toggle('active', idx === i);
@@ -9037,11 +9175,13 @@
   // - Hotels / activities / restaurants → typographic placeholder
   //   (we have no partner API to verify these)
   //
-  // Cache version in localStorage = mv_wiki_v5_{slug} — bumping this
+  // Cache version in localStorage = mv_wiki_v6_{slug} — bumping this
   // version automatically invalidates the prior image cache so users
   // get the clean system on next load. v5 dropped the "upscale to
   // 1600px" rewrite, which produced a width outside Wikimedia's
-  // allowed thumbnail ladder and therefore cached broken URLs.
+  // allowed thumbnail ladder and therefore cached broken URLs. v6
+  // flushes "__NONE__" entries that v5 wrote for transient 429/5xx
+  // responses, and stores URLs without the ?utm_… suffix.
   // ============================================================
 
   // One-time cache wipe of older Unsplash-based assignments
@@ -9051,7 +9191,7 @@
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (!k) continue;
-        if (/^mv_wiki_v[1-4]_/.test(k) || k.startsWith('mv_img_')) drop.push(k);
+        if (/^mv_wiki_(hero_)?v[1-5]_/.test(k) || k.startsWith('mv_img_')) drop.push(k);
       }
       drop.forEach(k => localStorage.removeItem(k));
     } catch (e) {}
@@ -10159,45 +10299,46 @@
   // add speculative widths here, they will 400.
   const WIKI_WIDTHS = [120, 250, 330, 500, 960, 1280, 1920, 3840];
 
-  // Pick the ladder width closest to what we actually render at.
-  // Nearest-on-a-log-scale rather than always-round-up: the ladder
-  // jumps 500 → 960, and rounding a 680px need up to 960 doubles
-  // the bytes for a card that is cropped with object-fit anyway.
-  // The 0.7 floor stops us serving a visibly soft image.
+  // Pick the smallest ladder width that covers what we render at.
+  // Rounding up (with a 10% tolerance) rather than to the nearest
+  // rung: the old nearest-on-a-log-scale pick served a 1920px source
+  // into a 2600px retina hero and a 500px one into a 680px card, both
+  // visibly soft. On a 4K / retina screen the hero now gets the
+  // 3840px rung; on a 1x laptop it still gets 1920.
   function wikiWidthFor(want) {
-    const floor = want * 0.7;
-    let best = null, bestD = Infinity;
-    for (const w of WIKI_WIDTHS) {
-      if (w < floor) continue;
-      const d = Math.abs(Math.log(w / want));
-      if (d < bestD) { bestD = d; best = w; }
-    }
-    return best || WIKI_WIDTHS[WIKI_WIDTHS.length - 1];
+    const need = want * 0.9;
+    for (const w of WIKI_WIDTHS) if (w >= need) return w;
+    return WIKI_WIDTHS[WIKI_WIDTHS.length - 1];
   }
 
   // Rewrite any Wikimedia URL to the given render width.
   //
-  //   original : /commons/f/f2/Name.jpg
-  //   thumb    : /commons/thumb/f/f2/Name.jpg/{W}px-Name.jpg
+  //   original : upload.wikimedia.org/wikipedia/commons/f/f2/Name.jpg
+  //   thumb    : thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Name.jpg/{W}px-Name.jpg
   //
   // The REST summary hands back either the raw original (Lisbon:
-  // 2048px / 2.1 MB) or a 3840px-capped thumb (Barcelona, Krakow).
-  // Both are absurd for a 56px map marker or a 340px rail card, and
-  // together they were by far the heaviest thing on the page.
+  // 2048px / 2.1 MB) or a 3840px thumb (Gdańsk, Naples) — absurd for
+  // a 340px rail card. Since late 2026 it also appends
+  // ?utm_source=…&utm_content=… and serves thumbs from
+  // thumb.wikimedia.org. The old rewrite glued the query string into
+  // the middle of the path, so every city whose summary returned a raw
+  // original (Lisbon, Prague, Budapest, Sofia, Benidorm…) rendered an
+  // empty placeholder, while the thumb-host cities slipped through
+  // unsized at 3840px. Both are handled here: query stripped, either
+  // host accepted, output on the thumb host Wikipedia itself now uses.
   // Requesting a width above the source is safe — Wikimedia caps to
   // the original rather than erroring.
+  const WIKI_THUMB_ORIGIN = 'https://thumb.wikimedia.org';
   function wikiSized(url, want) {
     if (!url || typeof url !== 'string') return url;
-    if (url.indexOf('upload.wikimedia.org') === -1) return url;
+    const clean = url.split(/[?#]/)[0];
+    const m = clean.match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/(wikipedia\/[^/]+)\/(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+)/);
+    if (!m) return url;
+    const [, project, d1, d2, file] = m;
     const w = wikiWidthFor(Math.max(1, Math.round(want || 500)));
-    const asThumb = url.match(/^(.*\/thumb\/.+?\/)\d+px-(.+)$/);
-    if (asThumb) return asThumb[1] + w + 'px-' + asThumb[2];
-    const asOriginal = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/([0-9a-f])\/([0-9a-f]{2})\/(.+)$/);
-    if (!asOriginal) return url;
-    const [, base, d1, d2, file] = asOriginal;
     // Wikimedia renders SVG thumbnails as PNG; raster formats keep their name.
     const thumbName = /\.svg$/i.test(file) ? file + '.png' : file;
-    return `${base}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
+    return `${WIKI_THUMB_ORIGIN}/${project}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
   }
 
   // How many source pixels does this <img> actually need? Measured,
@@ -10264,21 +10405,26 @@
   async function wikiImage(place) {
     if (!place) return null;
     const slug = wikiSlug(place);
-    const cacheKey = 'mv_wiki_v5_' + slug;
-  
-    const cached = localStorage.getItem(cacheKey);
+    const cacheKey = 'mv_wiki_v6_' + slug;
+
+    let cached = null;
+    try { cached = localStorage.getItem(cacheKey); } catch (e) {}
     if (cached === '__NONE__') return null;
     if (cached) return cached;
-  
+
     if (wikiInFlight.has(slug)) return wikiInFlight.get(slug);
-  
+
     const promise = (async () => {
       try {
         const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(slug), {
           headers: { 'Accept': 'application/json' }
         });
         if (!res.ok) {
-          localStorage.setItem(cacheKey, '__NONE__');
+          // Only a 404 means "Wikipedia has no such article". A 429
+          // or 5xx is transient — caching it would bake an empty
+          // placeholder into this visitor's browser for good.
+          if (res.status === 404) { try { localStorage.setItem(cacheKey, '__NONE__'); } catch (e) {} }
+          wikiInFlight.delete(slug);
           return null;
         }
         const data = await res.json();
@@ -10287,14 +10433,16 @@
         // at. (The previous "upscale to 1600px" rewrite produced a
         // width outside Wikimedia's allowed ladder, so every city
         // that had only a thumbnail served a broken image.)
-        const url = data.originalimage?.source || data.thumbnail?.source;
-        if (!url) {
-          localStorage.setItem(cacheKey, '__NONE__');
+        const raw = data.originalimage?.source || data.thumbnail?.source;
+        if (!raw) {
+          try { localStorage.setItem(cacheKey, '__NONE__'); } catch (e) {}
           return null;
         }
+        const url = raw.split(/[?#]/)[0]; // drop the ?utm_… tracking suffix
         try { localStorage.setItem(cacheKey, url); } catch (e) {}
         return url;
       } catch (e) {
+        wikiInFlight.delete(slug); // offline / blocked — let a later call retry
         return null;
       }
     })();
@@ -10313,6 +10461,7 @@
     if (url) {
       img.classList.remove('img-broken');
       img.removeAttribute('srcset');
+      delete img.dataset.hostRetried;
       // Request the width this element actually paints at, not the
       // 2048–3840px source Wikipedia hands us.
       const want = opts.width || renderWidthOf(img);
@@ -10343,6 +10492,7 @@
   function hydrateWikiImages(root = document) {
     root.querySelectorAll('[data-wiki]').forEach(el => {
       if (el.dataset.wikiHydrated === '1') return;
+      if (el.dataset.wikiDefer) return; // woken later (hidden hero slides)
       el.dataset.wikiHydrated = '1';
       const place = el.dataset.wiki;
       const img = el.querySelector('img');
@@ -10495,7 +10645,7 @@
   
   async function fetchCityHero(city) {
     if (!city) return null;
-    const cacheKey = 'mv_wiki_hero_v5_' + city;
+    const cacheKey = 'mv_wiki_hero_v6_' + city;
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) return cached === '__none__' ? null : cached;
@@ -10506,13 +10656,15 @@
         headers: { 'Accept': 'application/json' }
       });
       if (!res.ok) {
-        try { localStorage.setItem(cacheKey, '__none__'); } catch (e) {}
+        // 404 = no article. 429 / 5xx are transient: never cache them.
+        if (res.status === 404) { try { localStorage.setItem(cacheKey, '__none__'); } catch (e) {} }
         return null;
       }
       const data = await res.json();
       // Canonical source only — callers pass it through wikiSized()
       // to request the width they actually render at.
-      const url = data.originalimage?.source || data.thumbnail?.source || null;
+      const raw = data.originalimage?.source || data.thumbnail?.source || null;
+      const url = raw ? raw.split(/[?#]/)[0] : null;
       if (url) {
         try { localStorage.setItem(cacheKey, url); } catch (e) {}
         return url;
@@ -14852,6 +15004,14 @@
         'cg.submit': 'Mein günstigstes Wochenende finden',
         'cg.placeholder': 'Von wo fliegst du?',
 
+        'map.layerMap': 'Karte',
+        'map.layerSatellite': 'Satellit',
+        'map.zoomIn': 'Vergrössern',
+        'map.zoomOut': 'Verkleinern',
+        'map.coopWheel': 'Strg + Scrollen zum Zoomen der Karte',
+        'map.coopWheelMac': '⌘ + Scrollen zum Zoomen der Karte',
+        'map.coopTouch': 'Karte mit zwei Fingern bewegen',
+
         'deals.eyebrow': 'Preis-Tipps von heute',
         'sec.editorial': 'Die aktuelle Auswahl',
         'sec.viewAll': 'Alle Reiseziele ansehen',
@@ -15030,7 +15190,7 @@
           const cleanSlug = (typeof wikiSlug === 'function')
             ? wikiSlug(slug)
             : String(slug).replace(/\s+/g, '_');
-          const v = localStorage.getItem('mv_wiki_v5_' + cleanSlug);
+          const v = localStorage.getItem('mv_wiki_v6_' + cleanSlug);
           // 1280px: comfortably above the 1200px social-card spec
           // without shipping a 3840px original into a link preview.
           if (v && v !== '__NONE__') {
@@ -15298,7 +15458,7 @@
       <ul>
         <li><strong>Wikipedia / Wikimedia</strong> — for city images and landmark summaries.</li>
         <li><strong>Open-Meteo</strong> — for current weather and short-range forecasts.</li>
-        <li><strong>Map tile providers</strong> (Esri, Carto) — for satellite imagery and label overlays.</li>
+        <li><strong>Map tile providers</strong> (Esri) — for the street map, satellite imagery and label overlays.</li>
         <li><strong>Google Fonts</strong> — for typography.</li>
         <li><strong>unpkg.com</strong> — content delivery for the Leaflet map library, loaded on demand when you scroll to the map.</li>
       </ul>
@@ -15774,14 +15934,77 @@
   function availability() { return null; }
   
   // ====== LEAFLET MAP ======
-  // Satellite-only experience. We intentionally do NOT initialise a
-  // standard tile layer — there's no view toggle. Esri World Imagery
-  // + a translucent labels overlay is the only render path.
+  // Behaves like an embedded Google Map:
+  //   - a light street map by default (Esri World Street Map),
+  //     with a Map / Satellite switch in the bottom-left corner
+  //   - zoom buttons bottom-right
+  //   - cooperative gestures: a plain mouse wheel scrolls the PAGE,
+  //     Ctrl/⌘ + wheel or a trackpad pinch zooms the map; on touch
+  //     screens one finger scrolls the page, two fingers move the map
+  //   - opens framed on Europe whatever the frame size
+  // It used to be satellite-only, opened on a fixed zoom 4.2 that in
+  // a large frame showed Greenland and half the Atlantic, blurred
+  // every tile while moving, and swallowed the page scroll whenever
+  // the cursor crossed it.
   let leafletMap = null;
+  let tileStandard = null;
   let tileSatellite = null;
   let tileSatelliteLabels = null;
+  let mapLayerMode = 'map';
   const cityMarkers = new Map();
-  
+  // Lisbon to Helsinki, Dublin to Athens — the overview every visit
+  // starts from and the "Overview" button returns to.
+  const EUROPE_VIEW = [[35.2, -10.5], [61.5, 30.5]];
+  const EUROPE_PAD = { padding: [28, 28] };
+
+  function fitEurope(animate) {
+    if (!leafletMap) return;
+    if (animate) leafletMap.flyToBounds(EUROPE_VIEW, Object.assign({ duration: 1.2, easeLinearity: 0.2 }, EUROPE_PAD));
+    else leafletMap.fitBounds(EUROPE_VIEW, Object.assign({ animate: false }, EUROPE_PAD));
+  }
+
+  function setMapLayer(mode) {
+    if (!leafletMap) return;
+    mapLayerMode = mode === 'satellite' ? 'satellite' : 'map';
+    const host = leafletMap.getContainer();
+    const sat = mapLayerMode === 'satellite';
+    if (sat) {
+      if (leafletMap.hasLayer(tileStandard)) leafletMap.removeLayer(tileStandard);
+      tileSatellite.addTo(leafletMap);
+      tileSatelliteLabels.addTo(leafletMap);
+    } else {
+      if (leafletMap.hasLayer(tileSatellite)) leafletMap.removeLayer(tileSatellite);
+      if (leafletMap.hasLayer(tileSatelliteLabels)) leafletMap.removeLayer(tileSatelliteLabels);
+      tileStandard.addTo(leafletMap);
+    }
+    host.classList.toggle('satellite-view', sat);
+    const btn = document.getElementById('mapLayerBtn');
+    if (btn) {
+      // The button previews the layer you would switch TO, like Google's.
+      btn.dataset.target = sat ? 'map' : 'satellite';
+      const label = sat ? MV.i18n.t('map.layerMap', 'Map') : MV.i18n.t('map.layerSatellite', 'Satellite');
+      btn.querySelector('.mlb-label').textContent = label;
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('aria-pressed', sat ? 'true' : 'false');
+    }
+  }
+
+  // "Use Ctrl + scroll to zoom the map" — shown over the map, the way
+  // Google does it, whenever a gesture is left to the page instead.
+  let _mapCoopTimer = null;
+  function _showMapCoopHint(kind) {
+    const el = document.getElementById('mapCoopHint');
+    if (!el) return;
+    const mac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
+    el.textContent = kind === 'touch'
+      ? MV.i18n.t('map.coopTouch', 'Use two fingers to move the map')
+      : (mac ? MV.i18n.t('map.coopWheelMac', 'Use ⌘ + scroll to zoom the map')
+             : MV.i18n.t('map.coopWheel', 'Use Ctrl + scroll to zoom the map'));
+    el.classList.add('show');
+    clearTimeout(_mapCoopTimer);
+    _mapCoopTimer = setTimeout(() => el.classList.remove('show'), 1300);
+  }
+
   function initLeaflet() {
     if (typeof L === 'undefined') {
       // Leaflet hasn't loaded yet — retry shortly
@@ -15789,44 +16012,57 @@
       return;
     }
     if (leafletMap) return;
-  
+
     const host = document.getElementById('leafletMap');
     if (!host) return;
-  
+
+    // Touch-first devices: one finger must keep scrolling the page.
+    const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+
     leafletMap = L.map(host, {
       center: [48.5, 13.5],
-      zoom: 4.2,
+      zoom: 4,
       minZoom: 3,
-      maxZoom: 14,
-      zoomControl: true,
+      maxZoom: 18,
+      zoomControl: false,             // re-added bottom-right below
       attributionControl: true,
-      // Apple-Maps-style fluid wheel + smooth zoom:
-      // no snap, finer steps, longer debounce → silk motion.
-      // Tuned further for cinematic feel: longer wheel zoom, longer
-      // inertia glide, softer easing.
-      scrollWheelZoom: 'center',
-      wheelDebounceTime: 50,
-      wheelPxPerZoomLevel: 130,
-      zoomSnap: 0,
-      zoomDelta: 0.5,
+      scrollWheelZoom: true,          // only reached with Ctrl/⌘ or a pinch — see the wheel gate
+      wheelDebounceTime: 40,
+      wheelPxPerZoomLevel: 90,
+      zoomSnap: 0.25,                 // raster tiles stay crisp; 0 left them permanently mid-scale
+      zoomDelta: 1,
       zoomAnimation: true,
-      zoomAnimationThreshold: 8,
       fadeAnimation: true,
       markerZoomAnimation: true,
       inertia: true,
-      inertiaDeceleration: 1100,        // longer glide than 1400 — more film-like
-      inertiaMaxSpeed: 1400,
-      easeLinearity: 0.10,              // even slower-easing than 0.18 — silk
+      inertiaDeceleration: 2600,
+      inertiaMaxSpeed: 1800,
+      easeLinearity: 0.2,
       worldCopyJump: false,
-      maxBounds: [[34, -25], [71, 45]],
-      maxBoundsViscosity: 0.85,
-      tap: true,                        // mobile touch handling
-      touchZoom: 'center',
+      maxBounds: [[22, -40], [74, 60]],
+      maxBoundsViscosity: 0.9,
+      dragging: !coarse,
+      touchZoom: true,                // two-finger pinch zooms AND pans around the fingers
       bounceAtZoomLimits: false
     });
 
-    // Satellite-only: Esri World Imagery + a discreet reference overlay
-    // for labels (otherwise places are unreadable from above).
+    L.control.zoom({
+      position: 'bottomright',
+      zoomInTitle: MV.i18n.t('map.zoomIn', 'Zoom in'),
+      zoomOutTitle: MV.i18n.t('map.zoomOut', 'Zoom out')
+    }).addTo(leafletMap);
+
+    // Default: Esri World Street Map — the free, keyless basemap
+    // closest to the Google Maps look (roads, water, parks, English
+    // place names), from the same provider as the satellite layer.
+    // (CARTO Voyager was the first choice, but its free tiles now
+    // return an "API KEY REQUIRED" watermark.)
+    tileStandard = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors, GIS User Community',
+      maxZoom: 19,
+      crossOrigin: true
+    });
+    // Satellite: Esri World Imagery + a reference overlay for labels.
     tileSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
       maxZoom: 18,
@@ -15836,23 +16072,45 @@
     tileSatelliteLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
       attribution: '',
       maxZoom: 18,
-      opacity: 0.78,
+      opacity: 0.85,
       pane: 'overlayPane',
-      crossOrigin: true,
-      detectRetina: true
+      crossOrigin: true
     });
+    setMapLayer('map');
 
-    tileSatellite.addTo(leafletMap);
-    tileSatelliteLabels.addTo(leafletMap);
-    host.classList.add('satellite-view');
+    const layerBtn = document.getElementById('mapLayerBtn');
+    if (layerBtn) {
+      layerBtn.hidden = false;
+      layerBtn.addEventListener('click', () => setMapLayer(layerBtn.dataset.target));
+    }
 
-    // Brief blur on tile pane during zoom flights — the camera glide
-    // already smooths panning, but blurring the tiles in motion
-    // sells the cinematic "scene change" feel when entering a city.
-    leafletMap.on('zoomstart', () => host.classList.add('map-blurring'));
-    leafletMap.on('zoomend',   () => host.classList.remove('map-blurring'));
-    leafletMap.on('movestart', () => host.classList.add('map-moving'));
-    leafletMap.on('moveend',   () => host.classList.remove('map-moving'));
+    // Cooperative wheel: captured on the container before Leaflet's
+    // own listener. Without Ctrl/⌘ the event is stopped from reaching
+    // Leaflet and NOT prevented, so the page simply scrolls on.
+    host.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) return;
+      e.stopPropagation();
+      _showMapCoopHint('wheel');
+    }, { capture: true, passive: true });
+    if (coarse) {
+      host.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length === 1) _showMapCoopHint('touch');
+      }, { passive: true });
+    }
+
+    fitEurope(false);
+    // Leaflet only listens for window resizes, but this frame also
+    // changes size when the sidebar or the grid reflows. Re-measure,
+    // and keep the overview framed on Europe while no city is open.
+    if ('ResizeObserver' in window) {
+      let lastW = host.clientWidth, lastH = host.clientHeight;
+      new ResizeObserver(() => {
+        if (!leafletMap || (host.clientWidth === lastW && host.clientHeight === lastH)) return;
+        lastW = host.clientWidth; lastH = host.clientHeight;
+        leafletMap.invalidateSize({ pan: false });
+        if (!_currentScene) fitEurope(false);
+      }).observe(host);
+    }
 
     // Ambient hover reveal — show a few cities physically near the
     // cursor as the user drifts across the map. rAF-coalesced so we
@@ -16209,11 +16467,41 @@
     });
   }
 
+  // Every destination as a small pin, the way Google Maps marks
+  // places — so the map is never an empty canvas, and touch screens
+  // (no hover, so no ambient reveal) can still discover and open
+  // cities. Circle markers live in the overlay pane, under the price
+  // chips the ambient reveal and city scenes add on top.
+  let _destDots = null;
+  function renderDestinationDots() {
+    if (!leafletMap || typeof L === 'undefined') return;
+    if (_destDots) leafletMap.removeLayer(_destDots);
+    _destDots = L.layerGroup();
+    const from = mapState.from;
+    const pool = (typeof smartDestinations !== 'undefined') ? smartDestinations : [];
+    pool.forEach(d => {
+      const c = d && cityCoords[d.key];
+      if (!c || d.key === from) return;
+      const dot = L.circleMarker(c, {
+        radius: 5.5,
+        weight: 2,
+        color: '#FFFFFF',
+        fillColor: '#7E6230',
+        fillOpacity: 1,
+        className: 'lf-dest-dot'
+      });
+      dot.on('click', () => { if (typeof openSmartDetail === 'function') openSmartDetail(d.key); });
+      _destDots.addLayer(dot);
+    });
+    _destDots.addTo(leafletMap);
+  }
+
   function renderLeafletMarkers() {
     if (!leafletMap || typeof L === 'undefined') return;
     cityMarkers.forEach(m => leafletMap.removeLayer(m));
     cityMarkers.clear();
     _clearSceneMarkers();
+    renderDestinationDots();
 
     const from = mapState.from;
 
@@ -16467,12 +16755,8 @@
     if (!leafletMap) return;
     _clearSceneMarkers();
     _currentScene = null;
-    // Camera glides back to the original European overview
-    leafletMap.flyTo([48.5, 13.5], 4.2, {
-      duration: 1.4,
-      easeLinearity: 0.14,
-      noMoveStart: false
-    });
+    // Camera glides back to the same Europe framing the map opened on
+    fitEurope(true);
     _updateMapHint('idle');
   }
 
@@ -17394,12 +17678,33 @@
     if (!img || img.dataset.fadeBound) return;
     img.dataset.fadeBound = '1';
     img.classList.add('img-fade');
-    if (img.complete && img.naturalWidth > 0) {
+    if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+    // Persistent listeners, not { once: true }: a Wikipedia image can
+    // be re-pointed later (size upgrade, host retry, a hero slide that
+    // hydrates after load). With one-shot listeners a single early
+    // failure left the typographic placeholder painted over a photo
+    // that had since loaded fine.
+    img.addEventListener('load', () => {
+      if (!img.naturalWidth) return;
       img.classList.add('loaded');
-      return;
-    }
-    img.addEventListener('load', () => img.classList.add('loaded'), { once: true });
+      img.classList.remove('img-broken');
+      if (img.dataset.source !== 'wikipedia') return;
+      const parent = img.parentElement;
+      if (!parent) return;
+      const ph = parent.querySelector(':scope > .img-placeholder');
+      if (ph) ph.remove();
+      parent.classList.remove('has-placeholder');
+    });
     img.addEventListener('error', () => {
+      // One retry on Wikimedia's other host before giving up — the
+      // thumb and upload hosts serve the same paths but throttle
+      // independently.
+      const src = img.getAttribute('src') || '';
+      if (src && !img.dataset.hostRetried && src.indexOf('//thumb.wikimedia.org/') !== -1) {
+        img.dataset.hostRetried = '1';
+        img.src = src.replace('//thumb.wikimedia.org/', '//upload.wikimedia.org/');
+        return;
+      }
       img.classList.add('img-broken');
       const parent = img.parentElement;
       if (parent) {
@@ -17407,7 +17712,7 @@
         const emoji = img.dataset.emoji || '';
         insertPlaceholder(parent, { label: img.alt || '', emoji, tag });
       }
-    }, { once: true });
+    });
   }
   function decorateAllImages(root = document) {
     root.querySelectorAll('img').forEach(decorateImage);
@@ -17630,11 +17935,20 @@
   (function ambientParallax() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const orbs = document.querySelectorAll('.cg-ambient .orb');
+    if (!orbs.length) return;
+    // rAF-coalesced like the hero parallax: style writes on every raw
+    // scroll event (120+/s on high-refresh trackpads) were wasted work.
+    let ticking = false;
     window.addEventListener('scroll', () => {
-      const y = window.scrollY;
-      orbs.forEach((o, i) => {
-        const k = (i + 1) * 0.05;
-        o.style.transform = `translate3d(0, ${y * -k}px, 0)`;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = window.scrollY;
+        orbs.forEach((o, i) => {
+          const k = (i + 1) * 0.05;
+          o.style.transform = `translate3d(0, ${y * -k}px, 0)`;
+        });
       });
     }, { passive: true });
   })();

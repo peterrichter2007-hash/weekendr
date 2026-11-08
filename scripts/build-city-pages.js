@@ -168,16 +168,17 @@ function range(lo, hi) {
 }
 
 /** Wikimedia only serves this fixed ladder; anything else is HTTP 400. */
+// Accepts both hosts the REST API hands out (upload. for raw originals,
+// thumb. for thumbnails) and drops any ?utm_… suffix — same logic as
+// wikiSized() in public/index.html.
 function wikiSized(url, want) {
-  if (!url || url.indexOf('upload.wikimedia.org') === -1) return url;
-  let w = WIKI_WIDTHS.find(x => x >= want) || WIKI_WIDTHS[WIKI_WIDTHS.length - 1];
-  const asThumb = url.match(/^(.*\/thumb\/.+?\/)\d+px-(.+)$/);
-  if (asThumb) return asThumb[1] + w + 'px-' + asThumb[2];
-  const asOriginal = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/[^/]+)\/([0-9a-f])\/([0-9a-f]{2})\/(.+)$/);
-  if (!asOriginal) return url;
-  const [, base, d1, d2, file] = asOriginal;
+  if (!url) return url;
+  const m = url.split(/[?#]/)[0].match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/(wikipedia\/[^/]+)\/(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+)/);
+  if (!m) return url;
+  const [, project, d1, d2, file] = m;
+  const w = WIKI_WIDTHS.find(x => x >= want) || WIKI_WIDTHS[WIKI_WIDTHS.length - 1];
   const thumbName = /\.svg$/i.test(file) ? file + '.png' : file;
-  return `${base}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
+  return `https://upload.wikimedia.org/${project}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
 }
 
 /* ---------- Wikipedia lead images, fetched once and cached ---------- */
