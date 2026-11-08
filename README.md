@@ -2,7 +2,7 @@
 
 A premium travel-discovery platform for cheap European weekend trips. The whole frontend is a single self-contained HTML file (`public/index.html`); the backend is a tiny static server.
 
-> **Live data sources**: Wikipedia REST API (city + landmark imagery), Open-Meteo (weather), Esri / Carto (map tiles). Skyscanner / Booking.com / FlixBus / GetYourGuide are linked out to via deep-link search URLs only. No affiliate programs are active today.
+> **Live data sources**: Wikipedia REST API (city + landmark imagery), Open-Meteo (weather), Esri (street map + satellite tiles), Wikimedia Commons (winter hero photos, credited on screen). Skyscanner / Booking.com / FlixBus / GetYourGuide are linked out to via deep-link search URLs only. No affiliate programs are active today.
 
 ---
 
@@ -86,7 +86,8 @@ git push origin main
 |---|---|---|
 | **Wikipedia REST API** | Every city / landmark / dish photo (verified) | None |
 | **Open-Meteo** | Live weather + 4-day forecast per city | None |
-| **Carto basemaps** | Map standard view (CARTO Voyager tiles) | None |
+| **Esri World Street Map / World Imagery** | Map (street view by default, satellite toggle) | None |
+| **Wikimedia Commons** | Winter hero photos (Nov–Feb), credited on screen | None |
 | **Esri World Imagery** | Map satellite view | None |
 | **Skyscanner / Booking / GetYourGuide / FlixBus / Trainline** | Deep-link search URLs (real prices on the partner site) | None — no affiliate programs active today |
 
@@ -97,8 +98,9 @@ git push origin main
 - **No hotel cards.** We don't have a Booking partner API, so we don't recommend specific properties. The cost-breakdown shows an honest accommodation budget range; clicking through opens Booking.com with the user's dates pre-filled.
 - **All images come from Wikipedia.** If Wikipedia doesn't have an article, a typographic placeholder kicks in. No stock photos.
 - **Prices are estimates shown as ranges.** Real partner inventory varies too much for a single number to read as a promise.
-- **Smooth-scroll wheel inertia is enabled.** Trackpad scroll uses native behaviour; only mouse wheel is intercepted.
-- **The map only wheel-zooms once you've clicked into it.** Stops the map hijacking the page scroll.
+- **Scrolling is native.** The custom wheel-inertia handler is disabled (`window.MV_SMOOTH` opts back in); native scroll is smoother everywhere.
+- **The map zooms with Ctrl/⌘ + scroll or a pinch, like an embedded Google Map.** A plain scroll keeps scrolling the page; on touch screens two fingers move the map.
+- **The homepage follows the season.** Nov–Feb shows a winter hero, a northern-lights / Christmas-market rail and no beach suggestions. Override with `?season=winter` or `?season=default`.
 
 ---
 

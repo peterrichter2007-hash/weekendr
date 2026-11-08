@@ -362,9 +362,23 @@ ambient → scene          (click an ambient chip)
 scene → idle             (Overview button)
 ```
 
+### Basemap + gestures (Google-Maps-style, Nov 2026)
+Default layer is **Esri World Street Map**; a Map / Satellite switch
+(`#mapLayerBtn`, `setMapLayer()`) sits bottom-left, zoom buttons
+bottom-right. **CARTO Voyager is not usable** — its free tiles now return
+an "API KEY REQUIRED" watermark. Cooperative gestures: a plain wheel
+scrolls the page (a capture-phase listener stops it reaching Leaflet),
+Ctrl/⌘ + wheel or a trackpad pinch zooms; on touch screens dragging is
+off and two fingers pan/zoom. The view is framed with `fitEurope()`
+(`EUROPE_VIEW`) on boot, on frame resize (ResizeObserver) and on
+Overview. `.map-shell` is `minmax(0,1fr) 360px` with the sidebar
+`contain: size` — before, the sidebar set the row height and the 16:11
+frame grew wider than its column (that is why it opened on Greenland).
+No tile blur on move any more.
+
 ### IDLE
-Default. Empty satellite canvas. Only the home anchor (departure
-city) + bottom hint pill: "Hover anywhere to discover · click to enter".
+Every destination is a small bronze pin (`renderDestinationDots()`,
+click opens the city). Home anchor + hint pill "Tap a pin to explore".
 
 ### AMBIENT
 Cursor drifts over the map → up to N cities physically nearest to the
@@ -575,7 +589,8 @@ every reader. The interactive planner adds it.
 |---|---|---|
 | **Wikipedia REST API** | City heroes, landmarks, dishes, restaurants — all verified | None |
 | **Open-Meteo** | Live weather per city + 4-day forecast | None |
-| **Esri World Imagery + Carto** | Map tiles | None |
+| **Esri World Street Map + World Imagery** | Map tiles (street default, satellite toggle) | None |
+| **Wikimedia Commons** | The five winter hero photos (credited on screen) | None |
 
 Partner-search URLs (Skyscanner / Booking / GetYourGuide / FlixBus /
 Trainline) are **deep-links** — they open the real partner site with
@@ -735,6 +750,8 @@ curated dataset. The Express server just serves `public/` and a
 | Budget breakdown | `function budgetBreakdown`, `function budgetTier`, `function countDestinationsInRange` |
 | Instant search synthesis | `function synthesizeInstantTrips` |
 | Best deals renderer | `function renderBestDeals`, `function computeBestDeals` |
+| Season / winter mode | `const SEASON`, `WINTER_PICKS`, `WINTER_HERO`, `seasonalScoreAdjust` |
+| Map layers + gestures | `function setMapLayer`, `fitEurope`, `renderDestinationDots`, `_showMapCoopHint` |
 | Map scene mode | `function enterCityScene`, `function exitCityScene`, `function _addSceneChip` |
 | Ambient reveal | `function _updateAmbientReveal`, `_ambientParamsForZoom`, `_POPULAR_CITIES` |
 | Transport options | `MV.transport.getOptions`, `canFly`, `canBus`, `canTrain` |
@@ -771,6 +788,31 @@ git push origin HEAD:main
 ---
 
 ## Recent session highlights (latest work, chronological — mid-2026)
+
+**Season + images + map pass** (Nov 2026, latest):
+- **Season module** (`SEASON`, top of the inline script). Nov–Feb =
+  winter: `html[data-season="winter"]` cools the tokens, `WINTER_HERO`
+  swaps the hero to five credited Wikimedia Commons winter photos
+  (`data-photo` instead of `data-wiki`), `collections.winter` replaces
+  the beach rail and moves it up, "Beach" mood → "Winter",
+  `seasonalScoreAdjust()` sinks beach-first places in search / deals /
+  ranking and search always keeps two far-north picks (55°N+).
+  `WINTER_PICKS` holds the only winter claims — standing seasonal facts,
+  Christmas-market labels Nov–Dec only. Tallinn is not in the dataset.
+  Test either mode with `?season=winter` / `?season=default`.
+- **Images were broken for half the cities.** The REST summary now adds
+  `?utm_…` to image URLs and serves thumbs from `thumb.wikimedia.org`;
+  `wikiSized()` handles both (and rounds UP the width ladder, so retina
+  / 4K screens get 3840px). Cache key `mv_wiki_v6_`; only 404s are
+  cached as "no image"; failed images retry once on the other host.
+- **Hero carousel only ever showed slide 1** — `.img-host {position:
+  relative}` overrode the slides. Fixed with `.hero-stage >
+  .hero-slide.img-host`. Hidden slides hydrate just before they show.
+- **Map**: see "Basemap + gestures" above.
+- **Less text** across the homepage; removed the fake "Sofia & Mateo"
+  testimonial, the no-op "Weekend / Open trip" tabs and the disabled
+  newsletter field. Nav at rest over the hero is light-on-dark.
+
 
 **AI-removal pass** (latest, three staged commits):
 - **Search-AI enrichment removed.** `_mergeAiIntoTrips`, `_tripCache*`,
