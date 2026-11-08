@@ -1782,7 +1782,7 @@
     }
     .foot-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
       gap: 3rem;
       margin-bottom: 4rem;
     }
@@ -4238,7 +4238,13 @@
     /* Destination pins */
     .lf-dest-dot { cursor: pointer; transition: fill-opacity var(--fast); }
     .lf-dest-dot:hover { fill-opacity: 0.75; }
+    /* Phones / tablets: the 16:11 desktop frame was only ~230px tall
+       on a phone. (An older 5:6 rule existed but sat earlier in the
+       file than the 16:11 one, so it never applied.) */
+    @media (max-width: 1024px) { .map-frame { aspect-ratio: 4 / 3; } }
     @media (max-width: 640px) {
+      .map-frame { aspect-ratio: 4 / 5; }
+      .map-hint { max-width: calc(100% - 2rem); white-space: normal; text-align: center; }
       .map-layer-btn { width: 56px; height: 56px; bottom: 4.2rem; left: 0.75rem; }
       .map-layer-btn .mlb-label { font-size: 0.6rem; }
     }
@@ -5952,6 +5958,17 @@
     .img-host {
       position: relative;
     }
+    /* Hero slides are img-hosts too, and the rule above (same
+       specificity, later in the file) turned their position:absolute
+       into relative. The five slides then stacked vertically inside
+       the overflow-hidden stage: only the first was ever on screen,
+       and every carousel tick faded it out and left the hero black. */
+    /* Three classes deep so it also beats the placeholder rule
+       .has-placeholder:not(:has(.img-placeholder)) further down. */
+    .hero-stage > .hero-slide.img-host {
+      position: absolute;
+      inset: 0;
+    }
     .img-host::before {
       content: '';
       position: absolute;
@@ -7629,6 +7646,33 @@
       color: #E2C38C;
       opacity: 0.55;
     }
+    /* ============================================================
+       WINTER TONE (html[data-season="winter"], Nov–Feb — see SEASON)
+       The warm paper whites cool to frost; the bronze accent stays,
+       so it reads as candlelight against snow. Muted text keeps
+       ≥ 5:1 on the new backgrounds.
+       ============================================================ */
+    html[data-season="winter"] {
+      --bg: #F3F5F7;
+      --bg-2: #E9EDF1;
+      --bg-3: #DDE3E9;
+      --sand: #C9D3DD;
+      --muted: #535A62;
+      --muted-2: #616973;
+      --warm-glow: rgba(150, 178, 206, 0.18);
+      --glass: rgba(244, 247, 250, 0.74);
+      --glass-strong: rgba(244, 247, 250, 0.92);
+    }
+    html[data-season="winter"] .hero { background: #0D121A; }
+    html[data-season="winter"] .hero-slide::after {
+      background: linear-gradient(180deg,
+        rgba(10, 15, 24, 0.45) 0%,
+        rgba(10, 15, 24, 0.26) 30%,
+        rgba(10, 15, 24, 0.40) 60%,
+        rgba(10, 15, 24, 0.68) 85%,
+        rgba(10, 15, 24, 0.82) 100%);
+    }
+
     /* The placeholder's light top sheen made sense on beige; on the dark
        surface it reads as a grey smear. */
     .hero-slide .img-placeholder::before,
@@ -7676,7 +7720,7 @@
     <div class="fullmenu-grid">
       <a href="#destinations"><span>Destinations</span><span class="num">01</span></a>
       <a href="#weekends"><span>Weekend Escapes</span><span class="num">02</span></a>
-      <a href="#beaches"><span>Beach Retreats</span><span class="num">03</span></a>
+      <a href="#beaches"><span data-season-label>Beach Retreats</span><span class="num">03</span></a>
       <a href="#hidden"><span>Hidden Gems</span><span class="num">04</span></a>
       <a href="#map"><span>The Map</span><span class="num">05</span></a>
       <a href="#concierge"><span>Concierge</span><span class="num">06</span></a>
@@ -7716,16 +7760,16 @@
 
     <!-- Section-level Wikipedia attribution — covers all rotating
          hero slides without per-image chip flicker (TASK 11). -->
-    <div class="section-attribution" aria-label="Imagery source: Wikipedia">
+    <div class="section-attribution" id="heroAttribution" aria-label="Imagery source: Wikipedia">
       <span class="sa-dot"></span>
-      Imagery · Wikipedia
+      <span class="sa-text">Imagery · Wikipedia</span>
     </div>
 
     <div class="hero-inner">
       <div class="hero-top">
         <div class="hero-tagline">
           <span class="line"></span>
-          Cheap, beautiful weekends · Europe
+          <span id="heroTagline" data-i18n="hero.tagline">Cheap, beautiful weekends · Europe</span>
         </div>
         <div class="hero-meta">
           <div class="place">Lisbon, Portugal</div>
@@ -7740,10 +7784,7 @@
           <span class="word"><span>Beautiful</span></span>
           <span class="word"><span>cities.</span></span>
         </h1>
-        <p class="hero-sub">
-          We find the cheapest flight, the smartest stay and the best three things to do —
-          for a full weekend in Europe from around €200 all-in. No filler.
-        </p>
+        <p class="hero-sub" data-i18n="hero.sub">Flight, stay and three things worth doing. One all-in price.</p>
         <div class="hero-actions">
           <button class="btn-primary btn-primary-hero" onclick="openStepWizard()">
             Find your cheapest weekend trip
@@ -7793,9 +7834,6 @@
         <div class="left reveal">
           <div class="eyebrow"><span class="dot"></span>The Concierge · instant</div>
           <h2 class="h-1" style="margin-top: 1.2rem;">Tell us your budget.<br><em class="italic-accent">We'll find the weekend.</em></h2>
-          <p class="lede" style="max-width: 580px; margin-top: 1.4rem;">
-            Instant search that ranks Europe's cheapest beautiful weekends by what you actually have — flight + stay + the three things worth doing. No filler, no upsell.
-          </p>
         </div>
         <!-- cg-trust block removed — the previous version implied fake
              user avatars + an invented 4.96-star rating + a 12,400
@@ -7814,10 +7852,8 @@
               <span class="cg-ai-name">Concierge</span>
               <span class="cg-ai-status">instant</span>
             </div>
-            <div class="cg-tabs">
-              <button class="cg-tab on">Weekend</button>
-              <button class="cg-tab">Open trip</button>
-            </div>
+            <!-- "Weekend / Open trip" tabs removed: they toggled a class and
+                 nothing else — a control that does nothing. -->
           </div>
 
           <div class="cg-grid">
@@ -7948,7 +7984,7 @@
                    that replaced it renders in about a millisecond, so
                    the label was both wrong and selling the product
                    short at the exact moment someone decides to click. -->
-              <span>5 cheap weekend matches · ranked by value · instant</span>
+              <span>5 matches · instant</span>
             </div>
             <button class="cg-cta" id="genBtn" onclick="generate()">
               <span class="cg-cta-text">
@@ -8001,7 +8037,6 @@
         <div class="left">
           <div class="deals-eyebrow"><span class="dot"></span>Today's value picks</div>
           <h2 class="deals-title">Best cheap weekend <em>escapes</em> right now.</h2>
-          <p class="deals-sub">Curated routes (flight · bus · train) from your departure city. Estimates update as you change origin.</p>
         </div>
         <div class="deals-origin-pill" id="dealsOriginPill">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>
@@ -8027,8 +8062,6 @@
       </div>
       <p class="manifesto-text reveal d1">
         A beautiful weekend in Europe <em>shouldn't cost €1500</em>.
-        <span class="muted">We hunt the cheapest flights, buses, trains, the smartest stays and the things
-        worth doing — so your weekend is good for €300, not great for three months' salary.</span>
       </p>
       <div class="manifesto-meta reveal d2">
         <div>
@@ -8063,7 +8096,7 @@
           <div class="eyebrow"><span class="dot"></span>The Atlas · indicative pricing</div>
           <h2 class="h-1">Where can we <em class="italic-accent">actually go</em>?</h2>
           <p class="lede" style="margin-top: 1.2rem; max-width: 580px;">
-            Tap your home airport. We'll quietly rank the most beautiful weekends within reach — sorted by what's worth the money.
+            Pick your airport. We rank what's worth it.
           </p>
         </div>
         <div class="map-controls reveal d1">
@@ -8130,7 +8163,7 @@
             <span class="map-hint-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </span>
-            <span class="map-hint-label" id="mapHintLabel">Pick a city to enter the scene</span>
+            <span class="map-hint-label" id="mapHintLabel">Tap a pin to explore</span>
             <button type="button" class="map-hint-action" id="mapHintAction" hidden>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               Overview
@@ -8295,8 +8328,8 @@
   <section class="collection alt" id="beaches">
     <div class="rail-head">
       <div class="left reveal">
-        <div class="eyebrow"><span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 0.5rem;"></span>Beach Retreats</div>
-        <h2 class="h-2" style="margin-top: 0.5rem;">A long swim, <em style="font-style: italic; color: var(--accent);">nothing else</em></h2>
+        <div class="eyebrow"><span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 0.5rem;"></span><span id="seasonRailEyebrow">Beach Retreats</span></div>
+        <h2 class="h-2" id="seasonRailTitle" style="margin-top: 0.5rem;">A long swim, <em style="font-style: italic; color: var(--accent);">nothing else</em></h2>
       </div>
       <div class="rail-controls reveal d1">
         <button class="rail-btn" data-rail="beaches" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
@@ -8362,7 +8395,7 @@
         Begin
       </div>
       <h2 class="reveal d1">Cheap weekends, <em>beautifully sorted</em>.</h2>
-      <p class="reveal d2">Tell us your budget and where you're flying from. We'll find the cheapest flight, the smartest stay and the three things actually worth doing — all under €600.</p>
+      <p class="reveal d2">Your budget, your airport. We do the rest.</p>
       <button class="btn-primary reveal d3" onclick="scrollToConcierge()">
         Find my cheap weekend
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -8379,7 +8412,7 @@
       <div class="foot-grid">
         <div class="foot-brand">
           <div class="foot-logo"><span class="dot"></span>Maison<em style="font-style: italic; color: var(--accent-2); margin-left: 2px;">Voyage</em></div>
-          <p>A private travel concierge for cheap, beautiful European weekends. Hand-picked flights, smart bus and train routes, and the stays worth the budget.</p>
+          <p>Cheap, beautiful weekends in Europe.</p>
           <p style="font-size: 0.78rem; opacity: 0.5;">An independent weekend-curation project · Switzerland-operated.</p>
         </div>
         <div>
@@ -8387,7 +8420,7 @@
           <ul>
             <li><a href="#destinations">Destinations</a></li>
             <li><a href="#weekends">Weekend Trips</a></li>
-            <li><a href="#beaches">Beach Retreats</a></li>
+            <li><a href="#beaches" data-season-label>Beach Retreats</a></li>
             <li><a href="#hidden">Hidden Gems</a></li>
             <li><a href="#stories">The Journal</a></li>
           </ul>
@@ -8412,16 +8445,8 @@
             <li><a href="mailto:peter.richter2007@gmail.com">Contact</a></li>
           </ul>
         </div>
-        <div>
-          <h3 data-i18n="foot.newsletter">Newsletter</h3>
-          <p style="font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.7rem;">A short letter, once a month. New places, quietly.</p>
-          <input type="email" placeholder="Sign-up coming soon" disabled aria-label="Newsletter email — currently disabled" style="width: 100%; padding: 0.8rem 1rem; background: rgba(251,247,239,0.04); border: 1px solid rgba(251,247,239,0.10); border-radius: 100px; color: rgba(255,255,253,0.45); font-size: 0.88rem; cursor: not-allowed;" />
-          <!-- 0.66rem/0.55 opacity measured 10.6px at 2.6:1 — below both
-               the readability floor and AA. 0.72rem/0.8 reads cleanly
-               and this sentence is a promise about user consent, so it
-               should not be the faintest text in the footer. -->
-          <p style="font-size: 0.72rem; opacity: 0.8; margin-top: 0.55rem; font-style: italic; line-height: 1.55;">We'll wire this up when there's a backend that respects your <a href="#" data-legal="cookies" onclick="event.preventDefault(); if (MV.consent) MV.consent.reopen();" style="color: rgba(255, 214, 138, 0.95); text-decoration: underline; text-decoration-color: rgba(255, 214, 138, 0.4); text-underline-offset: 2px;">consent choice</a>.</p>
-        </div>
+        <!-- Newsletter column removed: a disabled "Sign-up coming soon"
+             field is a placeholder feature, not a feature. -->
       </div>
       <!-- Destination index. Generated by scripts/build-city-pages.js
            between the markers below — do not hand-edit, it is rewritten
@@ -8753,6 +8778,117 @@
   <!-- Maison Voyage application logic -->
   <script>
   // ============================================================
+  // SEASON — the homepage follows the calendar
+  //
+  // November–February is "winter": a cooler page tone, a winter
+  // hero, the beach rail replaced by a northern / snow / Christmas-
+  // market rail (moved up to be the first collection), beach-first
+  // places pushed down in suggestions and the "Beach" mood swapped
+  // for "Winter". Every winter claim below is a standing seasonal
+  // fact about that city — aurora season, the annual Christmas
+  // market, snow country — never a live condition. Christmas-market
+  // labels show in Nov–Dec only. ?season=winter|default overrides
+  // the calendar for testing.
+  //
+  // Runs before anything renders. Note: `MV` is a const declared
+  // much further down, so nothing here may touch it at load time.
+  // ============================================================
+  const SEASON = (function () {
+    let forced = null;
+    try { forced = new URLSearchParams(location.search).get('season'); } catch (e) {}
+    const m = new Date().getMonth(); // 0 = January
+    const winter = forced === 'winter' || (forced !== 'default' && (m >= 10 || m <= 1));
+    const xmas = winter && (m === 10 || m === 11 || forced === 'winter');
+    document.documentElement.dataset.season = winter ? 'winter' : 'default';
+    return { isWinter: winter, xmas };
+  })();
+
+  // Curated winter picks — only cities in the dataset. `xmas` is the
+  // Nov–Dec label, `tag` the rest-of-winter one (null = not a winter
+  // pick outside the Christmas-market weeks). Tallinn would belong
+  // here but is not one of the 64 destinations yet.
+  const WINTER_PICKS = {
+    'Reykjavik':  { tag: 'Northern lights' },
+    'Stockholm':  { xmas: 'Christmas market', tag: 'Nordic winter' },
+    'Oslo':       { xmas: 'Christmas market', tag: 'Snow & ski jump' },
+    'Bergen':     { xmas: 'Gingerbread town', tag: 'Fjords in winter' },
+    'Copenhagen': { xmas: 'Tivoli at Christmas', tag: 'Winter harbour' },
+    'Riga':       { xmas: 'Christmas market', tag: 'Baltic winter' },
+    'Vilnius':    { xmas: 'Christmas market', tag: 'Baltic winter' },
+    'Gdańsk':     { xmas: 'Christmas market', tag: 'Baltic winter' },
+    'Hallstatt':  { tag: 'Snowy lakeside' },
+    'Innsbruck':  { xmas: 'Christmas market', tag: 'Ski from town' },
+    'Interlaken': { tag: 'Alpine snow' },
+    'Salzburg':   { xmas: 'Christkindlmarkt', tag: 'Alpine winter' },
+    'Vienna':     { xmas: 'Christmas markets', tag: 'Ball season' },
+    'Budapest':   { xmas: 'Christmas market', tag: 'Thermal baths' },
+    'Prague':     { xmas: 'Christmas markets', tag: null },
+    'Krakow':     { xmas: 'Christmas market', tag: null },
+    'Wrocław':    { xmas: 'Christmas market', tag: null }
+  };
+  function winterLabel(city) {
+    const p = WINTER_PICKS[city];
+    if (!p) return null;
+    return (SEASON.xmas && p.xmas) || p.tag || null;
+  }
+  function isWinterPick(city) { return SEASON.isWinter && !!winterLabel(city); }
+
+  // Winter hero — real Wikimedia Commons photos whose location is in
+  // the file record, credited while shown (all CC BY / BY-SA). City
+  // lead images on Wikipedia are mostly summer shots, hence files.
+  const WINTER_HERO = [
+    { label: 'Reykjavik', place: 'Reykjavík, Iceland', coord: '64°08′N 21°56′W',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Northern_Lights_over_Reykjavik_%2815849686473%29.jpg',
+      credit: 'sergejf · CC BY-SA 2.0' },
+    { label: 'Bergen', place: 'Bergen, Norway', coord: '60°23′N 5°19′E',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Bergen_winter_night_tunliweb.jpg',
+      credit: 'Svein Magne Tunli · CC BY-SA 4.0' },
+    { label: 'Stockholm', place: 'Stockholm, Sweden', coord: '59°19′N 18°04′E',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Corner_between_S%C3%B6dra_Benickebrinken_and_%C3%96sterl%C3%A5nggatan_in_Gamla_Stan%2C_Stockholm%2C_Sweden%2C_2022_December.jpg',
+      credit: 'Ximonic (Simo Räsänen) · CC BY-SA 4.0' },
+    { label: 'Hallstatt', place: 'Hallstatt, Austria', coord: '47°33′N 13°39′E',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Hallstatt_winter.jpg',
+      credit: 'Thomas Fabian · CC BY-SA 2.0' },
+    SEASON.xmas
+      ? { label: 'Riga', place: 'Riga, Latvia', coord: '56°57′N 24°06′E',
+          src: 'https://upload.wikimedia.org/wikipedia/commons/6/66/Riga_Christmas_Market.jpg',
+          credit: 'Rīgas invest · CC BY 2.0' }
+      : { label: 'Copenhagen', place: 'Copenhagen, Denmark', coord: '55°40′N 12°34′E',
+          src: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Nyhavn_winter_2026_1.jpg',
+          credit: 'kallerna · CC BY-SA 4.0' }
+  ];
+
+  // Page-level winter changes that don't belong to a renderer.
+  (function applySeasonToPage() {
+    if (!SEASON.isWinter) return;
+    // 1. The seasonal rail becomes the first collection on the page.
+    const seasonal = document.getElementById('beaches');
+    const firstRail = document.getElementById('weekends');
+    if (seasonal && firstRail) {
+      firstRail.before(seasonal);
+      seasonal.classList.remove('alt');
+      firstRail.classList.add('alt');
+    }
+    const eyebrow = document.getElementById('seasonRailEyebrow');
+    if (eyebrow) eyebrow.textContent = 'Winter weekends';
+    const title = document.getElementById('seasonRailTitle');
+    if (title) {
+      title.innerHTML = SEASON.xmas
+        ? 'Northern lights &amp; <em style="font-style: italic; color: var(--accent);">Christmas markets</em>'
+        : 'Northern lights &amp; <em style="font-style: italic; color: var(--accent);">snow</em>';
+    }
+    document.querySelectorAll('[data-season-label]').forEach(el => { el.textContent = 'Winter Weekends'; });
+    // 2. "Beach" mood → "Winter" in the concierge and the mobile wizard.
+    document.querySelectorAll('.vibe-pill[data-vibe="Beach"], .sw-vibe[data-vibe="Beach"]').forEach(p => {
+      p.dataset.vibe = 'Winter';
+      const icon = p.querySelector('span');
+      p.textContent = '';
+      if (icon) { icon.textContent = '❄️'; p.appendChild(icon); }
+      p.appendChild(document.createTextNode('Winter'));
+    });
+  })();
+
+  // ============================================================
   // DATA — collections
   // ============================================================
   const collections = {
@@ -8786,7 +8922,27 @@
       { place: 'Plage de Palombaggia', country: 'Corsica · France', img: 'photo-1505691938895-1758d7feb511', desc: 'Pink granite, parasol pines, white sand. A French island that thinks it\'s Sardinian.', tags: ['Sand', 'Granite', 'Bohemian'], price: 'from €730' },
       { place: 'Spiaggia Rosa', country: 'Sardinia · Italy', img: 'photo-1469854523086-cc02fe5d8800', desc: 'A protected pink-sand beach you can only see from a boat. Pour the rosé.', tags: ['Pink sand', 'Yacht', 'Rare'], price: 'from €910' },
       { place: 'Elafonissi', country: 'Crete · Greece', img: 'photo-1533105079780-92b9be482077', desc: 'A pink-and-white lagoon at the southwest tip of Crete. A long drive, an unforgettable swim.', tags: ['Lagoon', 'Pink', 'Wild'], price: 'from €600' }
-    ]
+    ],
+    // Winter rail — replaces "beaches" from November to February
+    // (see SEASON). One short line each; the first chip is the
+    // seasonal reason, from WINTER_PICKS. North first.
+    winter: [
+      { place: 'Reykjavik',  country: 'Iceland',  desc: 'Aurora season, hot pools, dark skies minutes out of town.', tags: ['Hot pools'] },
+      { place: 'Stockholm',  country: 'Sweden',   desc: 'Gamla Stan by candlelight.', tags: ['Old town'] },
+      { place: 'Oslo',       country: 'Norway',   desc: 'A fjord city with the ski jump one metro ride away.', tags: ['Fjord'] },
+      { place: 'Bergen',     country: 'Norway',   desc: 'A fjord harbour ringed by seven mountains.', tags: ['Fjords'] },
+      { place: 'Copenhagen', country: 'Denmark',  desc: 'Tivoli lit up, hygge in every café.', tags: ['Design'] },
+      { place: 'Riga',       country: 'Latvia',   desc: 'Art Nouveau streets and old-town spires.', tags: ['Cheap'] },
+      { place: 'Vilnius',    country: 'Lithuania', desc: 'A baroque old town, quiet and cheap in winter.', tags: ['Cheap'] },
+      { place: 'Hallstatt',  country: 'Austria',  desc: 'A lakeside village under the Alps.', tags: ['Alps'] },
+      { place: 'Innsbruck',  country: 'Austria',  desc: 'Old town below the slopes.', tags: ['Alps'] },
+      { place: 'Salzburg',   country: 'Austria',  desc: 'Baroque squares with the mountains behind.', tags: ['Music'] },
+      { place: 'Vienna',     country: 'Austria',  desc: 'Coffee houses and imperial ballrooms.', tags: ['Coffee'] },
+      { place: 'Budapest',   country: 'Hungary',  desc: 'Steaming outdoor baths in the cold.', tags: ['Cheap'] },
+      { place: 'Prague',     country: 'Czechia',  desc: 'Old Town Square with the tree lit.', tags: ['Cheap'] },
+      { place: 'Krakow',     country: 'Poland',   desc: 'The Main Square market and low prices.', tags: ['Cheap'] }
+    ].filter(it => winterLabel(it.place))
+     .map(it => Object.assign(it, { tags: [winterLabel(it.place)].concat(it.tags) }))
   };
   
   function imgUrl(id, w = 1000) {
@@ -8818,8 +8974,12 @@
     return 2.4;
   }
   
-  function renderRail(key) {
-    const items = [...collections[key]]; // copy
+  function renderRail(key, railId) {
+    let items = [...collections[key]]; // copy
+    // Winter: no beach coves in Hidden Gems either.
+    if (SEASON.isWinter && key === 'hidden') {
+      items = items.filter(it => !/beach|cove/i.test((it.tags || []).join(' ')));
+    }
     // Per-card price: ONLY shown when we can compute a real estimate
     // (place has a cityEconomy entry → weekendEstimate → range via
     // weekendRange, from the current origin). Places without an
@@ -8842,17 +9002,17 @@
     });
     // Smart sort: 'weekends' and 'hidden' favour cheaper picks. Sort by the
     // dynamic per-person all-in when we have it, else fall back to static.
-    if (key === 'weekends' || key === 'hidden' || key === 'beaches') {
+    if (key === 'weekends' || key === 'hidden' || key === 'beaches') { // winter keeps its north-first order
       items.sort((a, b) => (a._dynamicAllIn ?? priceNum(a.price)) - (b._dynamicAllIn ?? priceNum(b.price)));
     }
     const cheapestPrice = Math.min(...items.map(i => i._dynamicAllIn ?? priceNum(i.price)));
-    const rail = document.getElementById('rail-' + key);
+    const rail = document.getElementById(railId || ('rail-' + key));
     if (!rail) return;
     rail.innerHTML = items.map((it, i) => {
       const num = it._dynamicAllIn ?? priceNum(it.price);
       // "Best value" badge only when a real computed estimate backs it —
       // never on a card whose price we can't honestly state.
-      const isDeal = it._dynamicAllIn != null && num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches');
+      const isDeal = it._dynamicAllIn != null && num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches' || key === 'winter');
       const flight = flightForPlace(it.place);
       const flightStr = (function () {
         const h = Math.floor(flight);
@@ -8885,7 +9045,12 @@
   // After rebuild we re-apply saved/compare state so newly-rendered .save
   // buttons reflect any persisted MV.favorites entries.
   function renderAllRails() {
-    Object.keys(collections).forEach(renderRail);
+    renderRail('weekends');
+    renderRail('hidden');
+    // The third rail is seasonal: beaches in the warm months, the
+    // north / snow / Christmas-market picks in winter.
+    if (SEASON.isWinter) renderRail('winter', 'rail-beaches');
+    else renderRail('beaches');
     if (typeof refreshFavouriteUI === 'function') refreshFavouriteUI();
     if (typeof refreshCompareUI === 'function') refreshCompareUI();
   }
@@ -8944,13 +9109,47 @@
   // ============================================================
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-dots button');
-  const places = [
-    { name: 'Lisbon, Portugal',  coord: '38°43′N 9°08′W' },
-    { name: 'Barcelona, Spain',  coord: '41°23′N 2°10′E' },
-    { name: 'Budapest, Hungary', coord: '47°30′N 19°02′E' },
-    { name: 'Naples, Italy',     coord: '40°51′N 14°16′E' },
-    { name: 'Prague, Czechia',   coord: '50°05′N 14°25′E' }
-  ];
+  const places = SEASON.isWinter
+    ? WINTER_HERO.map(w => ({ name: w.place, coord: w.coord, credit: w.credit }))
+    : [
+        { name: 'Lisbon, Portugal',  coord: '38°43′N 9°08′W' },
+        { name: 'Barcelona, Spain',  coord: '41°23′N 2°10′E' },
+        { name: 'Budapest, Hungary', coord: '47°30′N 19°02′E' },
+        { name: 'Naples, Italy',     coord: '40°51′N 14°16′E' },
+        { name: 'Prague, Czechia',   coord: '50°05′N 14°25′E' }
+      ];
+  // Winter: swap the five slides to the WINTER_HERO photos before
+  // anything hydrates. They are Commons files, not article lead
+  // images, so they carry data-photo (a direct source) instead of
+  // data-wiki; the same sizing / retry / deferral pipeline applies.
+  if (SEASON.isWinter) {
+    slides.forEach((s, i) => {
+      const w = WINTER_HERO[i];
+      if (!w) return;
+      delete s.dataset.wiki;
+      s.dataset.photo = w.src;
+      s.dataset.label = w.label;
+      const img = s.querySelector('img');
+      if (img) img.alt = w.place;
+    });
+    dots.forEach((d, i) => { if (places[i]) d.setAttribute('aria-label', 'Show ' + places[i].name); });
+    const tag = document.getElementById('heroTagline');
+    if (tag) {
+      tag.textContent = SEASON.xmas ? 'Northern lights · snow · Christmas markets' : 'Northern lights · snow · winter weekends';
+      tag.dataset.i18n = SEASON.xmas ? 'hero.taglineXmas' : 'hero.taglineWinter';
+    }
+    const meta0 = document.querySelector('.hero-meta');
+    if (meta0 && places[0]) meta0.innerHTML = `<div class="place">${places[0].name}</div><div>${places[0].coord}</div>`;
+  }
+  // CC BY / BY-SA photos are credited while they are on screen.
+  function creditHeroSlide(i) {
+    const attr = document.querySelector('#heroAttribution .sa-text');
+    if (!attr) return;
+    attr.textContent = (places[i] && places[i].credit)
+      ? 'Photo · ' + places[i].credit + ' · Wikimedia Commons'
+      : 'Imagery · Wikipedia';
+  }
+  creditHeroSlide(0);
   let heroIdx = 0;
   // Hidden slides carry data-wiki-defer and only fetch their photo
   // when they are about to be shown. The active slide is the LCP
@@ -8983,6 +9182,7 @@
     if (meta && places[i]) {
       meta.innerHTML = `<div class="place">${places[i].name}</div><div>${places[i].coord}</div>`;
     }
+    creditHeroSlide(i);
     heroIdx = i;
   }
   dots.forEach((d, i) => d.addEventListener('click', () => setHero(i)));
@@ -9054,12 +9254,28 @@
   // cityEconomy + weekendEstimate, so the result is honest and
   // pricing-coherent with everything else on the platform.
   // ============================================================
+  // Seasonal nudge shared by search and the deal picks: in winter,
+  // beach-first places sink and winter picks rise. A nudge, not a
+  // filter — a cheap Barcelona or Valencia city break still shows.
+  function seasonalScoreAdjust(cityKey, tags) {
+    if (!SEASON.isWinter || !cityKey) return 0;
+    if (isWinterPick(cityKey)) return -20;
+    if (!tags) {
+      // try/catch, not typeof: smartDestinations is a later const.
+      try { const sd = smartDestinations.find(x => x.key === cityKey); tags = sd && sd.vibeTags; } catch (e) {}
+    }
+    tags = tags || [];
+    return (tags.includes('Island') || (tags.includes('Beach') && tags.includes('Coastal'))) ? 60 : 0;
+  }
+
   function _vibeTagMatchScore(d, wanted) {
     if (!wanted || wanted.length === 0) return 0;
     const tags = (d.vibeTags || []).map(x => x.toLowerCase());
     let s = 0;
     wanted.forEach(v => {
       const lv = String(v).toLowerCase();
+      // The winter mood matches the curated WINTER_PICKS, not a tag.
+      if (lv === 'winter') { if (isWinterPick(d.key)) s += 4; return; }
       tags.forEach(t => {
         if (t === lv) s += 4;
         else if (t.includes(lv) || lv.includes(t)) s += 2;
@@ -9098,7 +9314,7 @@
       // Score: cheaper wins, vibe match strongly bonused, short
       // flights slightly favoured.
       const flight = d.flights && d.flights[origin] != null ? d.flights[origin] : 3.0;
-      let score = totalPP - (vibeMatch * 28) + (flight * 6);
+      let score = totalPP - (vibeMatch * 28) + (flight * 6) + seasonalScoreAdjust(d.key, d.vibeTags);
       // Tier bonus — keep cheap-tier cities heavily favoured (brand promise)
       const tier = (est && est.tier) || 'mid';
       if (tier === 'budget') score -= 22;
@@ -9106,7 +9322,22 @@
       candidates.push({ d, totalPP, flight, vibeMatch, score, est });
     });
     candidates.sort((a, b) => a.score - b.score);
-    const picks = candidates.slice(0, 5);
+    let picks = candidates.slice(0, 5);
+    // Winter: keep the far north in the five — at least two picks at
+    // 55°N or beyond (Baltics, Scandinavia, Iceland) whenever the
+    // budget allows. Price alone always hands every slot to the
+    // cheaper Central-European Christmas markets.
+    if (SEASON.isWinter) {
+      const farNorth = c => isWinterPick(c.d.key) && ((cityCoords[c.d.key] || [0])[0] >= 55);
+      const missing = 2 - picks.filter(farNorth).length;
+      if (missing > 0) {
+        const extra = candidates.slice(5).filter(farNorth).slice(0, missing);
+        if (extra.length) {
+          picks = picks.slice(0, 5 - extra.length).concat(extra);
+          picks.sort((a, b) => a.score - b.score);
+        }
+      }
+    }
     // Map to trip-shape consumed by openTripDetail. All copy comes
     // from curated sources (cityProfiles + cityEconomy + d.vibe).
     return picks.map((c, i) => {
@@ -10456,7 +10687,7 @@
     if (!img) return;
     img.dataset.place = place;
     const parent = img.parentElement;
-    const url = await wikiImage(place);
+    const url = opts.src || await wikiImage(place);
     if (img.dataset.place !== place) return; // a newer call took over
     if (url) {
       img.classList.remove('img-broken');
@@ -10490,13 +10721,16 @@
   // Find every container marked with data-wiki and fetch its image.
   // Runs once at page load and again after dynamic renders.
   function hydrateWikiImages(root = document) {
-    root.querySelectorAll('[data-wiki]').forEach(el => {
+    root.querySelectorAll('[data-wiki], [data-photo]').forEach(el => {
       if (el.dataset.wikiHydrated === '1') return;
       if (el.dataset.wikiDefer) return; // woken later (hidden hero slides)
       el.dataset.wikiHydrated = '1';
-      const place = el.dataset.wiki;
       const img = el.querySelector('img');
-      if (img) applyWikiImage(img, place);
+      if (!img) return;
+      // data-photo: a curated Wikimedia Commons file (the winter hero)
+      // — no article lookup, straight into the sizing pipeline.
+      if (el.dataset.photo) applyWikiImage(img, el.dataset.label || '', { src: el.dataset.photo });
+      else applyWikiImage(img, el.dataset.wiki);
     });
     root.querySelectorAll('[data-wiki-target="1"]').forEach(el => {
       if (el.dataset.wikiHydrated === '1') return;
@@ -14991,6 +15225,9 @@
         'nav.toTop': 'Maison Voyage — nach oben',
 
         'hero.tagline': 'Günstige, schöne Wochenenden · Europa',
+        'hero.taglineXmas': 'Nordlichter · Schnee · Weihnachtsmärkte',
+        'hero.taglineWinter': 'Nordlichter · Schnee · Winterwochenenden',
+        'hero.sub': 'Flug, Unterkunft und drei Dinge, die sich lohnen. Ein Preis, alles inklusive.',
         'hero.cta': 'Finde dein günstigstes Wochenende',
         'hero.scroll': 'Scrollen zum Entdecken',
 
@@ -15798,6 +16035,7 @@
     let score = price * 1.0 + flight * 25;
     if (d.vibeTags.includes('Cheap luxe')) score -= 18;
     if (d.vibeTags.includes('Hidden')) score -= 8;
+    score += seasonalScoreAdjust(d.key, d.vibeTags); // winter: north up, beaches down
     return score;
   }
   
@@ -16572,11 +16810,11 @@
     const action = document.getElementById('mapHintAction');
     el.dataset.mode = mode;
     if (mode === 'idle') {
-      if (label)  label.textContent = 'Hover anywhere to discover · click to enter';
+      if (label)  label.textContent = 'Tap a pin to explore';
       if (action) action.hidden = true;
     } else if (mode === 'ambient') {
       const n = (opts && opts.count) || 0;
-      if (label)  label.textContent = n + ' weekend' + (n === 1 ? '' : 's') + ' near here · click any to enter';
+      if (label)  label.textContent = n + ' weekend' + (n === 1 ? '' : 's') + ' near here';
       if (action) action.hidden = true;
     } else if (mode === 'scene') {
       const name = (opts && opts.city) || _currentScene || '';
@@ -16811,6 +17049,7 @@
     if (tier === 'budget') s -= 25;
     else if (tier === 'mid') s -= 8;
     else if (tier === 'luxury') s += 18;
+    s += seasonalScoreAdjust(dCity);
     return s;
   }
 
@@ -17737,15 +17976,7 @@
   });
   imgObserver.observe(document.body, { childList: true, subtree: true });
   
-  // ====== CONCIERGE TABS ======
-  document.querySelectorAll('.cg-tabs .cg-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.cg-tabs .cg-tab').forEach(x => x.classList.remove('on'));
-      t.classList.add('on');
-    });
-  });
-  
-  // Map toggle removed — satellite-only is the experience now.
+  // (Map / Satellite switch lives in initLeaflet — see setMapLayer.)
 
   // Initialise map
   bindMapControls();
