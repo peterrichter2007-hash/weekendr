@@ -123,7 +123,7 @@ const DE_COUNTRY = {
   Poland: 'Polen', Austria: 'Österreich', Denmark: 'Dänemark',
   'United Kingdom': 'Grossbritannien', Netherlands: 'Niederlande', Germany: 'Deutschland',
   Belgium: 'Belgien', Ireland: 'Irland', Sweden: 'Schweden', Norway: 'Norwegen',
-  Serbia: 'Serbien', Latvia: 'Lettland', Lithuania: 'Litauen', Monaco: 'Monaco',
+  Serbia: 'Serbien', Latvia: 'Lettland', Lithuania: 'Litauen', Estonia: 'Estland', Monaco: 'Monaco',
   Iceland: 'Island', Slovenia: 'Slowenien', Slovakia: 'Slowakei', Bulgaria: 'Bulgarien',
   Bosnia: 'Bosnien', Albania: 'Albanien', 'North Macedonia': 'Nordmazedonien',
   Switzerland: 'Schweiz'

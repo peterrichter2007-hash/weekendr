@@ -7795,7 +7795,7 @@
             <!-- Replaced at runtime from smartDestinations.length; this
                  is only what a crawler or a no-JS visitor sees. It said
                  67 while the dataset held 64. -->
-            <span id="heroTrustLine">All-in estimates · 64 cities · no signup</span>
+            <span id="heroTrustLine">All-in estimates · 65 cities · no signup</span>
           </div>
         </div>
       </div>
@@ -8072,7 +8072,7 @@
           <span class="label">Cities tracked</span>
           <!-- Was a hardcoded 67 that nothing kept in sync — the
                dataset holds 64. Now written from smartDestinations. -->
-          <span class="value" id="manifestoCityCount">64 · Europe only</span>
+          <span class="value" id="manifestoCityCount">65 · Europe only</span>
         </div>
         <div>
           <span class="label">Routes via</span>
@@ -8515,6 +8515,7 @@
           <a href="/city/sofia" data-de-href="/de/city/sofia" data-de-text="Sofia">Sofia</a>
           <a href="/city/split" data-de-href="/de/city/split" data-de-text="Split">Split</a>
           <a href="/city/stockholm" data-de-href="/de/city/stockholm" data-de-text="Stockholm">Stockholm</a>
+          <a href="/city/tallinn" data-de-href="/de/city/tallinn" data-de-text="Tallinn">Tallinn</a>
           <a href="/city/tirana" data-de-href="/de/city/tirana" data-de-text="Tirana">Tirana</a>
           <a href="/city/valencia" data-de-href="/de/city/valencia" data-de-text="Valencia">Valencia</a>
           <a href="/city/venice" data-de-href="/de/city/venedig" data-de-text="Venedig">Venice</a>
@@ -8803,20 +8804,74 @@
     return { isWinter: winter, xmas };
   })();
 
+  // ---- German display helpers --------------------------------
+  // For markup that is built in JS (rail cards, deal cards, results,
+  // map hints). Static frame strings are handled by MV.i18n further
+  // down. isDE() is safe before MV exists: MV is a later const, so
+  // the access throws inside the try and we fall back to English.
+  function isDE() { try { return MV.i18n.lang() === 'de'; } catch (e) { return false; } }
+  function tr(en, de) { return isDE() ? de : en; }
+  // German exonyms + country names — same spellings as the generated
+  // /de/city pages (scripts/build-city-pages.js).
+  const DE_CITY = {
+    Lisbon: 'Lissabon', Prague: 'Prag', Milan: 'Mailand', Naples: 'Neapel',
+    Venice: 'Venedig', Florence: 'Florenz', Rome: 'Rom', Athens: 'Athen',
+    Copenhagen: 'Kopenhagen', Brussels: 'Brüssel', Warsaw: 'Warschau',
+    Krakow: 'Krakau', 'Gdańsk': 'Danzig', 'Wrocław': 'Breslau', Nice: 'Nizza',
+    Seville: 'Sevilla', Lucerne: 'Luzern', Vienna: 'Wien', Belgrade: 'Belgrad',
+    'Lake Como': 'Comer See', Santorini: 'Santorin', Malaga: 'Málaga',
+    Reykjavik: 'Reykjavík', Munich: 'München', Zurich: 'Zürich'
+  };
+  const DE_COUNTRY = {
+    Spain: 'Spanien', Hungary: 'Ungarn', Czechia: 'Tschechien', Italy: 'Italien',
+    Croatia: 'Kroatien', Greece: 'Griechenland', France: 'Frankreich', Poland: 'Polen',
+    Austria: 'Österreich', Denmark: 'Dänemark', 'United Kingdom': 'Grossbritannien',
+    Netherlands: 'Niederlande', Germany: 'Deutschland', Belgium: 'Belgien',
+    Ireland: 'Irland', Sweden: 'Schweden', Norway: 'Norwegen', Serbia: 'Serbien',
+    Latvia: 'Lettland', Lithuania: 'Litauen', Estonia: 'Estland', Iceland: 'Island',
+    Slovenia: 'Slowenien', Slovakia: 'Slowakei', Bulgaria: 'Bulgarien',
+    Bosnia: 'Bosnien', Albania: 'Albanien', 'North Macedonia': 'Nordmazedonien',
+    Switzerland: 'Schweiz', Morocco: 'Marokko'
+  };
+  // Short labels: winter reasons, chips, badges.
+  const DE_WORD = {
+    'Northern lights': 'Nordlichter', 'Christmas market': 'Weihnachtsmarkt',
+    'Christmas markets': 'Weihnachtsmärkte', 'Nordic winter': 'Nordischer Winter',
+    'Snow & ski jump': 'Schnee & Skischanze', 'Gingerbread town': 'Lebkuchenstadt',
+    'Fjords in winter': 'Fjorde im Winter', 'Tivoli at Christmas': 'Tivoli zu Weihnachten',
+    'Winter harbour': 'Winterhafen', 'Baltic winter': 'Baltischer Winter',
+    'Alpine lakeside': 'Bergsee', 'Ski from town': 'Ski ab der Stadt',
+    'Alpine snow': 'Alpenschnee', 'Alpine winter': 'Alpenwinter',
+    'Ball season': 'Ballsaison', 'Thermal baths': 'Thermalbäder',
+    'Hot pools': 'Heisse Quellen', 'Old town': 'Altstadt', 'Fjords': 'Fjorde',
+    'Cheap': 'Günstig', 'Alps': 'Alpen', 'Music': 'Musik', 'Coffee': 'Kaffeehäuser',
+    'Best value': 'Bester Wert', 'Top pick': 'Top-Tipp', 'Cheap flight': 'Günstiger Flug',
+    'Bus deal': 'Bus-Deal', 'Quick train': 'Schneller Zug',
+    'Whole weekend under €180': 'Ganzes Wochenende unter €180',
+    'Fly': 'Flug', 'Train': 'Zug',
+    'Cultural': 'Kultur', 'Hidden': 'Geheimtipp', 'Coastal': 'Küste',
+    'Romantic': 'Romantisch', 'Editorial': 'Stilvoll', 'Nightlife': 'Nachtleben',
+    'Beach': 'Strand', 'Island': 'Insel', 'Nature': 'Natur', 'Cinematic': 'Filmreif',
+    'Cheap luxe': 'Günstiger Luxus', 'Cool': 'Cool', 'Wine': 'Wein'
+  };
+  function deCity(name)    { return (isDE() && DE_CITY[name]) || name; }
+  function deCountry(name) { return (isDE() && DE_COUNTRY[name]) || name; }
+  function deWord(w)       { return (isDE() && DE_WORD[w]) || w; }
+
   // Curated winter picks — only cities in the dataset. `xmas` is the
   // Nov–Dec label, `tag` the rest-of-winter one (null = not a winter
-  // pick outside the Christmas-market weeks). Tallinn would belong
-  // here but is not one of the 64 destinations yet.
+  // pick outside the Christmas-market weeks).
   const WINTER_PICKS = {
     'Reykjavik':  { tag: 'Northern lights' },
     'Stockholm':  { xmas: 'Christmas market', tag: 'Nordic winter' },
     'Oslo':       { xmas: 'Christmas market', tag: 'Snow & ski jump' },
     'Bergen':     { xmas: 'Gingerbread town', tag: 'Fjords in winter' },
     'Copenhagen': { xmas: 'Tivoli at Christmas', tag: 'Winter harbour' },
+    'Tallinn':    { xmas: 'Christmas market', tag: 'Baltic winter' },
     'Riga':       { xmas: 'Christmas market', tag: 'Baltic winter' },
     'Vilnius':    { xmas: 'Christmas market', tag: 'Baltic winter' },
     'Gdańsk':     { xmas: 'Christmas market', tag: 'Baltic winter' },
-    'Hallstatt':  { tag: 'Snowy lakeside' },
+    'Hallstatt':  { tag: 'Alpine lakeside' },
     'Innsbruck':  { xmas: 'Christmas market', tag: 'Ski from town' },
     'Interlaken': { tag: 'Alpine snow' },
     'Salzburg':   { xmas: 'Christkindlmarkt', tag: 'Alpine winter' },
@@ -8931,6 +8986,7 @@
       { place: 'Stockholm',  country: 'Sweden',   desc: 'Gamla Stan by candlelight.', tags: ['Old town'] },
       { place: 'Oslo',       country: 'Norway',   desc: 'A fjord city with the ski jump one metro ride away.', tags: ['Fjord'] },
       { place: 'Bergen',     country: 'Norway',   desc: 'A fjord harbour ringed by seven mountains.', tags: ['Fjords'] },
+      { place: 'Tallinn',    country: 'Estonia',  desc: 'A walled medieval old town on the Baltic.', tags: ['Old town'] },
       { place: 'Copenhagen', country: 'Denmark',  desc: 'Tivoli lit up, hygge in every café.', tags: ['Design'] },
       { place: 'Riga',       country: 'Latvia',   desc: 'Art Nouveau streets and old-town spires.', tags: ['Cheap'] },
       { place: 'Vilnius',    country: 'Lithuania', desc: 'A baroque old town, quiet and cheap in winter.', tags: ['Cheap'] },
@@ -8943,6 +8999,23 @@
       { place: 'Krakow',     country: 'Poland',   desc: 'The Main Square market and low prices.', tags: ['Cheap'] }
     ].filter(it => winterLabel(it.place))
      .map(it => Object.assign(it, { tags: [winterLabel(it.place)].concat(it.tags) }))
+  };
+  const WINTER_DESC_DE = {
+    Reykjavik: 'Polarlicht-Saison, heisse Quellen, dunkler Himmel gleich vor der Stadt.',
+    Stockholm: 'Gamla Stan im Kerzenlicht.',
+    Oslo: 'Fjordstadt mit der Skischanze eine Metrofahrt entfernt.',
+    Bergen: 'Ein Fjordhafen, umgeben von sieben Bergen.',
+    Tallinn: 'Eine ummauerte mittelalterliche Altstadt an der Ostsee.',
+    Copenhagen: 'Tivoli im Lichterglanz, Hygge in jedem Café.',
+    Riga: 'Jugendstil-Strassen und Altstadttürme.',
+    Vilnius: 'Eine barocke Altstadt, ruhig und günstig im Winter.',
+    Hallstatt: 'Ein Dorf am See unter den Alpen.',
+    Innsbruck: 'Altstadt direkt unter den Pisten.',
+    Salzburg: 'Barocke Plätze, dahinter die Berge.',
+    Vienna: 'Kaffeehäuser und kaiserliche Ballsäle.',
+    Budapest: 'Dampfende Freiluftbäder in der Kälte.',
+    Prague: 'Der Altstädter Ring mit beleuchtetem Baum.',
+    Krakow: 'Der Markt auf dem Hauptplatz und kleine Preise.'
   };
   
   function imgUrl(id, w = 1000) {
@@ -8962,16 +9035,17 @@
     return (typeof mapState !== 'undefined' && mapState) ? mapState.from : 'Berlin';
   }
   
-  // Estimate a flight time per place (fallback: lookup smartDestinations, else default)
+  // Flight time for a rail card — only when the dataset really has
+  // one for this place from the current origin, otherwise null and the
+  // card shows no flight line. This used to fall back to a flat 2.4h,
+  // so Marrakech, Procida, every beach cove and any place viewed from
+  // an unlisted origin all claimed "2h 24m". The lookup was also a
+  // substring match, under which "Venice" matched "Nice".
   function flightForPlace(name) {
-    if (typeof smartDestinations !== 'undefined') {
-      const d = smartDestinations.find(x =>
-        name.toLowerCase().includes(x.key.toLowerCase()) ||
-        x.key.toLowerCase().includes(name.toLowerCase())
-      );
-      if (d) return d.flights[currentFrom()] || 2.4;
-    }
-    return 2.4;
+    if (typeof smartDestinations === 'undefined' || !name) return null;
+    const d = smartDestinations.find(x => x.key.toLowerCase() === String(name).toLowerCase());
+    const h = d && d.flights ? d.flights[currentFrom()] : null;
+    return (typeof h === 'number' && h > 0) ? h : null;
   }
   
   function renderRail(key, railId) {
@@ -8996,7 +9070,7 @@
         try {
           const est = weekendEstimate(it.place, { origin: fromCity, adults: 2, nights: 2 });
           it._dynamicAllIn = est.totalPP;
-          it._displayPrice = weekendRange(est.totalPP) + ' pp';
+          it._displayPrice = weekendRange(est.totalPP) + tr(' pp', ' p. P.');
         } catch (e) { /* no price badge */ }
       }
     });
@@ -9015,6 +9089,7 @@
       const isDeal = it._dynamicAllIn != null && num <= cheapestPrice * 1.12 && (key === 'weekends' || key === 'hidden' || key === 'beaches' || key === 'winter');
       const flight = flightForPlace(it.place);
       const flightStr = (function () {
+        if (flight == null) return '';
         const h = Math.floor(flight);
         const m = Math.round((flight - h) * 60);
         return m > 0 ? `${h}h ${m}m` : `${h}h`;
@@ -9023,20 +9098,20 @@
         <div class="rail-card" onclick="openDetail(${JSON.stringify(it).replace(/"/g, '&quot;')})">
           <div class="img-wrap has-placeholder" data-label="${it.place}" data-wiki="${it.place}">
             <img alt="${it.place}" loading="lazy" />
-            ${isDeal ? `<span class="deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Best value</span>` : ''}
+            ${isDeal ? `<span class="deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>${tr('Best value', 'Bester Wert')}</span>` : ''}
             ${it._displayPrice ? `<span class="price">${it._displayPrice}</span>` : ''}
             <button class="save" data-fav-toggle="${it.place}" aria-label="Save trip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
           </div>
           <div class="meta">
-            <span class="place">${it.place}</span>
-            <span class="country">${it.country}</span>
+            <span class="place">${deCity(it.place)}</span>
+            <span class="country">${deCountry(it.country)}</span>
           </div>
-          <p class="desc">${it.desc}</p>
-          <div class="flight-meta">
+          <p class="desc">${(isDE() && key === 'winter' && WINTER_DESC_DE[it.place]) || it.desc}</p>
+          ${flightStr ? `<div class="flight-meta">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l18-7-7 18-2-8-9-3z"/></svg>
-            ${flightStr} from ${currentFrom()}
-          </div>
-          <div class="tags" style="margin-top: 0.6rem;">${it.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>
+            ${flightStr} ${tr('from', 'ab')} ${deCity(currentFrom())}
+          </div>` : ''}
+          <div class="tags" style="margin-top: 0.6rem;">${it.tags.map(t => `<span class="chip">${deWord(t)}</span>`).join('')}</div>
         </div>
       `;
     }).join('');
@@ -9333,7 +9408,14 @@
       if (missing > 0) {
         const extra = candidates.slice(5).filter(farNorth).slice(0, missing);
         if (extra.length) {
-          picks = picks.slice(0, 5 - extra.length).concat(extra);
+          // Make room by dropping the lowest-ranked picks that are NOT
+          // far-north — dropping simply "the last one" could evict the
+          // one northern pick already there.
+          const keep = picks.slice();
+          for (let k = keep.length - 1, drop = extra.length; k >= 0 && drop > 0; k--) {
+            if (!farNorth(keep[k])) { keep.splice(k, 1); drop--; }
+          }
+          picks = keep.concat(extra).slice(0, 5);
           picks.sort((a, b) => a.score - b.score);
         }
       }
@@ -9961,6 +10043,7 @@
     Reykjavik:           ['Bæjarins_Beztu_Pylsur', 'Icelandic_cuisine', 'Reykjavík'],
     Riga:                ['Riga_Central_Market', 'Latvian_cuisine', 'Riga_Black_Balsam'],
     Vilnius:             ['Lithuanian_cuisine', 'Cepelinai'],
+    Tallinn:             ['Kama_(food)', 'Vana_Tallinn', 'Estonian_cuisine'],
     // ----- East + Balkans -----
     Budapest:            ['Great_Market_Hall,_Budapest', 'Ruin_bar', 'Hungarian_wine', 'Lángos'],
     Prague:              ['U_Fleků', 'Czech_beer', 'Old_Town_Square', 'Beer_in_the_Czech_Republic'],
@@ -10311,6 +10394,7 @@
     Warsaw:    ['Warsaw', 'Warsaw_Old_Town', 'Royal_Castle,_Warsaw', 'Łazienki_Park', 'Palace_of_Culture_and_Science'],
     Riga:      ['Riga', 'House_of_the_Black_Heads', 'Riga_Cathedral', 'Central_Market,_Riga'],
     Vilnius:   ['Vilnius', 'Vilnius_Old_Town', "Gediminas'_Tower", 'Užupis'],
+    Tallinn:   ['Tallinn', 'Tallinn_Old_Town', 'Toompea', 'Alexander_Nevsky_Cathedral,_Tallinn', 'Tallinn_Town_Hall', 'Kadriorg_Palace'],
     Monaco:    ['Monaco', 'Monte_Carlo_Casino', "Prince's_Palace_of_Monaco", 'Monaco_Cathedral'],
     'Lake Como': ['Lake_Como', 'Bellagio,_Lombardy', 'Varenna', 'Como'],
     Reykjavik: ['Reykjavík', 'Hallgrímskirkja', 'Harpa_(concert_hall)', 'Sun_Voyager', 'Blue_Lagoon_(geothermal_spa)'],
@@ -10784,24 +10868,26 @@
   
   function renderResults(trips, ctx) {
     const body = document.getElementById('resBody');
-    document.getElementById('resTitle').textContent = 'Cheap escapes for you';
-    document.getElementById('resMeta').textContent = `${trips.length} affordable weekends · from ${ctx.from} · ranked by value`;
+    document.getElementById('resTitle').textContent = tr('Cheap escapes for you', 'Günstige Trips für dich');
+    document.getElementById('resMeta').textContent = isDE()
+      ? `${trips.length} günstige Wochenenden · ab ${deCity(ctx.from)} · nach Wert sortiert`
+      : `${trips.length} affordable weekends · from ${ctx.from} · ranked by value`;
     body.innerHTML = trips.map((t, i) => {
       const place = t.place || t.title || 'Europe';
       return `
         <div class="res-card" data-idx="${i}">
           <div class="ri has-placeholder" data-label="${place}" data-wiki="${place}">
             <img alt="${place}" loading="lazy" decoding="async" />
-            <span class="num">No. ${String(i + 1).padStart(2, '0')}</span>
+            <span class="num">${tr('No.', 'Nr.')} ${String(i + 1).padStart(2, '0')}</span>
           </div>
           <div class="rb">
-            <div class="place">${t.country || t.place}</div>
-            <h4>${t.title || t.place}</h4>
+            <div class="place">${deCountry(t.country || t.place)}</div>
+            <h4>${deCity(t.title || t.place)}</h4>
             <p class="desc">${t.description || t.vibe || ''}</p>
-            <div class="tags">${(t.tags || []).slice(0, 4).map(x => `<span class="tag">${x}</span>`).join('')}</div>
+            <div class="tags">${(t.tags || []).slice(0, 4).map(x => `<span class="tag">${deWord(x)}</span>`).join('')}</div>
             <div class="foot">
-              <div class="price">${(t.price || '').replace(/per person.*/i, '').trim()}<span class="per">per person</span></div>
-              <button class="open-btn">View detail<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+              <div class="price">${(t.price || '').replace(/per person.*/i, '').trim()}<span class="per">${tr('per person', 'pro Person')}</span></div>
+              <button class="open-btn">${tr('View detail', 'Details')}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
             </div>
           </div>
         </div>
@@ -11117,6 +11203,7 @@
     Skopje:     { iata: 'SKP',                 metro: false },
     Riga:       { iata: 'RIX',                 metro: false },
     Vilnius:    { iata: 'VNO',                 metro: false },
+    Tallinn:    { iata: 'TLL',                 metro: false },
     Ljubljana:  { iata: 'LJU',                 metro: false },
     Bratislava: { iata: 'BTS',                 metro: false },
     'Wrocław':  { iata: 'WRO',                 metro: false },
@@ -11255,7 +11342,7 @@
     Benidorm: 'benidorm', Malaga: 'malaga', Cannes: 'cannes', Split: 'split',
     Zadar: 'zadar', Albufeira: 'albufeira', Faro: 'faro', Catania: 'catania',
     Bari: 'bari', Belgrade: 'belgrade', Warsaw: 'warsaw', Riga: 'riga',
-    Vilnius: 'vilnius', Ljubljana: 'ljubljana', Bratislava: 'bratislava',
+    Vilnius: 'vilnius', Tallinn: 'tallinn', Ljubljana: 'ljubljana', Bratislava: 'bratislava',
     Sofia: 'sofia', Sarajevo: 'sarajevo', Tirana: 'tirana', Skopje: 'skopje',
     'Wrocław': 'wroclaw-poland', 'Gdańsk': 'gdansk', Lucerne: 'lucerne',
     Innsbruck: 'innsbruck', Salzburg: 'salzburg', Bergen: 'bergen', Annecy: 'annecy'
@@ -12801,6 +12888,7 @@
     Athens:    { tier: 'mid',     h_min: 25, h_mid: 75,  h_max: 180, a_min: 0, a_mid: 22, a_max: 60,  m_lunch: 10, m_dinner: 22 },
     Lisbon:    { tier: 'mid',     h_min: 22, h_mid: 75,  h_max: 200, a_min: 0, a_mid: 22, a_max: 60,  m_lunch: 10, m_dinner: 22 },
     Porto:     { tier: 'mid',     h_min: 22, h_mid: 70,  h_max: 180, a_min: 0, a_mid: 20, a_max: 55,  m_lunch: 9,  m_dinner: 20 },
+    Tallinn:   { tier: 'mid',     h_min: 22, h_mid: 72,  h_max: 180, a_min: 0, a_mid: 18, a_max: 50,  m_lunch: 10, m_dinner: 22 },
     Faro:      { tier: 'mid',     h_min: 28, h_mid: 80,  h_max: 200, a_min: 0, a_mid: 22, a_max: 60,  m_lunch: 11, m_dinner: 24 },
     Albufeira: { tier: 'mid',     h_min: 35, h_mid: 95,  h_max: 240, a_min: 0, a_mid: 25, a_max: 65,  m_lunch: 12, m_dinner: 26 },
     Granada:   { tier: 'mid',     h_min: 20, h_mid: 65,  h_max: 170, a_min: 0, a_mid: 18, a_max: 50,  m_lunch: 9,  m_dinner: 20 },
@@ -13062,6 +13150,7 @@
     'Finland':     { quarter: 'Centre',         cuisine: 'Finnish', dish: 'salmon soup + a Lapin Kulta', market: 'kauppahalli' },
     'Latvia':      { quarter: 'Vecrīga',        cuisine: 'Latvian', dish: 'rye bread + Riga black balsam', market: 'tirgus' },
     'Lithuania':   { quarter: 'Senamiestis',    cuisine: 'Lithuanian', dish: 'cepelinai + a chilled vodka', market: 'turgus' },
+    'Estonia':     { quarter: 'Vanalinn',       cuisine: 'Estonian', dish: 'black rye bread + smoked sprats', market: 'turg' },
     'Monaco':      { quarter: 'Monte Carlo',    cuisine: 'Niçoise · French', dish: 'pissaladière + a glass of Bandol', market: 'Marché' }
   };
   function _vocab(country) { return _countryVocab[country] || { quarter: 'Old Town', cuisine: 'Local', dish: 'the regional dish + a local drink', market: 'market' }; }
@@ -14215,6 +14304,14 @@
       vibeTags: ['Hidden', 'Cultural', 'Cheap luxe']
     },
     {
+      key: 'Tallinn', country: 'Estonia',
+      vibe: 'Medieval · Old town · Baltic',
+      tagline: 'A walled medieval old town on the Baltic — towers, cobbles and sea air.',
+      prices: { Berlin: 59, Munich: 109, Zurich: 129, Vienna: 99, Amsterdam: 99, London: 79, Paris: 119, Stockholm: 55, Madrid: 189 },
+      flights: { Berlin: 1.9, Munich: 2.3, Zurich: 2.7, Vienna: 2.1, Amsterdam: 2.4, London: 2.9, Paris: 2.9, Stockholm: 1.0, Madrid: 4.5 },
+      vibeTags: ['Cultural', 'Hidden', 'Coastal']
+    },
+    {
       key: 'Monaco', country: 'Monaco',
       vibe: 'Riviera · Casino · Yachts',
       tagline: 'The casino at midnight, supercars on the cliff road, the Med below.',
@@ -14384,7 +14481,7 @@
     Split: [43.508, 16.440], Zadar: [44.119, 15.230], Albufeira: [37.089, -8.247],
     Faro: [37.019, -7.930], Catania: [37.502, 15.087], Bari: [41.117, 16.872],
     Belgrade: [44.787, 20.457], Warsaw: [52.230, 21.012], Riga: [56.949, 24.105],
-    Vilnius: [54.687, 25.279], Monaco: [43.738, 7.424], 'Lake Como': [45.998, 9.260],
+    Vilnius: [54.687, 25.279], Tallinn: [59.437, 24.754], Monaco: [43.738, 7.424], 'Lake Como': [45.998, 9.260],
     Reykjavik: [64.146, -21.942], Ljubljana: [46.056, 14.506], Bratislava: [48.148, 17.107],
     Sofia: [42.698, 23.319], Sarajevo: [43.857, 18.413], Tirana: [41.327, 19.819],
     Skopje: [41.997, 21.428], 'Wrocław': [51.107, 17.039], 'Gdańsk': [54.352, 18.646],
@@ -15301,6 +15398,131 @@
       });
     }
 
+    // ---- frame strings the data-i18n attributes cannot reach -----
+    // Headings with an inline <em>, buttons that carry an icon,
+    // labels that share their parent with a dot or an svg. Keyed by
+    // selector so the markup stays untouched; the English original is
+    // captured on first run and restored when switching back.
+    //   [selector, german]          → innerHTML
+    //   [selector, german, 'text']  → first non-empty text node only
+    const EM = 'em style="font-style: italic; color: var(--accent);"';
+    const FRAME_DE = [
+      // nav + hero
+      ['.nav-cta', 'Trip planen', 'text'],
+      ['.hero-headline .word:nth-child(1) > span', 'Kleine'],
+      ['.hero-headline .word:nth-child(2) > span', 'Preise.'],
+      ['.hero-headline .word:nth-child(4) > span', 'Schöne'],
+      ['.hero-headline .word:nth-child(5) > span', 'Städte.'],
+      ['.btn-primary-hero', 'Günstigstes Wochenende finden', 'text'],
+      ['.hero-scroll > span:first-child', 'Scrollen zum Entdecken'],
+      ['.sticky-cta-label', 'Günstige Trips zeigen'],
+      // mobile menu
+      ['.fullmenu a[href="#destinations"] > span:first-child', 'Reiseziele'],
+      ['.fullmenu a[href="#weekends"] > span:first-child', 'Wochenend-Trips'],
+      ['.fullmenu a[href="#hidden"] > span:first-child', 'Geheimtipps'],
+      ['.fullmenu a[href="#map"] > span:first-child', 'Die Karte'],
+      ['.fullmenu a[href="#stories"] > span:first-child', 'Das Journal'],
+      // concierge
+      ['#concierge .section-head .eyebrow', 'Der Concierge · sofort', 'text'],
+      ['#concierge .section-head h2', 'Nenn uns dein Budget.<br><em class="italic-accent">Wir finden das Wochenende.</em>'],
+      ['.cg-ai-status', 'sofort'],
+      ['.cg-lbl:has(+ #vibeGrid)', 'Die Stimmung'],
+      ['.cg-cta .btxt', 'Günstigstes Wochenende finden'],
+      ['.cg-cta-hint > span:last-child', '5 Treffer · sofort'],
+      ['[data-vibe="Romantic"]', 'Romantisch', 'text'],
+      ['[data-vibe="Beach"]', 'Strand', 'text'],
+      ['[data-vibe="Hidden"]', 'Geheimtipps', 'text'],
+      ['[data-vibe="Cultural"]', 'Kultur', 'text'],
+      // deals + manifesto
+      ['.deals-eyebrow', 'Preis-Tipps von heute', 'text'],
+      ['.deals-title', 'Die besten günstigen <em>Wochenenden</em> – jetzt.'],
+      ['#dealsOriginPill > span', 'Ab ', 'text'],
+      ['.manifesto .eyebrow', 'Warum es uns gibt', 'text'],
+      ['.manifesto-text', 'Ein schönes Wochenende in Europa <em>muss keine €1500 kosten</em>.'],
+      ['.manifesto-meta > div:nth-child(1) .label', 'Günstigstes Wochenende jetzt'],
+      ['.manifesto-meta > div:nth-child(2) .label', 'Städte im Blick'],
+      ['.manifesto-meta > div:nth-child(3) .label', 'Routen über'],
+      ['.manifesto-meta > div:nth-child(4) .label', 'Für'],
+      ['.manifesto-meta > div:nth-child(4) .value', 'Studierende · Freunde · Paare'],
+      // map
+      ['#map .section-head .eyebrow', 'Der Atlas · Richtpreise', 'text'],
+      ['#map .section-head h2', 'Wohin können wir <em class="italic-accent">wirklich</em>?'],
+      ['#map .section-head .lede', 'Wähle deinen Flughafen. Wir sortieren, was sich lohnt.'],
+      ['.map-controls .mc-block:nth-child(1) .mc-lbl', 'Ab'],
+      ['.map-controls .mc-block:nth-child(2) .mc-lbl', 'Sortieren'],
+      ['.mc-chip[data-city="Munich"]', 'München'],
+      ['.mc-chip[data-city="Zurich"]', 'Zürich'],
+      ['.mc-chip[data-city="Vienna"]', 'Wien'],
+      ['.mc-chip[data-sort="value"]', 'Bester Wert'],
+      ['.mc-chip[data-sort="price"]', 'Günstigste'],
+      ['.mc-chip[data-sort="short"]', 'Kürzester Flug'],
+      ['.map-live > span:last-child', 'Richtpreise · Klick für Skyscanner'],
+      ['#mapStats > div:nth-child(1) .lbl', 'Günstigstes'],
+      ['#mapStats > div:nth-child(3) .lbl', 'Kürzester'],
+      ['#mapStats > div:nth-child(5) .lbl', 'In Reichweite'],
+      ['#mapHintAction', 'Übersicht', 'text'],
+      ['.ml-title', 'In Reichweite'],
+      ['.ml-foot > span:last-child', 'Schätzungen · Buchung über Skyscanner'],
+      // editorial + rails + journal
+      ['#destinations .section-head .eyebrow', 'Die aktuelle Auswahl', 'text'],
+      ['#destinations .section-head h2', 'Orte, die wir gerade <em class="italic-accent">lieben</em>.'],
+      ['#destinations .section-head .link', 'Alle Reiseziele ansehen', 'text'],
+      ['#weekends .rail-head .eyebrow', 'Wochenend-Trips · 48 Stunden entfernt', 'text'],
+      ['#weekends .rail-head h2', 'Freitag hin, <' + EM + '>Sonntag zurück</em>'],
+      ['#hidden .rail-head .eyebrow', 'Geheimtipps', 'text'],
+      ['#hidden .rail-head h2', 'Orte, die <' + EM + '>kaum jemand kennt</em>'],
+      ['#seasonRailEyebrow', SEASON.isWinter ? 'Winterwochenenden' : 'Strandziele'],
+      ['#seasonRailTitle', SEASON.isWinter
+        ? 'Nordlichter &amp; <' + EM + '>' + (SEASON.xmas ? 'Weihnachtsmärkte' : 'Schnee') + '</em>'
+        : 'Lange schwimmen, <' + EM + '>sonst nichts</em>'],
+      ['[data-season-label]', SEASON.isWinter ? 'Winterwochenenden' : 'Strandziele'],
+      ['#stories .section-head .eyebrow', 'Das Journal', 'text'],
+      ['#stories .section-head h2', 'Geschichten von <em class="italic-accent">unterwegs</em>.'],
+      // closing band + footer
+      ['.cta-band .eyebrow', 'Los geht\'s', 'text'],
+      ['.cta-band h2', 'Günstige Wochenenden, <em>schön sortiert</em>.'],
+      ['.cta-band .cta-inner > p', 'Dein Budget, dein Flughafen. Den Rest machen wir.'],
+      ['.cta-band .btn-primary', 'Mein günstiges Wochenende finden', 'text'],
+      ['.foot-brand > p:nth-of-type(1)', 'Günstige, schöne Wochenenden in Europa.'],
+      ['.foot-brand > p:nth-of-type(2)', 'Ein unabhängiges Wochenend-Projekt · betrieben in der Schweiz.'],
+      ['footer ul a[href="#destinations"]', 'Reiseziele'],
+      ['footer ul a[href="#weekends"]', 'Wochenend-Trips'],
+      ['footer ul a[href="#hidden"]', 'Geheimtipps'],
+      ['footer ul a[href="#stories"]', 'Das Journal'],
+      ['footer ul a[href="#map"]', 'Der Atlas'],
+      ['footer ul a[href="#deals"]', 'Beste Deals'],
+      ['footer ul a[data-legal="privacy"]', 'Datenschutz'],
+      ['footer ul a[data-legal="cookies"]', 'Cookie-Einstellungen'],
+      ['footer ul a[href^="mailto:"]', 'Kontakt'],
+      ['.trust-list .trust-item:nth-child(1) .trust-cat', 'Bilder'],
+      ['.trust-list .trust-item:nth-child(2) .trust-cat', 'Wetter'],
+      ['.trust-list .trust-item:nth-child(3) .trust-cat', 'Karte'],
+      ['.trust-list .trust-item:nth-child(4) .trust-cat', 'Links'],
+      ['.trust-note', 'Preise sind Schätzungen auf Basis von Transport- und Übernachtungsspannen. Endpreise können auf den Partnerseiten abweichen.'],
+      ['.foot-bottom > div:first-child', '© 2026 Maison Voyage. Alle Rechte vorbehalten.'],
+      ['.foot-bottom [data-legal="privacy"]', 'Datenschutz']
+    ];
+    const frameEn = new WeakMap();
+    function applyFrame() {
+      const de = lang() === 'de';
+      FRAME_DE.forEach(([sel, deStr, mode]) => {
+        let els;
+        try { els = document.querySelectorAll(sel); } catch (e) { return; }
+        els.forEach(el => {
+          if (mode === 'text') {
+            const node = Array.prototype.find.call(el.childNodes, n => n.nodeType === 3 && n.nodeValue.trim());
+            if (!node) return;
+            if (!frameEn.has(el)) frameEn.set(el, node.nodeValue);
+            const en = frameEn.get(el);
+            node.nodeValue = de ? en.replace(en.trim(), deStr.trim()) : en;
+          } else {
+            if (!frameEn.has(el)) frameEn.set(el, el.innerHTML);
+            el.innerHTML = de ? deStr : frameEn.get(el);
+          }
+        });
+      });
+    }
+
     // Init: respect a previously saved choice; otherwise leave the
     // <html lang="en"> attribute as the HTML author wrote it.
     const saved = read();
@@ -15324,6 +15546,7 @@
     function setLangAndRender(code) {
       setLang(code);
       translateDom(document);
+      applyFrame();
       swapCityIndex(lang());
       document.querySelectorAll('[data-lang-btn]').forEach(b => {
         b.setAttribute('aria-pressed', b.dataset.langBtn === lang() ? 'true' : 'false');
@@ -15337,6 +15560,7 @@
 
     function initDom() {
       translateDom(document);
+      applyFrame();
       swapCityIndex(lang());
       document.querySelectorAll('[data-lang-btn]').forEach(b => {
         b.setAttribute('aria-pressed', b.dataset.langBtn === lang() ? 'true' : 'false');
@@ -16810,18 +17034,20 @@
     const action = document.getElementById('mapHintAction');
     el.dataset.mode = mode;
     if (mode === 'idle') {
-      if (label)  label.textContent = 'Tap a pin to explore';
+      if (label)  label.textContent = tr('Tap a pin to explore', 'Tippe auf einen Pin');
       if (action) action.hidden = true;
     } else if (mode === 'ambient') {
       const n = (opts && opts.count) || 0;
-      if (label)  label.textContent = n + ' weekend' + (n === 1 ? '' : 's') + ' near here';
+      if (label)  label.textContent = isDE()
+        ? n + (n === 1 ? ' Wochenende' : ' Wochenenden') + ' in der Nähe'
+        : n + ' weekend' + (n === 1 ? '' : 's') + ' near here';
       if (action) action.hidden = true;
     } else if (mode === 'scene') {
       const name = (opts && opts.city) || _currentScene || '';
-      if (label)  label.textContent = name ? ('Now exploring ' + name) : 'Now exploring';
+      if (label)  label.textContent = name ? (tr('Now exploring ', 'Jetzt: ') + deCity(name)) : tr('Now exploring', 'Jetzt');
       if (action) action.hidden = false;
     } else if (mode === 'transitioning') {
-      if (label)  label.textContent = 'Flying in…';
+      if (label)  label.textContent = tr('Flying in…', 'Anflug…');
       if (action) action.hidden = true;
     }
   }
@@ -16998,6 +17224,16 @@
     _updateMapHint('idle');
   }
 
+  // Language switch: the hint pill and the layer button are written
+  // from JS, so they are re-rendered rather than translated in place.
+  document.addEventListener('mv:langchange', () => {
+    try {
+      const hint = document.getElementById('mapHint');
+      if (hint) _updateMapHint(hint.dataset.mode || 'idle');
+      if (leafletMap) setMapLayer(mapLayerMode);
+    } catch (e) {}
+  });
+
   // Reset-overview button (city scene only). Wired once at script init.
   document.addEventListener('click', (e) => {
     const btn = e.target && e.target.closest && e.target.closest('#mapHintAction');
@@ -17093,6 +17329,10 @@
       });
     });
     scored.sort((a, b) => a.score - b.score);
+    // Rank within the whole pool, so the badges stay true when the grid
+    // rotates to deals 5–8: "Best value" used to be handed to whichever
+    // card happened to be first in the visible four.
+    scored.forEach((s, i) => { s.rank = i; });
     return scored.slice(0, 8); // keep 8, render 4, rotate
   }
 
@@ -17116,7 +17356,8 @@
         ? weekendEstimate(d.city.name, { origin: fromOrigin, adults: 2, nights: 2 })
         : null;
       const allIn = est ? est.totalPP : d.opt.price;
-      const badge = _badgeFor(d.opt, i, allIn);
+      const rank = (typeof d.rank === 'number') ? d.rank : i;
+      const badge = _badgeFor(d.opt, rank, allIn);
       // Multi-modal awareness — when the chosen mode is bus/train AND
       // a flight also exists for this pair, show the savings vs flying
       // so the user understands WHY the bus/train wins.
@@ -17134,24 +17375,24 @@
         ? priceRangeTransport(d.opt.price, d.opt.mode)
         : ('€' + d.opt.price);
       const roundedSaves = savesVsFlight ? (Math.round(savesVsFlight / 5) * 5) : 0;
-      const modeChipLabel = `${meta.short} ${opPriceRange}${dur ? ' · ' + dur : ''}${roundedSaves ? ' · saves ~€' + roundedSaves + ' vs ✈' : ''}`;
+      const modeChipLabel = `${deWord(meta.short)} ${opPriceRange}${dur ? ' · ' + dur : ''}${roundedSaves ? ' · saves ~€' + roundedSaves + ' vs ✈' : ''}`;
       return `
         <article class="deal-card" data-city="${d.city.name}" onclick="openSmartDetail('${d.city.name}')">
           <div class="deal-img has-placeholder" data-label="${d.city.name}" data-wiki="${d.city.name}">
             <img alt="${d.city.name}" loading="lazy" decoding="async" />
           </div>
-          ${badge ? `<span class="deal-badge ${i === 0 ? 'best' : ''}">${badge}</span>` : ''}
+          ${badge ? `<span class="deal-badge ${rank === 0 ? 'best' : ''}">${deWord(badge)}</span>` : ''}
           <span class="deal-mode" title="${provider}${savesVsFlight ? ' — cheaper than flying' : ''}">
             <span class="deal-mode-icon">${meta.icon}</span>
             <span>${modeChipLabel}</span>
           </span>
           <div class="deal-body">
-            <div class="deal-country">${d.city.country}</div>
-            <h3 class="deal-name">${d.city.name}</h3>
+            <div class="deal-country">${deCountry(d.city.country)}</div>
+            <h3 class="deal-name">${deCity(d.city.name)}</h3>
             <div class="deal-foot">
               <div class="deal-price">
                 <span class="deal-price-amount">${weekendRange(allIn)}</span>
-                <span class="deal-price-meta">all-in p/p · 2 nights · estimate</span>
+                <span class="deal-price-meta">${tr('all-in p/p · 2 nights · estimate', 'alles inkl. p. P. · 2 Nächte · Schätzung')}</span>
               </div>
               <span class="deal-cta" aria-label="Open ${d.city.name}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -17170,7 +17411,7 @@
     const from = (typeof mapState !== 'undefined' && mapState && mapState.from) || 'Berlin';
 
     const originLabel = document.getElementById('dealsOriginName');
-    if (originLabel) originLabel.textContent = from;
+    if (originLabel) originLabel.textContent = deCity(from);
 
     const pool = computeBestDeals(from);
     bestDealsCursor = 0;
@@ -17189,7 +17430,7 @@
       const allIn = est ? est.totalPP : (cheap.opt.price + 36);
       const mp = document.getElementById('manifestoMinPrice');
       if (mp) {
-        mp.textContent = weekendRange(allIn) + ' all-in · ' + cheap.city.name;
+        mp.textContent = weekendRange(allIn) + tr(' all-in · ', ' alles inkl. · ') + deCity(cheap.city.name);
       }
       // Both counts come from the dataset itself. They used to be
       // hardcoded 67s that nobody updated when the destination list
@@ -17197,11 +17438,11 @@
       const n = (typeof smartDestinations !== 'undefined') ? smartDestinations.length : null;
       const ht = document.getElementById('heroTrustLine');
       if (ht) {
-        ht.textContent = weekendRange(allIn) + ' all-in'
-          + (n ? ' · ' + n + ' cities' : '') + ' · no signup';
+        ht.textContent = weekendRange(allIn) + tr(' all-in', ' alles inkl.')
+          + (n ? ' · ' + n + tr(' cities', ' Städte') : '') + tr(' · no signup', ' · ohne Anmeldung');
       }
       const cc = document.getElementById('manifestoCityCount');
-      if (cc && n) cc.textContent = n + ' · Europe only';
+      if (cc && n) cc.textContent = n + tr(' · Europe only', ' · nur Europa');
     }
 
     // Stop any previous rotation, then start a new one (only if 5+ deals)
@@ -17315,11 +17556,16 @@
     // page will then show. "from €49 return" reads as a complete weekend
     // even though it's just the flight, which causes the credibility
     // problem we're fixing.
-    let priceLabel = `${priceRangeTransport(d.prices[from] ?? 99, 'flight')} flight · ${fmtFlight(d.flights[from] ?? 2)}`;
+    // No invented fallbacks: a flight time or price is only printed
+    // when the dataset has one for this origin (was '?? 2' / '?? 99').
+    const flightBit = (d.flights && d.flights[from] > 0) ? fmtFlight(d.flights[from]) + ' flight' : '';
+    let priceLabel = (d.prices && d.prices[from] > 0)
+      ? priceRangeTransport(d.prices[from], 'flight') + ' flight' + (flightBit ? ' · ' + fmtFlight(d.flights[from]) : '')
+      : flightBit;
     try {
       if (typeof weekendEstimate === 'function') {
         const est = weekendEstimate(d.key, { origin: from, adults: 2, nights: 2 });
-        priceLabel = `${weekendRange(est.totalPP)} pp all-in · ${fmtFlight(d.flights[from] ?? 2)} flight`;
+        priceLabel = weekendRange(est.totalPP) + ' pp all-in' + (flightBit ? ' · ' + flightBit : '');
       }
     } catch (e) { /* keep fallback label */ }
     const trip = {
@@ -17696,6 +17942,7 @@
     { name: 'Ljubljana', country: 'Slovenia',        iata: 'LJU', popularity: 5 },
     { name: 'Riga',      country: 'Latvia',          iata: 'RIX', popularity: 5 },
     { name: 'Vilnius',   country: 'Lithuania',       iata: 'VNO', popularity: 5 },
+    { name: 'Tallinn',   country: 'Estonia',         iata: 'TLL', popularity: 5 },
     { name: 'Lake Como', country: 'Italy',           iata: 'MXP', popularity: 5, aliases: ['Como', 'Bellagio'] },
     { name: 'Annecy',    country: 'France',          iata: 'NCY', popularity: 5 },
     { name: 'Bergen',    country: 'Norway',          iata: 'BGO', popularity: 5 },

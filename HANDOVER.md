@@ -38,7 +38,7 @@ is young / friends / couples on a real budget. Every UI decision reinforces
 "find the cheapest beautiful weekend" — not luxury aesthetics.
 
 What the site shows today:
-- **64 destinations** across 30 European countries (Tirana → Reykjavik)
+- **65 destinations** across 31 European countries (Tirana → Reykjavik)
 - Interactive Leaflet **satellite map** — empty default, ambient hover-reveal
   surfaces ~3–10 nearby cities, click enters a single-city "scene mode"
 - **Concierge** — desktop form / 4-step mobile wizard with a redesigned
@@ -90,7 +90,7 @@ defined inside the inline `<script>` block.
 
 ```js
 MV.cities.get('Lisbon')      // → normalised city object — see SHAPE below
-MV.cities.all()              // → all 64 baseline + any overrides
+MV.cities.all()              // → all 65 baseline + any overrides
 MV.cities.override(name, p)  // merge partial override (future Hotelbeds /
                              // Skyscanner real-time data). Pass null to remove.
 ```
@@ -310,7 +310,7 @@ one: Wrocław lives at `wroclaw-poland`.
 `canBus` no longer picks the URL — it only chooses the note, since we
 can no longer pass the route through to FlixBus either way.
 
-Comprehensive `cityAirports` map covers every one of 64 destinations
+Comprehensive `cityAirports` map covers every one of 65 destinations
 + 19 common origins with real IATAs. Cities without their own airport
 (Cannes, Monaco, Annecy, Amalfi, Lake Como, Hallstatt, Interlaken,
 Lucerne, Albufeira, Benidorm) map to nearest airport via `via` +
@@ -471,7 +471,7 @@ don't surface.
   mobile blur reduction, `prefers-reduced-motion`, `will-change`
 
 **JS sections (in `<script>`, top-to-bottom):**
-- `DATA` — `collections` (3 rails), `smartDestinations` (64 cities ×
+- `DATA` — `collections` (3 rails), `smartDestinations` (65 cities ×
   prices/flights per origin), `cityCoords`, `cityGallery`,
   **`cityEconomy`** (70 entries, drives all accommodation budgets),
   `knownCities` (autocomplete)
@@ -520,7 +520,7 @@ don't surface.
 
 ### Generated city pages — `scripts/build-city-pages.js`
 
-64 real, indexable pages at `/city/{slug}`, one per destination.
+65 real, indexable pages at `/city/{slug}` (plus 65 at `/de/city/{slug}`), one per destination.
 **They are generated, not hand-written — never edit `public/city/**`
 directly, it is overwritten.** Rebuild with:
 
@@ -540,7 +540,7 @@ broke this site once.
 The build also rewrites the destination index in the homepage footer,
 between `<!-- CITY-INDEX:START -->` and `<!-- CITY-INDEX:END -->`.
 That block is not decoration: without real `<a href>`s pointing at
-them the 64 pages are orphans and no crawler can reach any of them.
+them the 65 pages are orphans and no crawler can reach any of them.
 
 Things the generator handles that will bite again if removed:
 
@@ -638,7 +638,7 @@ fabricated content" verifiable by inspection.
   activity estimate routes through this.
 - **`pickRestaurantWiki` 8-step chain** — engineered for honesty.
 - **`pickActivityWiki`** — 130+ landmark→Wikipedia mappings.
-- **`cityAirports` map** — 64 destinations + 19 origins, every IATA
+- **`cityAirports` map** — 65 destinations + 19 origins, every IATA
   hand-verified. `via` + `viaCity` for cities without airports.
 - **The inline `<script>` block** — ~100 DOM-coupled functions. Edit
   in-place; relocate one function per commit if needed. No big-bang.
@@ -789,7 +789,26 @@ git push origin HEAD:main
 
 ## Recent session highlights (latest work, chronological — mid-2026)
 
-**Season + images + map pass** (Nov 2026, latest):
+**Tallinn + German pass** (Nov 2026, latest):
+- **Adding a city = 10 places.** Tallinn went into: `cuisineWikiMap`
+  (already had Estonian), `cityFoodCulture`, `cityGallery`, `cityAirports`,
+  `flixbusCitySlug`, `cityEconomy`, the country-profile map (`Estonia`),
+  `smartDestinations`, `cityCoords`, the autocomplete list — then
+  `DE_COUNTRY` in the generator and `node scripts/build-city-pages.js`.
+  Every Wikipedia slug and the FlixBus city page were fetched and checked.
+- **No invented flight times.** `flightForPlace()` returned a flat 2.4h
+  for anything it did not know (and substring-matched "Venice" to
+  "Nice"). It now returns null and the rail card shows no flight line.
+- **German frame.** `FRAME_DE` (selector → German, inside `MV.i18n`)
+  covers headings with inline `<em>`, icon buttons and footer; `isDE()` /
+  `tr()` / `deCity()` / `deCountry()` / `deWord()` (top of the script)
+  localise JS-built markup: rail, deal and result cards, map hints.
+  Curated editorial prose (activities, restaurants, guides, journal)
+  is still English on purpose.
+- **Deal badges follow true rank.** When the grid rotated to deals 5–8,
+  the first visible card got "Best value". Rank now comes from the pool.
+
+**Season + images + map pass** (Nov 2026):
 - **Season module** (`SEASON`, top of the inline script). Nov–Feb =
   winter: `html[data-season="winter"]` cools the tokens, `WINTER_HERO`
   swaps the hero to five credited Wikimedia Commons winter photos
