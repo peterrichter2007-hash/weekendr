@@ -7371,8 +7371,6 @@
       .lf-ambient,
       .lf-scene-hero,
       .lf-scene-chip,
-      .map-hint,
-      .map-stats,
       .nav.scrolled {
         backdrop-filter: saturate(1.4) blur(18px) !important;
         -webkit-backdrop-filter: saturate(1.4) blur(18px) !important;
@@ -7671,6 +7669,58 @@
         rgba(10, 15, 24, 0.40) 60%,
         rgba(10, 15, 24, 0.68) 85%,
         rgba(10, 15, 24, 0.82) 100%);
+    }
+
+    /* ============================================================
+       SECOND PASS — layout on every width
+       ============================================================ */
+
+    /* Featured grid. Row 1 was 8 + 4 columns with two different
+       aspect ratios, so Lisbon stood 50px taller than Budapest; row 2
+       held two 4-column cards and left the last third of the row
+       empty. Now: the tall card stretches to the feature card's
+       height, and the four remaining cards form an even 2 × 2. */
+    @media (min-width: 1025px) {
+      .ed-tall { aspect-ratio: auto; }
+      .ed-medium { grid-column: span 6; aspect-ratio: 3 / 2; }
+    }
+    /* Tablets got the phone layout: one 4:5 card per row — at 1024px
+       that is a 960 × 1200px card, six times over. Two columns for the
+       featured grid, three for the journal. */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .editorial-grid { grid-template-columns: 1fr 1fr; }
+      .ed-large, .ed-tall, .ed-wide, .ed-medium { grid-column: auto; aspect-ratio: 4 / 4.4; }
+      .stories-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    }
+
+    /* Map stats — moved off the map into the sidebar head. */
+    .map-list .map-stats {
+      position: static;
+      transform: none;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 0 1rem;
+      margin-bottom: 0.9rem;
+      border-bottom: 1px solid var(--hairline);
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .map-list .map-stats .div { display: block; }
+    .map-list .map-stats .num { font-size: 1.05rem; white-space: nowrap; }
+    .map-list .map-stats .lbl { font-size: 0.6rem; letter-spacing: 0.12em; }
+
+    /* Hint pill: solid dark. It was 42% dark glass tuned for the
+       satellite view; over the light street map its cream text
+       dropped to ~2:1. Solid also means no backdrop blur to recompute
+       while the tiles move underneath. */
+    .map-hint {
+      background: rgba(18, 17, 15, 0.86);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
     /* The placeholder's light top sheen made sense on beige; on the dark
@@ -8140,20 +8190,11 @@
           <!-- "Use Ctrl + scroll to zoom" overlay for cooperative gestures -->
           <div class="map-coop-hint" id="mapCoopHint" aria-hidden="true"></div>
 
-          <!-- Source note — indicative prices, not live -->
-          <div class="map-live glass-pill">
-            <span class="live-dot"></span>
-            <span>Indicative · click for Skyscanner</span>
-          </div>
-
-          <!-- Dynamic stat tray -->
-          <div class="map-stats glass-pill" id="mapStats">
-            <div><span class="num" id="ms-from">€89</span><span class="lbl">Cheapest</span></div>
-            <div class="div"></div>
-            <div><span class="num" id="ms-flight">1h 45m</span><span class="lbl">Shortest</span></div>
-            <div class="div"></div>
-            <div><span class="num" id="ms-count">9</span><span class="lbl">Within reach</span></div>
-          </div>
+          <!-- The "Indicative · click for Skyscanner" pill and the stat
+               tray used to float on top of the map here. A map covered
+               in labels does not read as a map: the pill repeated the
+               section eyebrow, and the tray sat over Scandinavia. The
+               three numbers now live in the sidebar head. -->
 
           <!-- On-demand scene reveal: idle = subtle prompt, scene = reset.
                The map starts as an almost-empty satellite canvas; clicking
@@ -8179,6 +8220,13 @@
               <div class="ml-sub" id="ml-sub">Ranked from Berlin · best value</div>
             </div>
             <span class="ml-pulse"></span>
+          </div>
+          <div class="map-stats" id="mapStats">
+            <div><span class="num" id="ms-from">—</span><span class="lbl">Cheapest</span></div>
+            <div class="div"></div>
+            <div><span class="num" id="ms-flight">—</span><span class="lbl">Shortest</span></div>
+            <div class="div"></div>
+            <div><span class="num" id="ms-count">—</span><span class="lbl">Within reach</span></div>
           </div>
           <div class="ml-items" id="ml-items"></div>
           <div class="ml-foot">
@@ -9234,6 +9282,8 @@
   function wakeHeroSlide(slide) {
     if (!slide || !slide.dataset.wikiDefer) return;
     delete slide.dataset.wikiDefer;
+    const im = slide.querySelector('img');
+    if (im) im.loading = 'eager';
     hydrateWikiImages(slide.parentNode);
   }
   (function warmSecondHeroSlide() {
@@ -10643,8 +10693,14 @@
   // host accepted, output on the thumb host Wikipedia itself now uses.
   // Requesting a width above the source is safe — Wikimedia caps to
   // the original rather than erroring.
+  //
+  // WebP: Wikimedia renders any thumbnail as WebP when '.webp' is
+  // appended (measured 10–45% smaller at the same width). Requested by
+  // default; an <img> that cannot decode it falls back to the JPEG in
+  // decorateImage's error handler. Pass fmt = 'jpg' where a third
+  // party fetches the URL (og:image — not every crawler reads WebP).
   const WIKI_THUMB_ORIGIN = 'https://thumb.wikimedia.org';
-  function wikiSized(url, want) {
+  function wikiSized(url, want, fmt) {
     if (!url || typeof url !== 'string') return url;
     const clean = url.split(/[?#]/)[0];
     const m = clean.match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/(wikipedia\/[^/]+)\/(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+)/);
@@ -10653,7 +10709,26 @@
     const w = wikiWidthFor(Math.max(1, Math.round(want || 500)));
     // Wikimedia renders SVG thumbnails as PNG; raster formats keep their name.
     const thumbName = /\.svg$/i.test(file) ? file + '.png' : file;
-    return `${WIKI_THUMB_ORIGIN}/${project}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}`;
+    const webp = (fmt !== 'jpg' && /\.(jpe?g|png)$/i.test(thumbName)) ? '.webp' : '';
+    return `${WIKI_THUMB_ORIGIN}/${project}/thumb/${d1}/${d2}/${file}/${w}px-${thumbName}${webp}`;
+  }
+
+  // Pixel density we are willing to pay for.
+  //  - Big focal surfaces (hero, detail hero: >= 900 CSS px across)
+  //    get the display's real density up to 2x. This is where a 4K
+  //    or retina screen is served the 3840px rung.
+  //  - Cards cap at 1.5x: on a 2x or 3x screen a photo at 1.5x is not
+  //    distinguishable from 2x, and it is about half the bytes.
+  //  - Data-saver, or a 2G/3G connection: 1x everywhere.
+  // The <head> fast path applies the same rule to the first hero
+  // photo — keep the two in step.
+  const MV_SLOW_NET = (function () {
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    return !!(c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || '')));
+  })();
+  function densityFor(cssNeed) {
+    if (MV_SLOW_NET) return 1;
+    return Math.min(window.devicePixelRatio || 1, cssNeed >= 900 ? 2 : 1.5);
   }
 
   // How many source pixels does this <img> actually need? Measured,
@@ -10679,8 +10754,8 @@
       el = el.parentElement; hops++;
     }
     const need = Math.max(r.width || 0, (r.height || 0) * COVER_ASPECT);
-    if (need < 8) return 480 * Math.min(window.devicePixelRatio || 1, 2); // unmeasurable → sane card default
-    return need * Math.min(window.devicePixelRatio || 1, 2);
+    if (need < 8) return 480 * densityFor(480); // unmeasurable → sane card default
+    return need * densityFor(need);
   }
 
   // Re-check size once the image is genuinely on screen.
@@ -10779,10 +10854,21 @@
       delete img.dataset.hostRetried;
       // Request the width this element actually paints at, not the
       // 2048–3840px source Wikipedia hands us.
-      const want = opts.width || renderWidthOf(img);
-      img.dataset.wikiSrc = url;
-      img.dataset.wikiW = String(wikiWidthFor(want));
-      img.src = wikiSized(url, want);
+      // First hero photo: the <head> fast path has already started
+      // downloading it — use that exact URL so the bytes arrive once.
+      const fast = window.__mvHero;
+      if (fast && !fast.used && parent && parent.classList.contains('hero-slide')
+          && url.split(/[?#]/)[0] === fast.src) {
+        fast.used = true;
+        img.dataset.wikiSrc = url;
+        img.dataset.wikiW = String(fast.w);
+        img.src = fast.url;
+      } else {
+        const want = opts.width || renderWidthOf(img);
+        img.dataset.wikiSrc = url;
+        img.dataset.wikiW = String(wikiWidthFor(want));
+        img.src = wikiSized(url, want);
+      }
       // Correct the guess once the element is really on screen.
       if (wikiSizeObserver && !opts.width) wikiSizeObserver.observe(img);
       img.dataset.source = 'wikipedia';
@@ -15456,7 +15542,6 @@
       ['.mc-chip[data-sort="value"]', 'Bester Wert'],
       ['.mc-chip[data-sort="price"]', 'Günstigste'],
       ['.mc-chip[data-sort="short"]', 'Kürzester Flug'],
-      ['.map-live > span:last-child', 'Richtpreise · Klick für Skyscanner'],
       ['#mapStats > div:nth-child(1) .lbl', 'Günstigstes'],
       ['#mapStats > div:nth-child(3) .lbl', 'Kürzester'],
       ['#mapStats > div:nth-child(5) .lbl', 'In Reichweite'],
@@ -15655,7 +15740,7 @@
           // 1280px: comfortably above the 1200px social-card spec
           // without shipping a 3840px original into a link preview.
           if (v && v !== '__NONE__') {
-            return (typeof wikiSized === 'function') ? wikiSized(v, 1280) : v;
+            return (typeof wikiSized === 'function') ? wikiSized(v, 1280, 'jpg') : v;
           }
         }
       } catch (e) {}
@@ -15755,7 +15840,7 @@
           // The hero <img> is served at this device's render width —
           // 500px on a phone. A share card needs ~1200px regardless
           // of who is doing the sharing, so re-request that rung.
-          const shareUrl = (typeof wikiSized === 'function') ? wikiSized(img.src, 1280) : img.src;
+          const shareUrl = (typeof wikiSized === 'function') ? wikiSized(img.src, 1280, 'jpg') : img.src;
           defaults.ogImage = shareUrl;
           defaults.twImage = shareUrl;
           // Only push the default into <meta> if we're not currently
@@ -16414,9 +16499,10 @@
   let tileSatelliteLabels = null;
   let mapLayerMode = 'map';
   const cityMarkers = new Map();
-  // Lisbon to Helsinki, Dublin to Athens — the overview every visit
-  // starts from and the "Overview" button returns to.
-  const EUROPE_VIEW = [[35.2, -10.5], [61.5, 30.5]];
+  // Reykjavík to Athens, Lisbon to Tallinn — the overview every visit
+  // starts from and the "Overview" button returns to. Iceland is in
+  // frame on purpose: it is the first winter pick.
+  const EUROPE_VIEW = [[35.2, -23.5], [65.2, 30.5]];
   const EUROPE_PAD = { padding: [28, 28] };
 
   function fitEurope(animate) {
@@ -18186,6 +18272,12 @@
       // thumb and upload hosts serve the same paths but throttle
       // independently.
       const src = img.getAttribute('src') || '';
+      // A browser that cannot decode WebP (or a file Wikimedia will
+      // not transcode) gets the plain JPEG/PNG thumbnail instead.
+      if (/\.webp$/i.test(src) && src.indexOf('.wikimedia.org/') !== -1) {
+        img.src = src.replace(/\.webp$/i, '');
+        return;
+      }
       if (src && !img.dataset.hostRetried && src.indexOf('//thumb.wikimedia.org/') !== -1) {
         img.dataset.hostRetried = '1';
         img.src = src.replace('//thumb.wikimedia.org/', '//upload.wikimedia.org/');
