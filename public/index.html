@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#F6F1E8" />
+  <meta name="theme-color" content="#000000" />
 
   <!-- The tab showed a blank sheet until now. SVG only: it is one file
        that stays crisp at every size, and every browser this site
@@ -50,8 +50,6 @@
   <meta property="og:image:height" content="821" />
   <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Lisboa_-_Portugal_%2852597836992%29.jpg/1280px-Lisboa_-_Portugal_%2852597836992%29.jpg" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://en.wikipedia.org">
   <link rel="preconnect" href="https://thumb.wikimedia.org">
   <link rel="preconnect" href="https://upload.wikimedia.org">
@@ -95,7 +93,6 @@
 
   <!-- display=swap: text shows immediately in system fallback while Fraunces+Inter download.
        Inter 700 dropped — used only 2× in CSS; the 600 weight substitutes cleanly. -->
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <!-- Leaflet is loaded LAZILY on viewport visibility (see ensureLeafletAssets
        in the script block). Removing the static <link>+<script> here saves
@@ -4239,7 +4236,7 @@
       background-image: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/10/17');
     }
     .map-layer-btn[data-target="map"] .mlb-thumb {
-      background-image: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/5/10/17');
+      background-image: url('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/5/10/17');
     }
     .map-layer-btn .mlb-label {
       position: absolute; left: 0; right: 0; bottom: 0;
@@ -7596,10 +7593,10 @@
       -webkit-backdrop-filter: none;
     }
     .nav:not(.scrolled):not(.menu-open) .nav-logo { color: var(--cream); }
-    .nav:not(.scrolled):not(.menu-open) .nav-logo em { color: #E2C38C !important; }
+    .nav:not(.scrolled):not(.menu-open) .nav-logo em { color: #8e8e93 !important; }
     .nav:not(.scrolled):not(.menu-open) .nav-logo .dot {
-      background: #E2C38C;
-      box-shadow: 0 0 0 4px rgba(226, 195, 140, 0.18);
+      background: #e5e5ea;
+      box-shadow: none;
     }
     .nav:not(.scrolled):not(.menu-open) .nav-links a { color: rgba(255, 255, 253, 0.92); }
     .nav:not(.scrolled):not(.menu-open) .nav-links a::after { background: var(--cream); }
@@ -7618,7 +7615,7 @@
       color: var(--ink);
       box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
     }
-    .nav:not(.scrolled):not(.menu-open) .nav-cta:hover { background: #E2C38C; }
+    .nav:not(.scrolled):not(.menu-open) .nav-cta:hover { background: #ffffff; }
     .nav:not(.scrolled):not(.menu-open) .menu-btn {
       background: rgba(255, 255, 253, 0.14);
       border-color: rgba(255, 255, 253, 0.3);
@@ -7663,7 +7660,7 @@
     .cg-preview-img .img-placeholder .ip-init,
     .sr-hero .img-placeholder .ip-init,
     .detail-hero .img-placeholder .ip-init,
-    .dh-slide .img-placeholder .ip-init { color: #E2C38C; opacity: 0.85; }
+    .dh-slide .img-placeholder .ip-init { color: #8e8e93; opacity: 0.85; }
     .hero-slide .img-placeholder .ip-name,
     .ed-card .img .img-placeholder .ip-name,
     .deal-img .img-placeholder .ip-name,
@@ -7678,7 +7675,7 @@
     .sr-hero.has-placeholder:not(:has(.img-placeholder))::after,
     .detail-hero.has-placeholder:not(:has(.img-placeholder))::after,
     .dh-slide.has-placeholder:not(:has(.img-placeholder))::after {
-      color: #E2C38C;
+      color: #8e8e93;
       opacity: 0.55;
     }
     /* ============================================================
@@ -7687,17 +7684,8 @@
        so it reads as candlelight against snow. Muted text keeps
        ≥ 5:1 on the new backgrounds.
        ============================================================ */
-    html[data-season="winter"] {
-      --bg: #F3F5F7;
-      --bg-2: #E9EDF1;
-      --bg-3: #DDE3E9;
-      --sand: #C9D3DD;
-      --muted: #535A62;
-      --muted-2: #616973;
-      --warm-glow: rgba(150, 178, 206, 0.18);
-      --glass: rgba(244, 247, 250, 0.74);
-      --glass-strong: rgba(244, 247, 250, 0.92);
-    }
+    /* (Frost-white winter tokens removed — the Lock-In look at the end
+       of this stylesheet is dark in every season.) */
     html[data-season="winter"] .hero { background: #0D121A; }
     html[data-season="winter"] .hero-slide::after {
       background: linear-gradient(180deg,
@@ -7766,6 +7754,431 @@
     .ed-card .img .img-placeholder::before,
     .deal-img .img-placeholder::before,
     .cg-preview-img .img-placeholder::before { opacity: 0.25; }
+    /* ============================================================
+       LOOK — Lock-In (Nov 2026)
+       Peter: "zu sehr nach KI, zu hell, alles weiss — mehr wie die
+       Lock-In-App". This layer takes that app's design system
+       (~/project/lockin, docs/DESIGN.md §4, src/app/globals.css):
+         · black ground, Apple system greys, almost no pure white
+         · no colour accent — the bronze/gold is gone
+         · the system font (SF Pro on Apple) — no serif, no italics
+         · big bold titles; a heading's second half in grey instead
+           of a gold italic word
+         · section labels in normal case — no tracked capitals, no dots
+         · cards in matte glass (white 6–8%, hairline edge, no blur);
+           real glass (blur) only for navigation
+         · one light pill button per view; numbers in SF Rounded
+       It is the last block in the stylesheet on purpose: it re-points
+       the design tokens and overrides the handful of rules that
+       hard-code light or gold colours. Photos keep their own dark
+       scrims — they are the content.
+       ============================================================ */
+    :root {
+      color-scheme: dark;
+      --bg: #000000;
+      --bg-2: #0a0a0b;
+      --bg-3: #1c1c1e;
+      --sand: #2c2c2e;
+      /* Role swap: --ink is the foreground (light), --cream the
+         "on-ink" colour (black). Ink buttons become light pills with
+         black text, ink text becomes light. Text that sits on photos
+         is set to white explicitly further down. */
+      --ink: #f2f2f7;
+      --ink-2: #e5e5ea;
+      --cream: #000000;
+      --muted: #8e8e93;
+      --muted-2: #8e8e93;
+      --hairline: rgba(255, 255, 255, 0.09);
+      --hairline-strong: rgba(255, 255, 255, 0.16);
+      --accent: #e5e5ea;
+      --accent-2: #c7c7cc;
+      --warm-glow: transparent;
+      --glass: rgba(12, 12, 14, 0.72);
+      --glass-strong: rgba(18, 18, 20, 0.92);
+      --g-bg-1: rgba(255, 255, 255, 0.06);
+      --g-bg-2: rgba(255, 255, 255, 0.045);
+      --g-bg-3: rgba(255, 255, 255, 0.03);
+      --g-border: rgba(255, 255, 255, 0.09);
+      --g-edge: rgba(255, 255, 255, 0.06);
+      --g-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+      --g-shadow-sm: 0 8px 24px rgba(0, 0, 0, 0.45);
+      --g-shadow-md: 0 16px 40px rgba(0, 0, 0, 0.55);
+      --g-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6);
+      --g-shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.65);
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+      --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    /* Winter keeps the black, with the faintest cool cast in the
+       alternate sections (the frost-white tokens are gone). */
+    html[data-season="winter"] { --bg: #000000; --bg-2: #07090c; --bg-3: #1a1c1f; --sand: #2a2d31; }
+
+    html, body { background: #000; color: var(--ink); }
+    body {
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      /* A faint light from above, like Lock-In's .ambient — no colour */
+      background:
+        radial-gradient(120% 40% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 65%),
+        #000;
+    }
+    ::selection { background: rgba(255, 255, 255, 0.22); color: #fff; }
+
+    /* ---------- Typography ---------- */
+    .hero-headline, .h-1, .h-2, .deals-title, .manifesto-text, .cta-band h2,
+    .ed-card .title, .story h3, .deal-card .deal-name, .rail-card .meta .place,
+    .res-card .rb h4, .ml-title, .bp-amount, .lf-pop-body h4, .foot-logo, .nav-logo,
+    .detail h1, .detail h2, .detail h3, .story-reader h1, .story-reader h2 {
+      font-family: var(--sans) !important;
+      font-variation-settings: normal !important;
+      font-style: normal;
+    }
+    .hero-headline { font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; }
+    .h-1, .deals-title, .cta-band h2 { font-weight: 700; letter-spacing: -0.03em; line-height: 1.06; }
+    .h-2 { font-weight: 700; letter-spacing: -0.025em; }
+    .manifesto-text { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+    .ed-card .title, .story h3, .deal-card .deal-name, .rail-card .meta .place,
+    .res-card .rb h4, .lf-pop-body h4 { font-weight: 700; letter-spacing: -0.02em; }
+    .nav-logo, .foot-logo { font-weight: 700; letter-spacing: -0.02em; }
+    /* Second half of a heading in grey — not a gold italic word */
+    .hero-headline .italic, .italic-accent,
+    .h-1 em, .h-2 em, .deals-title em, .manifesto-text em, .cta-band h2 em,
+    .ed-card .title em, #seasonRailTitle em,
+    .nav-logo em, .foot-logo em {
+      font-style: normal !important;
+      font-weight: inherit !important;
+      color: var(--muted) !important;
+    }
+    .hero-headline .italic { color: rgba(255, 255, 255, 0.62) !important; }
+    .lede, .hero-sub { color: var(--muted); font-weight: 400; }
+
+    /* Section labels: normal case, no tracking, no dots (Lock-In D-053) */
+    .eyebrow, .deals-eyebrow, .hero-tagline, .mc-lbl, .manifesto-meta .label,
+    .map-stats .lbl, .deal-card .deal-country, .res-card .rb .place, .story-meta,
+    .story-meta .cat, footer h3, .trust-cat, .trust-eyebrow, .city-index-title,
+    .cg-lbl, .rail-card .meta .country, .ml-sub, .cg-ai-status, .hero-scroll,
+    .section-attribution, .bp-tier-row, .bp-cell-label, .cg-pg-eyebrow {
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+    .eyebrow, .deals-eyebrow { font-size: 0.95rem; font-weight: 600; color: var(--muted); }
+    .hero-tagline { font-size: 0.95rem; font-weight: 600; color: rgba(255, 255, 255, 0.72); }
+    .hero-tagline .line { display: none; }
+    .eyebrow .dot, .deals-eyebrow .dot,
+    .eyebrow > span[style*="border-radius: 50%"],
+    .manifesto .eyebrow > span[style] { display: none !important; }
+    footer h3 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+    .deal-card .deal-country, .res-card .rb .place { font-size: 0.8rem; font-weight: 600; }
+
+    /* Numbers like Apple Health */
+    .deal-card .deal-price-amount, .bp-amount, .map-stats .num, .ml-price,
+    .lf-price, .rail-card .price, .res-card .rb .price, .bp-cell-value,
+    .manifesto-meta .value, #manifestoMinPrice {
+      font-family: var(--rounded) !important;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    /* ---------- Decoration that read as "AI landing page" ---------- */
+    .cg-ambient, .hero .orb, .orb { display: none !important; }
+    .live-dot, .ml-pulse, .cg-blink, .cg-ai-dot, .hero-trust-dot,
+    .sticky-cta-dot, .ml-foot-dot, .sa-dot, .wx-pulse {
+      animation: none !important;
+      box-shadow: none !important;
+      background: var(--muted) !important;
+    }
+    .cg-cta::before, .btn-primary::before { display: none !important; }
+    footer::before { display: none; }
+
+    /* ---------- Surfaces: matte glass, no blur (Lock-In .surface) ---------- */
+    .glass-card, .glass-pill, .cg-panel, .cg-preview-glass, .map-list,
+    .res-card, .modal, .compare-modal, .legal-modal, .cookie-banner,
+    .detail-side, .iday, .pick, .wx-card, .listing, .bp-cell, .cg-quote {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.045)) !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.09) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      color: var(--ink);
+    }
+    .glass-card::before, .glass-card::after, .cg-panel::before, .cg-panel::after { display: none !important; }
+    .bp-cell-total {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    /* Overlays that must be opaque (they sit over the whole page) */
+    .results, .detail, .story-reader, .step-wizard, .fullmenu,
+    .legal-modal, .compare-modal, .cookie-banner {
+      background-color: #0b0b0c !important;
+    }
+    .results-head, .detail-top, .detail-head { background: rgba(11, 11, 12, 0.9) !important; }
+
+    /* Inputs and selects */
+    .cg-input-wrap {
+      background: rgba(255, 255, 255, 0.07) !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: none !important;
+    }
+    .cg-input-wrap:focus-within { border-color: rgba(255, 255, 255, 0.35) !important; box-shadow: none !important; }
+    .cg-input-wrap input, .cg-input-wrap select, .field input, .field select,
+    input, select, textarea { color: var(--ink); background-color: transparent; }
+    input::placeholder, textarea::placeholder { color: #636366; }
+    select option { background: #1c1c1e; color: #f2f2f7; }
+    .cg-autocomplete { background: #1c1c1e !important; border: 0.5px solid rgba(255, 255, 255, 0.12) !important; }
+
+    /* Slider */
+    .cg-slider-track { background: #2c2c2e !important; }
+    .cg-slider-fill, .cg-slider-wrap[data-tier] .cg-slider-fill { background: #e5e5ea !important; }
+    .cg-slider-tier-mark { background: rgba(255, 255, 255, 0.25) !important; }
+    .bp-tier-tag.on, .bp-tier-tag.on::before { color: var(--ink) !important; }
+    .bp-tier-label { color: var(--muted) !important; font-style: normal !important; font-family: var(--sans) !important; }
+
+    /* ---------- Buttons (Lock-In PrimaryButton / Chip / Pill) ---------- */
+    .btn-primary, .cg-cta, .nav-cta, .sticky-cta, .res-card .rb .open-btn,
+    .btn-primary-hero, .cb-total-cta, .ds-cta {
+      background: #e5e5ea !important;
+      background-image: none !important;
+      color: #000 !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      font-family: var(--sans) !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.01em !important;
+      box-shadow: none !important;
+      transition: transform 0.2s var(--ease-ios), opacity 0.2s var(--ease-ios) !important;
+    }
+    .btn-primary:hover, .cg-cta:hover, .nav-cta:hover, .sticky-cta:hover,
+    .res-card .rb .open-btn:hover, .btn-primary-hero:hover {
+      background: #ffffff !important;
+      transform: none !important;
+    }
+    .btn-primary:active, .cg-cta:active, .nav-cta:active, .sticky-cta:active,
+    .btn-primary-hero:active { transform: scale(0.98) !important; }
+    .sticky-cta-label, .cg-cta .btxt, .cg-cta-text { color: #000 !important; }
+    /* Chips: off = grey fill, on = light (Lock-In Chip) */
+    .vibe-pill, .cg-vibes .vibe-pill, .mc-chip, .sw-vibe, .sw-chip, .sw-pill, .cg-bpill {
+      background: #2c2c2e !important;
+      border: 0 !important;
+      color: var(--ink) !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+    }
+    .vibe-pill.on, .cg-vibes .vibe-pill.on, .mc-chip.on, .sw-vibe.on, .sw-chip.on, .sw-pill.on, .cg-bpill.on {
+      background: #e5e5ea !important;
+      color: #000 !important;
+    }
+    .vibe-pill .emoji { filter: grayscale(1) brightness(1.2); }
+    .vibe-pill.on .emoji { filter: grayscale(1) brightness(0.3); }
+    .rail-btn, .results-close, .menu-btn, .lang-switch {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+      color: var(--ink) !important;
+      backdrop-filter: none !important;
+    }
+    .rail-btn:hover { background: rgba(255, 255, 255, 0.2) !important; }
+    .lang-switch button { color: var(--muted) !important; }
+    .lang-switch button[aria-pressed="true"] { background: #e5e5ea !important; color: #000 !important; }
+    .menu-btn span, .menu-btn span::before, .menu-btn span::after { background: var(--ink) !important; }
+    .menu-btn.open span { background: transparent !important; }
+
+    /* ---------- Nav: glass bar (navigation is the one place for glass) ---------- */
+    .nav { background: transparent; }
+    .nav.scrolled {
+      background: rgba(10, 10, 12, 0.6) !important;
+      backdrop-filter: blur(30px) !important;
+      -webkit-backdrop-filter: blur(30px) !important;
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+      box-shadow: none !important;
+    }
+    .nav-links a { color: rgba(255, 255, 255, 0.78) !important; }
+    .nav-links a:hover { color: #fff !important; }
+    .nav-links a::after { background: #fff !important; }
+    .nav-logo { color: #fff !important; }
+    .nav-logo .dot, .foot-logo .dot { background: #e5e5ea !important; box-shadow: none !important; }
+    /* The over-the-hero variant (light-on-dark) now equals the default */
+    .nav:not(.scrolled):not(.menu-open) .nav-cta { background: #e5e5ea !important; color: #000 !important; }
+    .nav.menu-open .nav-logo { color: #fff !important; }
+
+    /* ---------- Text on photos stays white ---------- */
+    .hero, .hero-inner, .hero-meta, .hero-sub,
+    .deal-card .deal-body, .deal-card .deal-name, .deal-card .deal-price-amount,
+    .ed-card .body, .lf-pop-meta, .sr-hero, .detail-hero, .dh-slide,
+    .cg-preview-frame .cg-preview-glass, .story-img, .section-attribution {
+      color: #fff;
+    }
+    .hero-headline { color: #fff; }
+    .hero-meta, .hero-meta .place, .hero-meta div { color: #fff !important; }
+    .map-hint, .map-hint-label, .map-hint-action, .map-hint-icon { color: #fff !important; }
+    .deal-card { background: #1c1c1e !important; }
+    .hero-sub { color: rgba(255, 255, 255, 0.78) !important; }
+    .deal-card .deal-price-meta, .deal-card .deal-country { color: rgba(255, 255, 255, 0.78) !important; }
+    .ed-card .sub { color: rgba(255, 255, 255, 0.82); }
+    .hero .btn-primary-hero svg, .btn-primary svg, .cg-cta svg, .nav-cta svg { color: #000; stroke: currentColor; }
+
+    /* Badges and chips on photos: neutral, no gold */
+    .deal-card .deal-badge, .deal-card .deal-badge.best, .lf-pop-badge,
+    .rail-card .deal, .rail-card .price, .res-card .ri .num, .ed-card .tag {
+      background: rgba(0, 0, 0, 0.55) !important;
+      background-image: none !important;
+      color: #fff !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+    }
+    .deal-card .deal-badge.best { background: #e5e5ea !important; color: #000 !important; border-color: transparent !important; }
+    .deal-card .deal-mode {
+      background: rgba(0, 0, 0, 0.55) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: #fff !important;
+    }
+    .deal-card .deal-cta { background: #e5e5ea !important; color: #000 !important; }
+    .deal-card:hover .deal-cta { background: #fff !important; color: #000 !important; }
+    .deal-card, .ed-card, .rail-card .img-wrap, .story-img, .res-card .ri { box-shadow: none !important; }
+    .deal-card { border: 0.5px solid rgba(255, 255, 255, 0.08); }
+
+    /* Rail + story meta below photos */
+    .rail-card .desc, .story p, .rail-card .flight-meta { color: var(--muted) !important; }
+    .rail-card .chip, .tags .chip, .res-card .rb .tag {
+      background: #1c1c1e !important;
+      color: #c7c7cc !important;
+      border: 0 !important;
+    }
+
+    /* Placeholders: neutral graphite, grey initial — no gold */
+    .hero-slide .img-placeholder .ip-init, .ed-card .img .img-placeholder .ip-init,
+    .deal-img .img-placeholder .ip-init, .cg-preview-img .img-placeholder .ip-init,
+    .sr-hero .img-placeholder .ip-init, .detail-hero .img-placeholder .ip-init,
+    .dh-slide .img-placeholder .ip-init, .img-placeholder .ip-init { color: #8e8e93 !important; font-family: var(--sans) !important; font-style: normal !important; font-weight: 700 !important; }
+    .img-placeholder, .has-placeholder:not(:has(.img-placeholder)),
+    .hero-slide .img-placeholder, .ed-card .img .img-placeholder, .deal-img .img-placeholder,
+    .cg-preview-img .img-placeholder, .sr-hero .img-placeholder, .detail-hero .img-placeholder,
+    .dh-slide .img-placeholder,
+    .hero-slide.has-placeholder:not(:has(.img-placeholder)),
+    .ed-card .img.has-placeholder:not(:has(.img-placeholder)),
+    .deal-img.has-placeholder:not(:has(.img-placeholder)),
+    .cg-preview-img.has-placeholder:not(:has(.img-placeholder)) {
+      background: linear-gradient(160deg, #1c1c1e 0%, #0e0e10 100%) !important;
+    }
+    .img-placeholder .ip-name { color: #8e8e93 !important; font-family: var(--sans) !important; }
+    .has-placeholder:not(:has(.img-placeholder))::after { color: #8e8e93 !important; font-family: var(--sans) !important; font-style: normal !important; opacity: 0.6 !important; }
+    .img-placeholder::before { display: none !important; }
+
+    /* ---------- Map ---------- */
+    .map-frame { background: #111 !important; border: 0.5px solid rgba(255, 255, 255, 0.09) !important; box-shadow: none !important; }
+    .leaflet-host, .leaflet-container { background: #1b1b1d !important; }
+    .leaflet-control-zoom a { background: #2c2c2e !important; color: #e5e5ea !important; }
+    .leaflet-control-zoom a:hover { background: #3a3a3c !important; color: #fff !important; }
+    .leaflet-control-zoom-in { border-bottom-color: rgba(255, 255, 255, 0.1) !important; }
+    .leaflet-control-attribution { background: rgba(0, 0, 0, 0.6) !important; color: #8e8e93 !important; border-color: rgba(255, 255, 255, 0.1) !important; backdrop-filter: none !important; }
+    .leaflet-control-attribution a { color: #c7c7cc !important; }
+    .map-layer-btn { border-color: #3a3a3c; }
+    .lf-pin .lf-chip, .lf-ambient, .lf-scene-chip {
+      background: #1c1c1e !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.16) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: none !important;
+      color: #f2f2f7 !important;
+    }
+    .lf-pin .lf-price, .lf-ambient-name, .lf-scene-label { color: #f2f2f7 !important; }
+    .lf-pin .lf-name, .lf-ambient-price { color: #8e8e93 !important; }
+    .lf-pin.best .lf-chip, .lf-scene-hero {
+      background: #e5e5ea !important;
+      color: #000 !important;
+      border-color: transparent !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
+    }
+    .lf-pin.best .lf-price, .lf-pin.best .lf-name, .lf-scene-hero .lf-scene-name, .lf-scene-hero .lf-scene-sub { color: #000 !important; }
+    .lf-pin .lf-dot, .lf-pin.best .lf-dot, .lf-scene-dot, .lf-ambient-dot { background: #8e8e93 !important; box-shadow: none !important; }
+    .lf-pin .lf-dot::before { display: none !important; }
+    .lf-pop { background: #1c1c1e !important; border: 0.5px solid rgba(255, 255, 255, 0.12) !important; backdrop-filter: none !important; }
+    .map-list .ml-item { background: transparent !important; border-color: rgba(255, 255, 255, 0.08) !important; box-shadow: none !important; }
+    .map-list .ml-item:hover, .map-list .ml-item.on, .map-list .ml-item.active { background: rgba(255, 255, 255, 0.06) !important; }
+    .ml-price, .ml-item .ml-price { color: #f2f2f7 !important; }
+    .ml-badge, .ml-item .badge { background: #2c2c2e !important; color: #c7c7cc !important; }
+
+    /* ---------- Sections ---------- */
+    .concierge-light, .deals, .manifesto, .map-section, .editorial, .collection,
+    .stories, .cta-band { background: transparent !important; }
+    .collection.alt, .deals, .stories { background: var(--bg-2) !important; }
+    .cta-band { border-top: 0.5px solid rgba(255, 255, 255, 0.08); }
+    footer { background: #000 !important; border-top: 0.5px solid rgba(255, 255, 255, 0.08); }
+    footer, footer a, footer p { color: var(--muted); }
+    footer a:hover { color: #fff; }
+    .foot-logo { color: #fff; }
+    .trust-item strong { color: #c7c7cc; }
+    .deals-origin-pill { background: #1c1c1e !important; border-color: rgba(255, 255, 255, 0.1) !important; color: var(--ink) !important; }
+    .manifesto-meta div { border-top-color: rgba(255, 255, 255, 0.1); }
+    .section-head .link { color: var(--ink); }
+    .cg-pg-chip { background: rgba(0, 0, 0, 0.55) !important; color: #fff !important; }
+    .cg-pg-chip.light { background: rgba(255, 255, 255, 0.14) !important; color: #fff !important; }
+    .cg-pg-title { color: #fff !important; font-family: var(--sans) !important; font-weight: 700 !important; }
+    .cg-pg-dot { background: rgba(255, 255, 255, 0.25) !important; }
+    .cg-pg-dot.on { background: #fff !important; }
+
+    /* ---------- Site-wide Lock-In rules (incl. detail page and overlays) ---------- */
+    /* No tracked capitals anywhere (Lock-In D-053). */
+    body *:not(input):not(textarea) { text-transform: none !important; }
+    .eyebrow, .deals-eyebrow, .hero-tagline, .mc-lbl, .map-stats .lbl, .cg-lbl, footer h3,
+    .trust-cat, .cb-dates, .cb-eyebrow, .cb-route, .cb-total-eyebrow, .wx-wind, .ai-pill,
+    .avail-chip, .cb-arrow, .cb-row-unit, .guide-cat, .listing-rank, .per, .price-tag,
+    .wx-dlbl, .lbl, .ip-tag, .place, .story-meta, .ed-card .tag, .deal-badge, .deal-country,
+    .section-attribution, .lf-pop-badge, .lf-pop-meta, .res-card .ri .num, .hero-scroll,
+    .bp-tier-row, .bp-cell-label, .cg-pg-eyebrow, .listing-meta, .fullmenu .num { letter-spacing: 0 !important; }
+    /* Titles bold in the system font; italic display words become plain. */
+    h1, h2, h3, h4 { font-family: var(--sans) !important; font-weight: 700 !important; font-style: normal !important; }
+    h1 em, h2 em, h3 em, h4 em, h1 i, h2 i, h3 i { font-style: normal !important; font-weight: inherit !important; font-family: inherit !important; }
+    .detail h1 em, .detail-hero h1 em, .detail-hero em { color: #fff !important; }
+    .detail h2 em, .detail h3 em, .story-reader h2 em { color: var(--muted) !important; }
+    .num, span.num { font-style: normal !important; font-family: var(--rounded) !important; }
+    /* Neutral tags — Lock-In has no colour accents (green, amber, gold → grey). */
+    .price-tag, .price-tag.est, .avail-chip, .avail-chip.available, .avail-chip.popular,
+    .avail-chip.limited, .ai-pill, .wx-vd, .lf-pop-avail, .lf-pop-avail.limited,
+    .lf-pop-avail.popular, .ip-tag, .img-placeholder .ip-tag, .trust-cat, .verified-credit {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #c7c7cc !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.14) !important;
+      box-shadow: none !important;
+    }
+    .avail-chip .av-dot, .lf-pop-avail .av-dot, .verified-credit .vc-dot { background: #8e8e93 !important; animation: none !important; }
+    .cb-row-cta { background: #2c2c2e !important; color: #f2f2f7 !important; border-color: transparent !important; }
+    .cb-route { color: var(--muted) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+    .cb-head { border-color: rgba(255, 255, 255, 0.1) !important; }
+    .cb-alt-chip { background: #1c1c1e !important; border-color: rgba(255, 255, 255, 0.1) !important; color: #f2f2f7 !important; }
+    .cb-alt-chip .cb-alt-meta, .cb-alt-chip .cb-alt-delta { color: #8e8e93 !important; }
+    .detail-hero, .dh-slide { background: #111 !important; }
+    .lpulse { background: #8e8e93 !important; box-shadow: none !important; animation: none !important; }
+    .fullmenu a { font-family: var(--sans) !important; font-weight: 700 !important; letter-spacing: -0.03em !important; color: var(--ink); }
+    .fullmenu a .num { color: var(--muted); font-weight: 600 !important; }
+    /* The menu footer's mail link inherited the 64px menu-link size. */
+    .fullmenu .fullmenu-footer a { font-size: 0.9rem !important; font-weight: 400 !important; letter-spacing: 0 !important; color: var(--muted); }
+    .hero-meta .place { font-family: var(--sans) !important; font-style: normal !important; font-weight: 600 !important; }
+    /* The fixed body::before "atmosphere" — gold, blue and lilac orbs —
+       was the strongest AI-landing-page tell. Lock-In's .ambient instead:
+       a faint white light at the top and bottom, no colour. */
+    body::before {
+      background:
+        radial-gradient(120% 55% at 50% -18%, rgba(255, 255, 255, 0.06), transparent 65%),
+        radial-gradient(110% 38% at 50% 118%, rgba(255, 255, 255, 0.04), transparent 70%) !important;
+    }
+    .cg-ai-name { font-family: var(--sans) !important; font-style: normal !important; font-weight: 600 !important; }
+    .cg-slider::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important; }
+    .cg-slider::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important; }
+    /* Deal cards: one badge ("Best value") at most — the others repeated the
+       price printed below and collided with the transport chip. */
+    .deal-card .deal-badge:not(.best) { display: none !important; }
+    .map-section::before { display: none !important; }
+    .mc-block { background: rgba(255, 255, 255, 0.05) !important; border: 0.5px solid rgba(255, 255, 255, 0.08) !important; box-shadow: none !important; backdrop-filter: none !important; }
+    .map-list .map-stats { border: 0 !important; border-bottom: 0.5px solid rgba(255, 255, 255, 0.09) !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .ml-item .badge, .ml-badge { white-space: nowrap; }
+    /* Cookie banner: neutral, light primary button (no gold) */
+    .cb-head { color: var(--muted) !important; font-weight: 600 !important; letter-spacing: 0 !important; }
+    .cb-head .cb-dot { background: #8e8e93 !important; box-shadow: none !important; }
+    .cb-text { color: #c7c7cc !important; }
+    .cb-text button, .cb-text a { color: #f2f2f7 !important; text-decoration-color: rgba(255, 255, 255, 0.35) !important; }
+    .cb-btn { border-color: rgba(255, 255, 255, 0.16) !important; color: #f2f2f7 !important; }
+    .cb-btn.primary { background: #e5e5ea !important; background-image: none !important; color: #000 !important; border-color: transparent !important; }
+    .cb-btn.primary:hover { background: #fff !important; transform: none !important; }
   </style>
 </head>
 <body>
@@ -8287,7 +8700,7 @@
       <div class="section-head">
         <div class="left reveal">
           <div class="eyebrow"><span class="dot"></span>The Featured Edit</div>
-          <h2 class="h-1">Places we're <em class="italic-accent">in love with</em><br>this season.</h2>
+          <h2 class="h-1">Places we love <em class="italic-accent">this season.</em></h2>
         </div>
         <a href="#weekends" class="link reveal d1">
           View all destinations
@@ -15601,7 +16014,7 @@
       ['.ml-foot > span:last-child', 'Schätzungen · Buchung über Skyscanner'],
       // editorial + rails + journal
       ['#destinations .section-head .eyebrow', 'Die aktuelle Auswahl', 'text'],
-      ['#destinations .section-head h2', 'Orte, die wir gerade <em class="italic-accent">lieben</em>.'],
+      ['#destinations .section-head h2', 'Orte, die wir <em class="italic-accent">diese Saison lieben.</em>'],
       ['#destinations .section-head .link', 'Alle Reiseziele ansehen', 'text'],
       ['#weekends .rail-head .eyebrow', 'Wochenend-Trips · 48 Stunden entfernt', 'text'],
       ['#weekends .rail-head h2', 'Freitag hin, <' + EM + '>Sonntag zurück</em>'],
@@ -16656,11 +17069,19 @@
     // place names), from the same provider as the satellite layer.
     // (CARTO Voyager was the first choice, but its free tiles now
     // return an "API KEY REQUIRED" watermark.)
-    tileStandard = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors, GIS User Community',
-      maxZoom: 19,
-      crossOrigin: true
-    });
+    // Lock-In look (Nov 2026): Esri Dark Gray Canvas — same keyless
+    // provider, dark like the rest of the site. Base only: its city-label
+    // layer printed every name straight through our destination pins.
+    // Country names are in the base; city names come with the pins
+    // (hover chip, sidebar).
+    tileStandard = L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+        maxNativeZoom: 16,
+        maxZoom: 18,
+        crossOrigin: true
+      })
+    ]);
     // Satellite: Esri World Imagery + a reference overlay for labels.
     tileSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
@@ -17082,10 +17503,10 @@
       const c = d && cityCoords[d.key];
       if (!c || d.key === from) return;
       const dot = L.circleMarker(c, {
-        radius: 5.5,
+        radius: 4.5,
         weight: 2,
-        color: '#FFFFFF',
-        fillColor: '#7E6230',
+        color: '#000000',
+        fillColor: '#E5E5EA',
         fillOpacity: 1,
         className: 'lf-dest-dot'
       });
