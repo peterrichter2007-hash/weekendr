@@ -789,7 +789,26 @@ git push origin HEAD:main
 
 ## Recent session highlights (latest work, chronological — mid-2026)
 
-**Performance pass** (Nov 2026, latest):
+**The Lock-In look** (Nov 2026, latest) — binding for all new UI:
+- Peter found the cream/gold/serif design "too AI" and "too white" and wants
+  it to look like his own app Lock-In (`~/project/lockin`, docs/DESIGN.md §4,
+  src/app/globals.css). Implemented as ONE layer at the end of the
+  stylesheet ("LOOK — Lock-In"): tokens re-pointed (`--ink` is now the light
+  foreground, `--cream` the black on-ink colour), plus overrides for
+  hard-coded colours. Photos keep their own dark scrims.
+- Rules: black ground, Apple greys (#1c1c1e/#2c2c2e/#8e8e93), **no colour
+  accent** (no gold/bronze, no green/amber tags), system font (no serif, no
+  italics), bold titles with a grey second half, labels in normal case
+  (no tracked capitals, no dots), matte-glass cards without blur, real
+  glass only on the nav, light pill buttons, prices in SF Rounded.
+- Removed: the fixed gold/blue/lilac orb layer (`body::before`), pulsing
+  dots, Google Fonts. Map: Esri Dark Gray Canvas, light-grey pins.
+- City pages (`scripts/build-city-pages.js` CSS) follow the same look.
+- Visual checks: the in-app preview pane does not paint reliably — use
+  headless Edge over the DevTools protocol (node + global WebSocket,
+  no npm) for real screenshots.
+
+**Performance pass** (Nov 2026):
 - **Hero fast path** — a small `<script>` in `<head>` preloads the first
   hero photo and leaves its URL in `window.__mvHero`; `applyWikiImage`
   reuses it (matched by `wikiFileKey()`, i.e. file identity). It
