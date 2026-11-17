@@ -8179,6 +8179,127 @@
     .cb-btn { border-color: rgba(255, 255, 255, 0.16) !important; color: #f2f2f7 !important; }
     .cb-btn.primary { background: #e5e5ea !important; background-image: none !important; color: #000 !important; border-color: transparent !important; }
     .cb-btn.primary:hover { background: #fff !important; transform: none !important; }
+
+    /* ---------- Contrast fixes (Nov 2026 audit) ----------
+       --cream used to be the light colour, and the dark components
+       (detail hero, story reader, wizard, legal + cookie dialogs,
+       compare tray) set their text with it. After the role swap it is
+       black, which left black text on near-black. A contrast scan over
+       every overlay found these; each gets light text explicitly. */
+    .detail-back, .sr-back, .sr-share {
+      background: rgba(0, 0, 0, 0.55) !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
+      color: #fff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .detail-back:hover, .sr-back:hover { background: rgba(0, 0, 0, 0.75) !important; color: #fff !important; }
+    .detail-headline, .detail-headline h1, .detail-headline .stats .val,
+    .sr-headline, .sr-title { color: #fff !important; }
+    .sr-title em { color: rgba(255, 255, 255, 0.62) !important; font-style: normal !important; }
+    .detail-headline .place, .detail-headline .stats .lbl { color: rgba(255, 255, 255, 0.75) !important; }
+    .detail-headline .stats .val { font-family: var(--rounded) !important; font-weight: 600 !important; }
+    .detail-cta-top, .sr-end-cta, .sw-next, .compare-tray-cta {
+      background: #e5e5ea !important;
+      background-image: none !important;
+      color: #000 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+    .detail-cta-top:hover, .sr-end-cta:hover, .compare-tray-cta:hover { background: #fff !important; color: #000 !important; }
+    .sw-back { background: #2c2c2e !important; color: #f2f2f7 !important; }
+    .detail-fav-top, .detail-compare-top { background: rgba(0, 0, 0, 0.55) !important; color: #fff !important; border-color: rgba(255, 255, 255, 0.2) !important; backdrop-filter: none !important; }
+    .detail-fav-top:hover, .detail-compare-top:hover { background: rgba(0, 0, 0, 0.75) !important; }
+    .detail-fav-top.saved, .detail-compare-top.on { background: #e5e5ea !important; color: #000 !important; border-color: transparent !important; }
+    .detail-fav-top.saved svg { fill: #000 !important; stroke: #000 !important; }
+    .compare-tray {
+      background: #1c1c1e !important;
+      border: 0.5px solid rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+      color: #f2f2f7 !important;
+    }
+    .ct-pill, .ct-pill button { color: #f2f2f7 !important; }
+    .btn-ghost { color: #fff !important; border-color: rgba(255, 255, 255, 0.35) !important; }
+    .ed-card .arrow { color: #fff !important; background: rgba(0, 0, 0, 0.45) !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+    .hero-trust strong { color: #fff !important; }
+    /* The hero's ground was var(--ink) — light grey since the role swap,
+       so white headline text sat on #f2f2f7 until the photo arrived. */
+    .hero { background: #0b0b0c !important; }
+    .hero-scroll, .hero-scroll span { color: rgba(255, 255, 255, 0.7) !important; }
+    .bp-cell-sub { color: #a1a1a6 !important; }
+    /* Map/Satellite thumbnail: dark under the tile, firmer label scrim */
+    .map-layer-btn { background: #2c2c2e !important; border: 2px solid rgba(255, 255, 255, 0.85) !important; }
+    .map-layer-btn .mlb-label { background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 70%) !important; }
+    footer ul a:hover, .foot-bottom .links a:hover { color: #fff !important; }
+    /* Legal dialog: light headings, no gold */
+    .lm-title strong, .lm-content h3, .lm-content strong { color: #f2f2f7 !important; font-family: var(--sans) !important; font-weight: 700 !important; }
+    .lm-content h4 { color: #c7c7cc !important; }
+    .lm-content em { color: #f2f2f7 !important; font-style: normal !important; }
+    .lm-content a { color: #f2f2f7 !important; text-decoration-color: rgba(255, 255, 255, 0.35) !important; }
+    .lm-content time, .lm-title span { color: #8e8e93 !important; }
+    .lm-nav button:hover { color: #fff !important; border-color: rgba(255, 255, 255, 0.3) !important; }
+    .lm-nav button.on { background: #e5e5ea !important; color: #000 !important; border-color: transparent !important; }
+    .lm-content .placeholder { background: rgba(255, 255, 255, 0.06) !important; border-color: rgba(255, 255, 255, 0.25) !important; color: #c7c7cc !important; }
+    .lm-content .lm-note { border-left-color: rgba(255, 255, 255, 0.25) !important; background: rgba(255, 255, 255, 0.04) !important; }
+    /* Story hero: the headline sat on a busy photo with a thin scrim */
+    .sr-hero::after {
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.05) 26%, rgba(0, 0, 0, 0.35) 52%, rgba(0, 0, 0, 0.82) 82%, rgba(0, 0, 0, 0.9) 100%) !important;
+    }
+    .sr-title em { color: rgba(255, 255, 255, 0.78) !important; }
+    .sr-dek { color: rgba(255, 255, 255, 0.86) !important; }
+    .sw-eyebrow { letter-spacing: 0 !important; color: var(--muted) !important; font-size: 0.9rem !important; }
+    .sr-cat { letter-spacing: 0 !important; font-size: 0.9rem !important; font-weight: 600 !important; }
+    .sr-cat::before { display: none !important; }
+    .legal-modal { box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65) !important; }
+    /* Cookie settings */
+    .cb-prefs-row .lbl { color: #f2f2f7 !important; }
+    .cb-btn:hover { color: #fff !important; background: rgba(255, 255, 255, 0.08) !important; }
+    .cb-toggle.on { background: #e5e5ea !important; border-color: transparent !important; }
+    /* Leftover gold glows */
+    .map-hint-icon { color: #fff !important; }
+    .cg-slider:hover::-webkit-slider-thumb, .cg-slider:active::-webkit-slider-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.12) !important; }
+    .cg-slider:hover::-moz-range-thumb, .cg-slider:active::-moz-range-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.12) !important; }
+
+    /* ---------- Smooth rails ----------
+       · proximity snapping with a mouse/trackpad (mandatory snapping
+         fought every trackpad flick), mandatory on touch
+       · no horizontal overscroll → no accidental "back" swipe on Mac
+       · no blur on the badges (one blur per card was the main cost
+         while scrolling; Lock-In keeps glass for the nav only)
+       · hover effects only where there is hover, and paused while a
+         rail is moving so cards don't animate under the cursor */
+    .rail {
+      scroll-snap-type: x proximity;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (hover: none), (pointer: coarse) {
+      .rail { scroll-snap-type: x mandatory; }
+      .rail-card:hover { transform: none; }
+      .rail-card:hover img { transform: none; }
+      .rail-card .save { opacity: 1 !important; transform: none !important; }
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .rail { cursor: grab; }
+      .rail-card { transition: transform 0.4s var(--ease-ios); }
+      .rail-card:hover { transform: translateY(-4px); }
+      .rail-card img { transition: transform 0.6s var(--ease-ios); }
+      .rail-card:hover img { transform: scale(1.03); }
+    }
+    .rail.dragging { scroll-snap-type: none !important; scroll-behavior: auto !important; cursor: grabbing; user-select: none; -webkit-user-select: none; }
+    .rail.dragging .rail-card, .rail.is-moving .rail-card { pointer-events: none; }
+    .rail img { -webkit-user-drag: none; user-select: none; }
+    .rail-card .deal, .rail-card .price, .rail-card .save, .res-card .ri .num,
+    .deal-card .deal-badge, .deal-card .deal-mode, .ed-card .tag, .lf-pop-badge {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .rail-card .deal, .rail-card .price { background: rgba(0, 0, 0, 0.62) !important; }
+    .rail-card .save { background: rgba(0, 0, 0, 0.62) !important; color: #fff !important; border: 0.5px solid rgba(255, 255, 255, 0.2) !important; }
+    .rail-card .save.saved { background: #e5e5ea !important; color: #000 !important; border-color: transparent !important; }
+    /* Scrolling inside an overlay stays inside it */
+    .fullmenu, .story-reader, .modal, .results-body, .detail, .ml-items,
+    .cm-grid, .sw-body, .lm-body, .compare-tray-pills { overscroll-behavior: contain; }
   </style>
 </head>
 <body>
@@ -8471,7 +8592,7 @@
           <div class="cg-vibes">
             <span class="cg-lbl" style="margin-bottom: 0.7rem; display: block;">The mood</span>
             <div class="vibe-grid" id="vibeGrid">
-              <button class="vibe-pill on" data-vibe="Romantic"><span class="emoji">🌅</span>Romantic</button>
+              <button class="vibe-pill on" data-vibe="Romantic"><span class="emoji">♡</span>Romantic</button>
               <button class="vibe-pill" data-vibe="Party"><span class="emoji">🌙</span>Party</button>
               <button class="vibe-pill on" data-vibe="Beach"><span class="emoji">🌊</span>Beach</button>
               <button class="vibe-pill" data-vibe="Hidden"><span class="emoji">🗝️</span>Hidden</button>
@@ -9190,7 +9311,7 @@
         <h2 class="sw-title">What's the<br><em>weekend for?</em></h2>
         <p class="sw-help">Pick all that feel right. We'll match cities and experiences.</p>
         <div class="sw-vibe-grid" id="swVibeGrid">
-          <button class="sw-vibe on" data-vibe="Romantic"><span>🌅</span>Romantic</button>
+          <button class="sw-vibe on" data-vibe="Romantic"><span>♡</span>Romantic</button>
           <button class="sw-vibe" data-vibe="Party"><span>🌙</span>Party</button>
           <button class="sw-vibe on" data-vibe="Beach"><span>🌊</span>Beach</button>
           <button class="sw-vibe" data-vibe="Hidden"><span>🗝️</span>Hidden</button>
@@ -9599,7 +9720,7 @@
       return `
         <div class="rail-card" onclick="openDetail(${JSON.stringify(it).replace(/"/g, '&quot;')})">
           <div class="img-wrap has-placeholder" data-label="${it.place}" data-wiki="${it.place}">
-            <img alt="${it.place}" loading="lazy" />
+            <img alt="${it.place}" loading="lazy" decoding="async" />
             ${isDeal ? `<span class="deal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>${tr('Best value', 'Bester Wert')}</span>` : ''}
             ${it._displayPrice ? `<span class="price">${it._displayPrice}</span>` : ''}
             <button class="save" data-fav-toggle="${it.place}" aria-label="Save trip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
@@ -9632,15 +9753,85 @@
     if (typeof refreshCompareUI === 'function') refreshCompareUI();
   }
   
-  // Rail controls
+  // Rail controls — a page of WHOLE cards per click. The old 1.5-card
+  // step ended between two snap points, so every click glided and then
+  // jerked sideways into place.
+  function railStep(rail) {
+    const card = rail.querySelector('.rail-card');
+    if (!card) return 360;
+    const gap = parseFloat(getComputedStyle(rail).columnGap) || 20;
+    return card.offsetWidth + gap;
+  }
   document.querySelectorAll('.rail-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const rail = document.getElementById('rail-' + btn.dataset.rail);
-      const dir = parseInt(btn.dataset.dir);
-      const card = rail.querySelector('.rail-card');
-      const cardWidth = card ? card.offsetWidth + 20 : 360;
-      rail.scrollBy({ left: dir * cardWidth * 1.5, behavior: 'smooth' });
+      if (!rail) return;
+      const step = railStep(rail);
+      const perPage = Math.max(1, Math.floor((rail.clientWidth + 1) / step));
+      const target = Math.round(rail.scrollLeft / step + parseInt(btn.dataset.dir) * perPage) * step;
+      rail.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
     });
+  });
+
+  // Rails: end-state for the arrows, hover paused while moving, and
+  // mouse drag with a little momentum (touch + trackpads scroll natively).
+  document.querySelectorAll('.rail').forEach(rail => {
+    const key = rail.id.replace(/^rail-/, '');
+    const prev = document.querySelector(`.rail-btn[data-rail="${key}"][data-dir="-1"]`);
+    const next = document.querySelector(`.rail-btn[data-rail="${key}"][data-dir="1"]`);
+    let ticking = false, idle = null;
+    const syncArrows = () => {
+      const max = rail.scrollWidth - rail.clientWidth;
+      if (prev) prev.disabled = rail.scrollLeft <= 2;
+      if (next) next.disabled = rail.scrollLeft >= max - 2;
+      ticking = false;
+    };
+    rail.addEventListener('scroll', () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(syncArrows); }
+      rail.classList.add('is-moving');
+      clearTimeout(idle);
+      idle = setTimeout(() => rail.classList.remove('is-moving'), 140);
+    }, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(syncArrows).observe(rail);
+    new MutationObserver(syncArrows).observe(rail, { childList: true });
+
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    let down = null, moved = false, swallowUntil = 0;
+    rail.addEventListener('pointerdown', e => {
+      moved = false;
+      if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button, a')) return;
+      down = { x: e.clientX, left: rail.scrollLeft, t: performance.now(), v: 0 };
+    });
+    window.addEventListener('pointermove', e => {
+      if (!down) return;
+      const dx = e.clientX - down.x;
+      if (!moved && Math.abs(dx) < 6) return;
+      if (!moved) { moved = true; rail.classList.add('dragging'); }
+      const now = performance.now();
+      const left = down.left - dx;
+      down.v = (left - rail.scrollLeft) / Math.max(1, now - down.t);   // px per ms
+      down.t = now;
+      rail.scrollLeft = left;
+    }, { passive: true });
+    window.addEventListener('pointerup', () => {
+      if (!down) return;
+      // Held still before letting go → no throw.
+      const v = performance.now() - down.t > 90 ? 0 : down.v;
+      down = null;
+      if (!moved) return;
+      moved = false;
+      swallowUntil = performance.now() + 350;
+      rail.classList.remove('dragging');
+      // Glide on in the throw direction and settle on a whole card.
+      const step = railStep(rail);
+      const target = Math.round((rail.scrollLeft + v * 260) / step) * step;
+      rail.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    });
+    // A drag must not also open the card under the cursor.
+    rail.addEventListener('click', e => {
+      if (performance.now() < swallowUntil) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    rail.addEventListener('dragstart', e => e.preventDefault());
   });
   
   // ============================================================
@@ -11839,21 +12030,29 @@
   // URL that opens a partner error page — when precision isn't
   // possible, we degrade to a search-page hit that always works.
   // ============================================================
+  // Skyscanner keys multi-airport cities on its own four-letter codes
+  // ("lond" = every London airport), not the IATA metro codes we store.
+  const SKY_CITY = { LON: 'lond', PAR: 'pari', STO: 'stoc', MIL: 'mila', ROM: 'rome' };
+  const skyCode = a => SKY_CITY[a.iata] || a.iata.toLowerCase();
   function buildSkyscannerUrl(origin, dest, ctx) {
     const oa = airportFor(origin);
     const da = airportFor(dest);
     const adults = Math.max(1, (ctx && ctx.adults) || 1);
     const dates  = (ctx && ctx.dates) || {};
-    const shared = `adultsv2=${adults}&childrenv2=&cabinclass=economy&sortby=price&currency=EUR&market=DE&locale=en-GB`;
-    // (1) Precise: both IATAs + both dates → deep-link to actual results
+    // The local domain, so Skyscanner has no market redirect to make on
+    // the way in (a redirect is where a deep link loses its path).
+    const de = isDE();
+    const host = de ? 'https://www.skyscanner.de' : 'https://www.skyscanner.net';
+    const shared = `adultsv2=${adults}&childrenv2=&cabinclass=economy&rtn=1&preferdirects=false&sortby=price&currency=EUR&locale=${de ? 'de-DE' : 'en-GB'}`;
+    // (1) Precise: both airports + both dates → the actual results page
     if (oa && da && dates.checkinCompact && dates.checkoutCompact) {
-      const url = `https://www.skyscanner.net/transport/flights/${oa.iata.toLowerCase()}/${da.iata.toLowerCase()}/${dates.checkinCompact}/${dates.checkoutCompact}/?${shared}`;
+      const url = `${host}/transport/flights/${skyCode(oa)}/${skyCode(da)}/${dates.checkinCompact}/${dates.checkoutCompact}/?${shared}`;
       const note = da.via ? `Closest airport · ${da.viaCity}` : null;
       return { url, valid: true, label: 'View flights on Skyscanner', note };
     }
     // (2) Dest IATA only → city flights-to page with dates as params
     if (da) {
-      let url = `https://www.skyscanner.net/transport/flights-to/${da.iata.toLowerCase()}/?${shared}`;
+      let url = `${host}/transport/flights-to/${skyCode(da)}/?${shared}`;
       if (dates.checkin)  url += `&outbounddate=${dates.checkin}`;
       if (dates.checkout) url += `&inbounddate=${dates.checkout}`;
       const note = da.via ? `Closest airport · ${da.viaCity}` : null;
@@ -11868,70 +12067,118 @@
     return { url, valid: false, label: 'Search on Google Flights', note: 'No direct deep-link available' };
   }
 
-  // FlixBus destinations that have a real city page, verified by
-  // fetching every one of our destinations against global.flixbus.com
-  // and reading the page title. A served city returns "Affordable Bus
-  // tickets to X"; everything else returns the same generic "Coming
-  // your Way!" placeholder regardless of what you put in the path, so
-  // the URL 200s while telling the user nothing.
+  // FlixBus city IDs, looked up once from FlixBus's own city search
+  // (global.api.flixbus.com/search/autocomplete/cities) for every
+  // origin and destination we know. With both IDs the shop opens the
+  // real results list — route, outbound + return date and travellers
+  // already filled in — instead of a generic landing page.
   //
-  // The eleven destinations missing here are islands and Alpine
-  // villages FlixBus genuinely does not serve (Mykonos, Santorini,
-  // Ibiza, Palma, Amalfi, Monaco, Lake Como, Reykjavik, Interlaken,
-  // Hallstatt) — for those we say so instead of linking into a dead
-  // end. Values are the slug FlixBus itself uses, which is not always
-  // the obvious one: Wrocław lives at `wroclaw-poland`.
-  const flixbusCitySlug = {
-    Barcelona: 'barcelona', Lisbon: 'lisbon', Budapest: 'budapest', Prague: 'prague',
-    Milan: 'milan', Dubrovnik: 'dubrovnik', Paris: 'paris', Krakow: 'krakow',
-    Naples: 'naples', Porto: 'porto', Vienna: 'vienna', Athens: 'athens',
-    Copenhagen: 'copenhagen', London: 'london', Rome: 'rome', Amsterdam: 'amsterdam',
-    Berlin: 'berlin', Madrid: 'madrid', Brussels: 'brussels', Dublin: 'dublin',
-    Stockholm: 'stockholm', Oslo: 'oslo', Valencia: 'valencia', Nice: 'nice',
-    Venice: 'venice', Florence: 'florence', Seville: 'seville', Granada: 'granada',
-    Benidorm: 'benidorm', Malaga: 'malaga', Cannes: 'cannes', Split: 'split',
-    Zadar: 'zadar', Albufeira: 'albufeira', Faro: 'faro', Catania: 'catania',
-    Bari: 'bari', Belgrade: 'belgrade', Warsaw: 'warsaw', Riga: 'riga',
-    Vilnius: 'vilnius', Tallinn: 'tallinn', Ljubljana: 'ljubljana', Bratislava: 'bratislava',
-    Sofia: 'sofia', Sarajevo: 'sarajevo', Tirana: 'tirana', Skopje: 'skopje',
-    'Wrocław': 'wroclaw-poland', 'Gdańsk': 'gdansk', Lucerne: 'lucerne',
-    Innsbruck: 'innsbruck', Salzburg: 'salzburg', Bergen: 'bergen', Annecy: 'annecy'
+  // Missing on purpose: islands and villages FlixBus does not serve
+  // (Mykonos, Santorini, Ibiza, Palma, Amalfi, Monaco, Hallstatt,
+  // Reykjavik, Interlaken). For those we say so rather than link into
+  // a dead end.
+  const FLIX_CITY_ID = {
+    Barcelona: '40e086ed-8646-11e6-9066-549f350fcb0c', Lisbon: '14eefc82-b630-4aea-88dc-eb91e0b9d482',
+    Budapest: '40de6527-8646-11e6-9066-549f350fcb0c', Prague: '40de1ad1-8646-11e6-9066-549f350fcb0c',
+    Milan: '40ddcc6e-8646-11e6-9066-549f350fcb0c', Dubrovnik: '40e2c6c8-8646-11e6-9066-549f350fcb0c',
+    Paris: '40de8964-8646-11e6-9066-549f350fcb0c', Krakow: '40de7eb5-8646-11e6-9066-549f350fcb0c',
+    Naples: '40e096c1-8646-11e6-9066-549f350fcb0c', Porto: '74923e7b-3ace-43d2-8278-41ee00193a85',
+    Vienna: '40de1f31-8646-11e6-9066-549f350fcb0c', Athens: 'd672b263-63d4-4741-a4a3-475437d31e9c',
+    Copenhagen: '40de7db1-8646-11e6-9066-549f350fcb0c', London: '40dfdfd8-8646-11e6-9066-549f350fcb0c',
+    Rome: '40de90ff-8646-11e6-9066-549f350fcb0c', Amsterdam: '40dde3b8-8646-11e6-9066-549f350fcb0c',
+    Berlin: '40d8f682-8646-11e6-9066-549f350fcb0c', Madrid: '9a07bb38-3596-48eb-a857-18fd01199c62',
+    Brussels: '40de6287-8646-11e6-9066-549f350fcb0c', Dublin: '5b8f53b1-29ae-4dda-ba3a-7dc616e6e1b7',
+    Stockholm: '40dfdbe7-8646-11e6-9066-549f350fcb0c', Oslo: '40e18128-8646-11e6-9066-549f350fcb0c',
+    Valencia: 'fe6bf6e1-6198-4eec-8843-ab6001133840', Nice: '40e13a46-8646-11e6-9066-549f350fcb0c',
+    Venice: '40dea03b-8646-11e6-9066-549f350fcb0c', Florence: '40de71c6-8646-11e6-9066-549f350fcb0c',
+    Granada: '246101b8-2880-4b2f-a71a-171c927c442d', Benidorm: '65c73dee-a5ab-4812-a1ea-deb6cfe7d88c',
+    Malaga: 'ef2cc114-c257-402c-bc45-3f7e3eb70223', Cannes: '40e0010f-8646-11e6-9066-549f350fcb0c',
+    Split: '40e128e9-8646-11e6-9066-549f350fcb0c', Zadar: '40e12563-8646-11e6-9066-549f350fcb0c',
+    Albufeira: '67a8bce9-f76b-4a8c-8b83-79f8d37bd6a2', Faro: 'd0189569-bd3c-461f-9906-3bb7ebd9f65f',
+    Catania: 'fb17adee-7d5b-4b10-8872-e930644061f2', Bari: '40df3bba-8646-11e6-9066-549f350fcb0c',
+    Belgrade: '340bdce6-7eb1-4c50-bd1e-fd43485cdfef', Warsaw: '40e19c59-8646-11e6-9066-549f350fcb0c',
+    Riga: '20f5fe96-be0b-4d72-bd03-2affa653ca58', Vilnius: '4f05a96a-0043-4215-bcac-8c35c081056e',
+    Tallinn: '99c4fec7-3ecb-11ea-8017-02437075395e', 'Lake Como': 'dd129ead-912c-4052-8e6a-cd441c14d0b6',
+    Ljubljana: '40de8044-8646-11e6-9066-549f350fcb0c', Bratislava: '40de54de-8646-11e6-9066-549f350fcb0c',
+    Sofia: '40e09335-8646-11e6-9066-549f350fcb0c', Sarajevo: 'b4b1c3c9-608f-4920-9dfc-85762cef4b04',
+    Tirana: 'ec96ab6c-b8f7-4dcd-bf4f-27205e164b07', Skopje: '7c0e2d09-d177-4c0b-a274-051c9c9a6347',
+    'Wrocław': '40de575f-8646-11e6-9066-549f350fcb0c', 'Gdańsk': '40de6982-8646-11e6-9066-549f350fcb0c',
+    Innsbruck: '40dd9a2a-8646-11e6-9066-549f350fcb0c', Salzburg: '40de3471-8646-11e6-9066-549f350fcb0c',
+    Bergen: 'fb7f04bd-f9fb-4569-9253-71b6d7e78a4e', Annecy: '40dfe930-8646-11e6-9066-549f350fcb0c',
+    Munich: '40d901a5-8646-11e6-9066-549f350fcb0c', Hamburg: '40d91e53-8646-11e6-9066-549f350fcb0c',
+    Helsinki: 'f074ccfa-b588-45d2-a838-cf2a30cf3597', Geneva: '40df585b-8646-11e6-9066-549f350fcb0c',
+    Zurich: '40d8fa3c-8646-11e6-9066-549f350fcb0c', Frankfurt: '40d90407-8646-11e6-9066-549f350fcb0c',
+    Seville: '033b1bde-970c-45af-9504-91c4006fd466', Lucerne: 'bbc09524-5732-4539-b1ea-49fc1e36e90e'
   };
+  // shop.flixbus.de → German + euros; shop.flixbus.ie → English + euros
+  // (.com prices in dollars).
+  const _dmy = iso => { const [y, m, d] = String(iso).split('-'); return `${d}.${m}.${y}`; };
 
   function buildFlixBusUrl(origin, dest, ctxIn) {
+    const de = isDE();
+    const home = de ? 'https://www.flixbus.de/' : 'https://global.flixbus.com/';
     if (!dest || origin === dest) {
-      return { url: 'https://global.flixbus.com/', valid: false, label: 'Browse FlixBus', note: null };
+      return { url: home, valid: false, label: 'Browse FlixBus', note: null };
     }
-
-    // There is no working pre-filled deep link to give here. The old
-    // `/search?fromCity=…&toCity=…&rideDate=…` URL returned a hard
-    // 404 — so the "high confidence" path, the one taken for every
-    // route we had actually confirmed, was the broken one. FlixBus's
-    // only parameterised search lives on shop.flixbus.com and keys on
-    // internal numeric city IDs we do not have. `/bus-routes/…`, the
-    // old fallback, is a single generic network page for every input.
-    //
-    // What does work is the per-city page at /bus/{slug}, which lists
-    // real connections and prices into that city. So we send the user
-    // there and are honest that the dates aren't carried over.
-    const slug = flixbusCitySlug[dest];
-    if (!slug) {
-      return {
-        url: 'https://global.flixbus.com/',
-        valid: false,
-        label: 'Browse FlixBus',
-        note: 'FlixBus does not serve ' + dest
-      };
+    const to = FLIX_CITY_ID[dest];
+    if (!to) {
+      return { url: home, valid: false, label: 'Browse FlixBus', note: 'FlixBus does not serve ' + dest };
     }
-    const confirmed = canBus(origin, dest);
+    const from = FLIX_CITY_ID[origin];
+    const ctx = ctxIn || {};
+    const dates = ctx.dates || {};
+    const p = new URLSearchParams();
+    if (from) p.set('departureCity', from);
+    p.set('arrivalCity', to);
+    if (dates.checkin) p.set('rideDate', _dmy(dates.checkin));
+    if (dates.checkout) { p.set('backRide', '1'); p.set('backRideDate', _dmy(dates.checkout)); }
+    p.set('adult', String(Math.max(1, ctx.adults || 1)));
+    p.set('_locale', de ? 'de' : 'en');
     return {
-      url: `https://global.flixbus.com/bus/${slug}`,
+      url: `https://${de ? 'shop.flixbus.de' : 'shop.flixbus.ie'}/search?${p}`,
       valid: true,
       label: 'Find buses to ' + dest,
-      note: confirmed
-        ? 'Dates aren’t carried over — pick them on FlixBus'
-        : 'Direct route not confirmed — the page lists every connection into ' + dest
+      note: from ? null : 'Pick your departure stop on FlixBus'
     };
+  }
+
+  // Trainline location codes (urn:trainline:generic:loc:…), from
+  // Trainline's own location search, for every city in the rail DB.
+  // The results URL needs them — the old ?origin=Berlin&destination=…
+  // form silently redirected to the Trainline homepage.
+  const TRAINLINE_LOC = {
+    London: '182gb', Paris: '4916', Brussels: '5974', Amsterdam: '8657', Berlin: '7527',
+    Munich: '7686', Hamburg: '7626', Prague: '17587', Madrid: '6663', Barcelona: '6617',
+    Seville: '6683', Valencia: '23634', Granada: '6656', Rome: '8542', Florence: '8433',
+    Milan: '8483', Naples: '22184', Venice: '8573', Vienna: '26862', Salzburg: '6994',
+    Budapest: '18819', Innsbruck: '10461', Zurich: '6401', Lucerne: '6353',
+    Interlaken: '18576', Lisbon: '8721', Porto: '29278'
+  };
+  function buildTrainlineUrl(origin, dest, ctxIn) {
+    const de = isDE();
+    const o = TRAINLINE_LOC[origin], d = TRAINLINE_LOC[dest];
+    if (!o || !d || origin === dest) {
+      return { url: 'https://www.thetrainline.com/' + (de ? 'de' : ''), valid: false };
+    }
+    const ctx = ctxIn || {};
+    const dates = ctx.dates || {};
+    const urn = id => 'urn:trainline:generic:loc:' + id;
+    const p = new URLSearchParams({
+      journeySearchType: dates.checkout ? 'return' : 'single',
+      origin: urn(o),
+      destination: urn(d),
+      outwardDate: (dates.checkin || '') + 'T08:00:00',
+      outwardDateType: 'departAfter'
+    });
+    if (dates.checkout) {
+      p.set('inwardDate', dates.checkout + 'T15:00:00');
+      p.set('inwardDateType', 'departAfter');
+    }
+    // Trainline counts travellers by date of birth; an adult's will do.
+    const dob = (new Date().getFullYear() - 30) + '-01-01';
+    for (let i = 0; i < Math.max(1, ctx.adults || 1); i++) p.append('passengers[]', dob);
+    p.set('lang', de ? 'de' : 'en');
+    return { url: 'https://www.thetrainline.com/book/results?' + p, valid: true };
   }
 
   // ============================================================
@@ -11992,8 +12239,11 @@
     const checkout = new Date(checkin);
     checkout.setDate(checkin.getDate() + nights);
 
-    const iso     = d => d.toISOString().slice(0, 10);
-    const compact = d => d.toISOString().slice(2, 10).replace(/-/g, '');
+    // Local calendar date — toISOString() is UTC, which shifted every
+    // partner date back a day for searches made just after midnight.
+    const pad     = n => String(n).padStart(2, '0');
+    const iso     = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const compact = d => iso(d).slice(2).replace(/-/g, '');
     return {
       checkin:        iso(checkin),
       checkout:       iso(checkout),
@@ -12028,11 +12278,10 @@
     const flixbusInfo = bus;
     const flixbusValid = bus.valid;
 
-    // --- Train (Trainline deep-link search). We don't have a real
-    //     affiliate yet, so this is a free-text search that always
-    //     opens a real page. Only surfaced when canTrain() is true.
+    // --- Train: Trainline results page with route, dates and
+    //     travellers. Only surfaced when canTrain() is true.
     const trainValid = canTrain(ctx.origin, city);
-    const trainline = `https://www.trainline.com/search?origin=${encodeURIComponent(ctx.origin)}&destination=${encodeURIComponent(city)}&outbound=${encodeURIComponent(dates.checkin || '')}&return=${encodeURIComponent(dates.checkout || '')}&passengers=${ctx.adults || 1}`;
+    const trainline = buildTrainlineUrl(ctx.origin, city, ctx).url;
 
     // --- Booking: full search with cheapest sort + budget-derived price cap
     function bookingURL(query) {
@@ -12143,7 +12392,10 @@
     const links = partnerLinks(cityName, ctx);
     const smartD = smartDestinations.find(x => x.key === cityName);
     const flightPrice = smartD ? smartD.prices[origin] : null;
-    const flightTime = smartD ? fmtFlight(smartD.flights[origin]) : '2h flight';
+    // Only a known flight time — an unknown origin used to print "NaNh"
+    // (and a city without data a made-up "2h flight").
+    const flightHours = smartD && smartD.flights ? smartD.flights[origin] : null;
+    const flightTime = flightHours > 0 ? fmtFlight(flightHours) : null;
     // No fake availability indicators on the top deals — they used to
     // be hashed heuristics ("Limited · 4 left"). Now we just label the
     // deal source honestly.
@@ -12183,7 +12435,7 @@
           <h1>${cityName.replace(/(\w+)$/, '<em>$1</em>')}</h1>
           <div class="stats">
             <div><span class="lbl">Flights from ${origin}</span><span class="val">${flightPrice ? priceRangeTransport(flightPrice, 'flight') : 'check live'}</span></div>
-            <div><span class="lbl">Flight time</span><span class="val">${flightTime}</span></div>
+            ${flightTime ? `<div><span class="lbl">Flight time</span><span class="val">${flightTime}</span></div>` : ''}
             <div><span class="lbl">Best for</span><span class="val">${(trip.tags || trip.vibeTags || ['Weekend']).slice(0,2).join(' · ')}</span></div>
           </div>
         </div>
@@ -12253,7 +12505,7 @@
                   // row so the cost-breakdown still computes a total.
                   const flightInfo = links.skyscannerInfo || { url: links.skyscanner, valid: false, note: null };
                   if (links.canFly === false) return '';
-                  const subBits = [flightTime, 'cheapest-sorted on Skyscanner'];
+                  const subBits = [flightTime, 'cheapest-sorted on Skyscanner'].filter(Boolean);
                   if (flightInfo.note) subBits.unshift(flightInfo.note);
                   return `
                     <div class="cb-row">
@@ -12281,7 +12533,7 @@
                 // validated builder URLs from partnerLinks, never inline.
                 const ctaFor = (opt) => {
                   if (opt.mode === 'bus')   return { url: links.flixbus   || 'https://global.flixbus.com/', label: 'Check FlixBus →', title: 'Search opens on FlixBus' };
-                  if (opt.mode === 'train') return { url: links.trainline || 'https://www.trainline.com/', label: 'Check Trainline →', title: 'Search opens on Trainline' };
+                  if (opt.mode === 'train') return { url: links.trainline || 'https://www.thetrainline.com/', label: 'Check Trainline →', title: 'Search opens on Trainline' };
                   const info = links.skyscannerInfo || {};
                   return {
                     url:   info.url || links.skyscanner,

@@ -278,37 +278,61 @@ on the slider. `countDestinationsInRange(v, ctx)` returns
 buildSkyscannerUrl(origin, dest, ctx)
 // → { url, valid, label, note }
 // Three-tier fallback:
-//   1. Both IATAs + dates → /transport/flights/{from}/{to}/{depart}/{return}/
-//   2. Dest IATA only    → /transport/flights-to/{iata}/ with date params
-//   3. Neither           → Google Flights free-text URL
+//   1. Both airports + dates → /transport/flights/{from}/{to}/{yymmdd}/{yymmdd}/
+//   2. Dest airport only    → /transport/flights-to/{code}/ with date params
+//   3. Neither              → Google Flights free-text URL
+// Multi-airport metros use Skyscanner's own city codes (SKY_CITY:
+// LON→lond, PAR→pari, STO→stoc, MIL→mila, ROM→rome). Host is
+// skyscanner.de in German, skyscanner.net in English, and there is no
+// `market=` param — a market redirect is where a deep link loses its path.
 
 buildFlixBusUrl(origin, dest, ctx)
 // → { url, valid, label, note }
-//   • city in flixbusCitySlug:  /bus/{verified-slug}
-//   • otherwise:                homepage + "FlixBus does not serve X"
+//   • both cities in FLIX_CITY_ID → shop results page:
+//       shop.flixbus.de|ie/search?departureCity=<uuid>&arrivalCity=<uuid>
+//       &rideDate=DD.MM.YYYY&backRide=1&backRideDate=DD.MM.YYYY&adult=N
+//   • only the destination known → same URL without departureCity
+//   • destination not served     → homepage + "FlixBus does not serve X"
+
+buildTrainlineUrl(origin, dest, ctx)
+// → { url, valid }
+//   thetrainline.com/book/results?journeySearchType=return
+//   &origin=urn:trainline:generic:loc:<id>&destination=…
+//   &outwardDate=YYYY-MM-DDT08:00:00&inwardDate=…T15:00:00
+//   &passengers[]=<adult DOB> (one per traveller)&lang=de|en
 ```
 
-**FlixBus has no usable pre-filled deep link — do not try to add one
-back.** Verified against the live site:
+**Deep links land on the actual results page (Nov 2026).** Verified in a
+real browser: FlixBus shows "Berlin → Tallinn, Fri 27 Nov – Mon 30 Nov,
+2 adults" with live departures; Trainline shows "Wien nach Salzburg,
+Rückfahrt, 1 Erwachsene/r" with trains. What does NOT work, so do not
+go back to it:
 
 | URL shape | Result |
 |---|---|
-| `global.flixbus.com/search?fromCity=…&toCity=…` | **hard 404** |
-| `global.flixbus.com/bus-routes/{anything}` | one generic network page, byte-identical for `berlin-prague` and `zzzz-qqqq` |
-| `global.flixbus.com/bus/{a}-{b}` | generic "Coming your Way!" placeholder |
-| `global.flixbus.com/bus/{city}` | **real page** — "Affordable Bus tickets to X" |
-| `shop.flixbus.com/search?departureCity=<id>` | works, but needs FlixBus's internal numeric city IDs |
+| `global.flixbus.com/search?fromCity=…&toCity=…` | hard 404 |
+| `global.flixbus.com/bus/{city}` | city landing page — no route, no dates (the old link) |
+| `shop.flixbus.com/search?…` | works, but prices in US dollars → use `.de` (German) / `.ie` (English, euros) |
+| FlixBus `returnDate=` | ignored — the return leg is `backRide=1&backRideDate=` |
+| `trainline.com/search?origin=Berlin&destination=…` | silent redirect to the Trainline homepage |
 
-`flixbusCitySlug` is a verified lookup table: every destination was
-fetched and its page title checked. 53 have a real city page; the
-other 11 (Mykonos, Santorini, Ibiza, Palma, Amalfi, Monaco, Lake Como,
-Reykjavik, Interlaken, Hallstatt — islands and Alpine villages) are
-genuinely unserved and get an honest "FlixBus does not serve X"
-instead of a link into a dead end. Slugs are not always the obvious
-one: Wrocław lives at `wroclaw-poland`.
+IDs come from the partners' own public city search and are stored as
+lookup tables — refresh them the same way when adding a city:
 
-`canBus` no longer picks the URL — it only chooses the note, since we
-can no longer pass the route through to FlixBus either way.
+- FlixBus: `https://global.api.flixbus.com/search/autocomplete/cities?q=<name>&lang=en&country=<cc>`
+  → `id` (UUID). Only cities with `is_flixbus_city: true` go into
+  `FLIX_CITY_ID`; Mykonos, Santorini, Ibiza, Palma, Amalfi, Monaco,
+  Hallstatt, Reykjavik and Interlaken are not served.
+- Trainline: `https://www.thetrainline.com/api/locations-search/v2/search?searchTerm=<name>&locale=en-GB`
+  → the city entry's `code` (`urn:trainline:generic:loc:<id>`), kept
+  as `<id>` in `TRAINLINE_LOC` for every city in the rail DB.
+
+Skyscanner, Booking.com and GetYourGuide sit behind bot walls, so they
+cannot be checked automatically; their URL shapes are the documented
+search formats.
+
+`computeDates()` builds local calendar dates (it used `toISOString()`,
+which is UTC and moved every partner date back a day just after midnight).
 
 Comprehensive `cityAirports` map covers every one of 65 destinations
 + 19 common origins with real IATAs. Cities without their own airport
@@ -789,7 +813,34 @@ git push origin HEAD:main
 
 ## Recent session highlights (latest work, chronological — mid-2026)
 
-**The Lock-In look** (Nov 2026, latest) — binding for all new UI:
+**Contrast, rails, deep links** (Nov 2026, latest):
+- **Deep links open the real search** — FlixBus and Trainline now land on
+  their results pages with route, both dates and travellers filled in
+  (see "Partner URL builders"); Skyscanner uses its own city codes.
+- **Contrast audit over every state** — a scan in headless Edge composites
+  each text node's background and checks WCAG AA on the page, menu,
+  autocomplete, results drawer, city detail (top + scrolled), story
+  reader, step wizard, compare modal, legal dialog, at 1440 and 390 px,
+  EN + DE, winter + default season, and a static city page: 0 failures.
+  **Gotcha:** after the role swap `var(--cream)` is BLACK. ~30 old rules
+  used it as "light text on a dark surface" (detail hero, story reader,
+  wizard button, legal + cookie dialogs, compare tray, footer link hover);
+  the "Contrast fixes" block at the end of the LOOK layer sets those
+  explicitly. Never use `--cream` for text on a dark or photo surface.
+  `.hero` had `background: var(--ink)` → light grey until the photo
+  loaded; now `#0b0b0c`.
+- **Smooth rails** — arrows page by whole cards (the 1.5-card step ended
+  between snap points and jerked), arrows disable at the ends, mouse
+  drag with a short throw that settles on a card (a drag never opens the
+  card), proximity snap with mouse/trackpad + mandatory on touch,
+  `overscroll-behavior-x: contain` (no accidental Mac "back" swipe), no
+  blur on rail/deal badges, hover effects only with a real pointer and
+  paused while a rail moves. Overlays keep their scroll inside
+  (`overscroll-behavior: contain`).
+- Detail page no longer prints "NaNh" / a made-up "2h flight" when the
+  flight time is unknown — the stat is left out.
+
+**The Lock-In look** (Nov 2026) — binding for all new UI:
 - Peter found the cream/gold/serif design "too AI" and "too white" and wants
   it to look like his own app Lock-In (`~/project/lockin`, docs/DESIGN.md §4,
   src/app/globals.css). Implemented as ONE layer at the end of the
@@ -936,8 +987,8 @@ the AI-removal pass):
   user saw zero ambient markers). Pool switched to all destinations.
 - **Transport prices as RANGES** — `priceRangeTransport(n, mode)` with
   mode-specific spreads (flight ±40%, bus ±30%, train ±22%).
-- **FlixBus full-param URLs** — when `canBus`: full search URL with
-  fromCity / toCity / rideDate / returnDate / adult. canBus/canTrain
+- **FlixBus full-param URLs** — (superseded: that URL 404'd; see
+  "Partner URL builders" for the working shop deep link). canBus/canTrain
   routed through `getOptions` for normalised lookup.
 - **All fake reviews + invented social proof REMOVED** — `cg-trust`
   block (fake star rating + fake trip-count + gradient avatars) gone,
