@@ -53,7 +53,44 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://en.wikipedia.org">
+  <link rel="preconnect" href="https://thumb.wikimedia.org">
   <link rel="preconnect" href="https://upload.wikimedia.org">
+
+  <!-- Hero fast path. The first hero photo is the largest thing on
+       screen, but the app script that normally requests it sits at
+       the end of a ~900 KB document. This starts the download while
+       the <head> is still parsing: same season rule as SEASON, same
+       width ladder / density rule as wikiSized() + densityFor(), and
+       the exact URL is handed over in window.__mvHero so the <img>
+       reuses the preloaded bytes. Keep the three in step. -->
+  <script>
+  (function () {
+    try {
+      var q = location.search.match(/[?&]season=(winter|default)/);
+      var m = new Date().getMonth();
+      var winter = q ? q[1] === 'winter' : (m >= 10 || m <= 1);
+      var src = winter
+        ? 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Northern_Lights_over_Reykjavik_%2815849686473%29.jpg'
+        : 'https://upload.wikimedia.org/wikipedia/commons/4/41/Lisbon_%2836831596786%29_%28cropped%29.jpg';
+      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      var slow = !!(c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || '')));
+      var vw = window.innerWidth || 1024;
+      var vh = Math.max(window.innerHeight || 768, vw <= 640 ? 640 : 720);
+      var css = Math.max(vw, vh * 1.5);
+      var dpr = slow ? 1 : Math.min(window.devicePixelRatio || 1, (vw >= 900 && css >= 900) ? 2 : 1.5);
+      var need = css * dpr * 0.9, ladder = [120, 250, 330, 500, 960, 1280, 1920, 3840], w = 3840;
+      for (var i = 0; i < ladder.length; i++) { if (ladder[i] >= need) { w = ladder[i]; break; } }
+      var file = src.split('/').pop();
+      var url = src.replace('https://upload.wikimedia.org/', 'https://thumb.wikimedia.org/')
+                   .replace(/\/([0-9a-f])\/([0-9a-f]{2})\//, '/thumb/$1/$2/') + '/' + w + 'px-' + file + '.webp';
+      var link = document.createElement('link');
+      link.rel = 'preload'; link.as = 'image'; link.href = url;
+      link.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(link);
+      window.__mvHero = { src: src, url: url, w: w, used: false };
+    } catch (e) {}
+  })();
+  </script>
   <link rel="preconnect" href="https://server.arcgisonline.com">
 
   <!-- display=swap: text shows immediately in system fallback while Fraunces+Inter download.
@@ -7791,7 +7828,11 @@
   <main id="main">
   <section class="hero">
     <div class="hero-stage" id="heroStage">
-      <div class="hero-slide active img-host has-placeholder" data-label="Lisbon" data-wiki="Lisbon">
+      <!-- Slide 1 is pinned to a Commons file (credited on screen) rather
+           than Lisbon's live Wikipedia lead image: the <head> fast path
+           must know the URL before any script runs, and Wikipedia
+           swapped that lead image once already. -->
+      <div class="hero-slide active img-host has-placeholder" data-label="Lisbon" data-photo="https://upload.wikimedia.org/wikipedia/commons/4/41/Lisbon_%2836831596786%29_%28cropped%29.jpg">
         <img alt="Lisbon" loading="eager" fetchpriority="high" decoding="async" />
       </div>
       <div class="hero-slide img-host has-placeholder" data-label="Barcelona" data-wiki="Barcelona" data-wiki-defer="1">
@@ -9235,7 +9276,7 @@
   const places = SEASON.isWinter
     ? WINTER_HERO.map(w => ({ name: w.place, coord: w.coord, credit: w.credit }))
     : [
-        { name: 'Lisbon, Portugal',  coord: '38°43′N 9°08′W' },
+        { name: 'Lisbon, Portugal',  coord: '38°43′N 9°08′W', credit: 'Deensel · CC BY 2.0' },
         { name: 'Barcelona, Spain',  coord: '41°23′N 2°10′E' },
         { name: 'Budapest, Hungary', coord: '47°30′N 19°02′E' },
         { name: 'Naples, Italy',     coord: '40°51′N 14°16′E' },
@@ -10700,6 +10741,13 @@
   // decorateImage's error handler. Pass fmt = 'jpg' where a third
   // party fetches the URL (og:image — not every crawler reads WebP).
   const WIKI_THUMB_ORIGIN = 'https://thumb.wikimedia.org';
+  // 'wikipedia/commons/f/f2/Name.jpg' for any spelling of a Wikimedia
+  // file URL (either host, original or thumb, any width, any query).
+  function wikiFileKey(url) {
+    if (!url || typeof url !== 'string') return null;
+    const m = url.split(/[?#]/)[0].match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/(wikipedia\/[^/]+)\/(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+)/);
+    return m ? m.slice(1).join('/') : null;
+  }
   function wikiSized(url, want, fmt) {
     if (!url || typeof url !== 'string') return url;
     const clean = url.split(/[?#]/)[0];
@@ -10714,9 +10762,12 @@
   }
 
   // Pixel density we are willing to pay for.
-  //  - Big focal surfaces (hero, detail hero: >= 900 CSS px across)
-  //    get the display's real density up to 2x. This is where a 4K
-  //    or retina screen is served the 3840px rung.
+  //  - Big focal surfaces (hero, detail hero: >= 900 CSS px across,
+  //    on a screen at least 900px wide) get the display's real
+  //    density up to 2x. This is where a 4K or retina screen is
+  //    served the 3840px rung. Phones stop at 1.5x even for the
+  //    hero: a portrait crop of a landscape photo asked for the
+  //    3840px rung there — ~2 MB for a 6-inch screen.
   //  - Cards cap at 1.5x: on a 2x or 3x screen a photo at 1.5x is not
   //    distinguishable from 2x, and it is about half the bytes.
   //  - Data-saver, or a 2G/3G connection: 1x everywhere.
@@ -10728,7 +10779,7 @@
   })();
   function densityFor(cssNeed) {
     if (MV_SLOW_NET) return 1;
-    return Math.min(window.devicePixelRatio || 1, cssNeed >= 900 ? 2 : 1.5);
+    return Math.min(window.devicePixelRatio || 1, (window.innerWidth >= 900 && cssNeed >= 900) ? 2 : 1.5);
   }
 
   // How many source pixels does this <img> actually need? Measured,
@@ -10858,7 +10909,7 @@
       // downloading it — use that exact URL so the bytes arrive once.
       const fast = window.__mvHero;
       if (fast && !fast.used && parent && parent.classList.contains('hero-slide')
-          && url.split(/[?#]/)[0] === fast.src) {
+          && wikiFileKey(url) && wikiFileKey(url) === wikiFileKey(fast.src)) {
         fast.used = true;
         img.dataset.wikiSrc = url;
         img.dataset.wikiW = String(fast.w);
