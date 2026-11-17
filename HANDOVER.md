@@ -789,7 +789,25 @@ git push origin HEAD:main
 
 ## Recent session highlights (latest work, chronological — mid-2026)
 
-**Tallinn + German pass** (Nov 2026, latest):
+**Performance pass** (Nov 2026, latest):
+- **Hero fast path** — a small `<script>` in `<head>` preloads the first
+  hero photo and leaves its URL in `window.__mvHero`; `applyWikiImage`
+  reuses it (matched by `wikiFileKey()`, i.e. file identity). It
+  duplicates three rules — keep them in step: the season rule (`SEASON`),
+  the width ladder (`wikiWidthFor`) and the density rule (`densityFor`).
+  Slide 1 is therefore a pinned Commons file in both modes (`data-photo`).
+- **WebP** — `wikiSized()` appends `.webp` (Wikimedia transcodes any thumb;
+  10–45% smaller). Failing WebP falls back to the JPEG, then the other
+  host. Pass `fmt = 'jpg'` for URLs third parties fetch (og:image).
+- **Density** — `densityFor()`: up to 2x only for >= 900px surfaces on
+  >= 900px screens (4K/retina hero → 3840px), 1.5x for cards and for
+  phones, 1x on data-saver / 2G / 3G.
+- **Layout** — featured grid is an even feature row + 2x2; tablets get
+  2-column featured and 3-column journal; map stats moved from the map
+  into the sidebar head, the "Indicative" pill is gone, overview
+  includes Iceland, hint pill is solid dark (legible on the street map).
+
+**Tallinn + German pass** (Nov 2026):
 - **Adding a city = 10 places.** Tallinn went into: `cuisineWikiMap`
   (already had Estonian), `cityFoodCulture`, `cityGallery`, `cityAirports`,
   `flixbusCitySlug`, `cityEconomy`, the country-profile map (`Estonia`),
